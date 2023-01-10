@@ -1,0 +1,22 @@
+// eslint-disable testing-library/no-node-access
+import { ServiceCollection } from '@aesop-fables/containr';
+import { ServiceProvider } from '@aesop-fables/containr-react';
+import React from 'react';
+import { AppStorageProvider, IAppStorage } from '..';
+
+export interface InteractionContextProps {
+  appStorage: IAppStorage;
+  children: JSX.Element;
+}
+
+export const InteractionContext: React.FC<InteractionContextProps> = ({ appStorage, ...props }) => {
+  const services = new ServiceCollection();
+  services.register<IAppStorage>('appStorage', appStorage);
+  const container = services.buildContainer();
+
+  return (
+    <ServiceProvider rootContainer={container}>
+      <AppStorageProvider storage={appStorage}>{props.children}</AppStorageProvider>
+    </ServiceProvider>
+  );
+};

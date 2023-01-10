@@ -1,0 +1,150 @@
+import { BehaviorSubject, map, Observable } from 'rxjs';
+import 'reflect-metadata';
+import {
+  IAppStorage,
+  createDataCache,
+  DataCache,
+  DataCategory,
+  DataCompartmentOptions,
+  AppStorage,
+  ProjectionContext,
+  createDataCacheModule,
+  connectCache,
+  IProjectionFactory,
+  createProjection,
+} from '../index';
+
+export function createAccountDataCache(): DataCache<AccountCompartments> {
+  return createDataCache<AccountCompartments>({
+    plans: {
+      category: DataCategory.Critical,
+      load: async () => [],
+      defaultValue: [],
+    },
+  });
+}
+
+export interface InvestmentInfoRest {
+  id: number;
+  title: string;
+  balance: number;
+}
+
+export interface InvestmentInfo {
+  id: number;
+  name: string;
+  balance: number;
+}
+
+export interface AccountInfoRest {
+  id: number;
+  title: string;
+  investments: InvestmentInfoRest[];
+}
+
+export interface AccountInfo {
+  id: number;
+  name: string;
+  investments: InvestmentInfo[];
+}
+
+export interface AccountCompartments {
+  plans: DataCompartmentOptions<AccountInfoRest[]>;
+}
+
+export const CompartmentKeys = {
+  plans: 'plans' as keyof AccountCompartments,
+};
+
+export function mapInvestmentInfoRestToInvestmentInfo(data: InvestmentInfoRest): InvestmentInfo {
+  return {
+    id: data.id,
+    name: data.title,
+    balance: data.balance,
+  };
+}
+
+export function mapAccountInfoRestToAccountInfo(data: AccountInfoRest): AccountInfo {
+  return {
+    id: data.id,
+    name: data.title,
+    investments: data.investments.map(mapInvestmentInfoRestToInvestmentInfo),
+  };
+}
+
+export const AccountCompartmentKey = 'test-accounts';
+
+export class AccountProjections {
+  readonly cache: DataCache<AccountCompartments>;
+
+  constructor(context: ProjectionContext) {
+    const { storage } = context;
+    this.cache = storage.retrieve<AccountCompartments>(AccountCompartmentKey);
+  }
+
+  get accounts$(): Observable<AccountInfo[]> {
+    return this.cache
+      .observe$<AccountInfoRest[]>('plans')
+      .pipe(map((accounts) => accounts.map(mapAccountInfoRestToAccountInfo)));
+  }
+}
+
+export class AccountSummaryProjection {
+  constructor(@connectCache(AccountCompartmentKey) private readonly cache: DataCache<AccountCompartments>) {}
+
+  get totalBalance$(): Observable<number> {
+    return this.cache.observe$<AccountInfoRest[]>('plans').pipe(
+      map((accounts) => {
+        let balance = 0;
+        accounts.forEach((account) => {
+          account.investments.forEach((investment) => {
+            balance += investment.balance;
+          });
+        });
+
+        return balance;
+      }),
+    );
+  }
+}
+
+export class CurrentUserProjection implements IProjectionFactory<CurrentUser> {
+  constructor(private readonly name: string) {}
+
+  create(context: ProjectionContext): CurrentUser {
+    const { container, storage } = context;
+    return createProjection(storage, container, CurrentUser, this.name);
+  }
+}
+
+export class CurrentUser {
+  private readonly user = new BehaviorSubject('');
+
+  constructor(_context: ProjectionContext, name: string) {
+    this.user.next(name);
+  }
+
+  get user$(): Observable<string> {
+    return this.user.pipe();
+  }
+}
+
+export function createAccountStorage(policy: AccountCompartments): [IAppStorage, DataCache<AccountCompartments>] {
+  const appStorage = new AppStorage();
+  const dataCache = createDataCache<AccountCompartments>(policy);
+  appStorage.store(AccountCompartmentKey, dataCache);
+
+  return [appStorage, dataCache];
+}
+
+export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
+  const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>({
+    plans: {
+      category: DataCategory.Critical,
+      load: async () => [],
+      defaultValue: [],
+    },
+  });
+
+  appStorage.store<AccountCompartments>(CompartmentKeys.plans, dataCache);
+});
