@@ -2,7 +2,7 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 const activeTasks = new BehaviorSubject(0);
 
-async function wait(timeout: number): Promise<void> {
+export async function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });

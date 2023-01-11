@@ -30,3 +30,5 @@ export * from './hooks';
 
 // data-projections/tasks
 export * from './tasks';
+
+export * from './scheduling';
