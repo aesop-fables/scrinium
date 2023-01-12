@@ -19,6 +19,8 @@ export {
 // LazyCache
 export { IObservableHash, LazyObservable, LazyObservableCache, Modifier, Resolver, ValueResolver } from './LazyCache';
 
+export { Keychain } from './Keychain';
+
 // Stack
 export { Stack } from './Stack';
 
