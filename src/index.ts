@@ -7,14 +7,15 @@ export { AppStorage, AppStorageProvider, useAppStorage } from './AppStorage';
 export type { AppStorageProviderProps, IAppStorage } from './AppStorage';
 
 // DataCache
-export { DataCategory, createDataCache, DataCache, DataCompartment } from './DataCache';
+export { createDataCache, DataCache, IDataCache, IDataCacheObserver } from './DataCache';
+
 export {
   CompartmentResolver,
+  DataCategory,
+  DataCompartment,
   DataCompartmentOptions,
-  IDataCache,
-  IDataCacheObserver,
   IDataCompartment,
-} from './DataCache';
+} from './Compartments';
 
 // LazyCache
 export { IObservableHash, LazyObservable, LazyObservableCache, Modifier, Resolver, ValueResolver } from './LazyCache';
