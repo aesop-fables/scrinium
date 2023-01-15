@@ -4,7 +4,6 @@ import { render, screen, act, waitFor, fireEvent } from '@testing-library/react'
 import {
   useProjection,
   useObservable,
-  DataCategory,
   useMutation,
   DataCache,
   useAppStorage,
@@ -18,6 +17,7 @@ import { InteractionContext } from './InteractionContext';
 import { combineLatest, firstValueFrom, map, Observable } from 'rxjs';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
+import { ConfiguredDataSource } from '../Compartments';
 
 interface AccountSummaryDto {
   id: number;
@@ -148,12 +148,11 @@ describe('Mutations', () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
         autoLoad: false,
-        category: DataCategory.Critical,
-        load: async () => [
+        source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [{ id: 101, balance: 10, title: 'Account 1 - Investment 1' }] },
           { id: 2, title: 'Account 2', investments: [] },
           { id: 10, title: 'Account 3', investments: [] },
-        ],
+        ]),
         defaultValue: [],
       },
     });
@@ -181,12 +180,11 @@ describe('Mutations', () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
         autoLoad: false,
-        category: DataCategory.Critical,
-        load: async () => [
+        source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [{ id: 101, balance: 10, title: 'Account 1 - Investment 1' }] },
           { id: 2, title: 'Account 2', investments: [] },
           { id: 10, title: 'Account 3', investments: [] },
-        ],
+        ]),
         defaultValue: [],
       },
     });
@@ -231,12 +229,11 @@ describe('Mutations', () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
         autoLoad: false,
-        category: DataCategory.Critical,
-        load: async () => [
+        source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [{ id: 101, balance: 10, title: 'Account 1 - Investment 1' }] },
           { id: 2, title: 'Account 2', investments: [] },
           { id: 10, title: 'Account 3', investments: [] },
-        ],
+        ]),
         defaultValue: [],
       },
     });

@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Subscription, filter } from 'rxjs';
-import { DataCategory } from './Compartments';
+import { DataCompartment, DataCompartmentOptions } from './Compartments';
 import { DataCache, createDataCache } from './DataCache';
-import { createTypedCached, ITypedCache } from './TypedCache';
 
 export interface SubscriptionProxy<Compartments> {
   <T>(name: keyof Compartments): Promise<T>;
@@ -14,10 +13,10 @@ export interface DataCacheScenario<Compartments> {
   waitForAllCompartments: () => Promise<void>;
 }
 
-export interface TypedCacheScenario<Compartments> {
-  cache: ITypedCache<Compartments>;
-  waitForAllCompartments: () => Promise<void>;
-}
+// export interface TypedCacheScenario<Compartments> {
+//   cache: ITypedCache<Compartments>;
+//   waitForAllCompartments: () => Promise<void>;
+// }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDataCacheScenario<Compartments extends Record<string, any>>(
@@ -36,9 +35,13 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
   async function waitForAllCompartments(): Promise<void> {
     const waits = Object.keys(policy).map((key) => {
       return new Promise<void>((resolve) => {
-        const compartment = cache.findCompartment(key as keyof Compartments);
-        if (compartment.category === DataCategory.NonCritical) {
+        const compartment = cache.findCompartment(key as keyof Compartments) as DataCompartment<
+          any,
+          DataCompartmentOptions<any>
+        >;
+        if (compartment.options.autoLoad === false) {
           resolve();
+          return;
         }
 
         // eslint-disable-next-line prefer-const
@@ -77,58 +80,46 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
   };
 }
 
-export function createTypedCacheScenario<Compartments extends Record<string, any>>(
-  policy: Compartments,
-): TypedCacheScenario<Compartments> {
-  const cache = createTypedCached<Compartments>(policy);
-  function createProxy<T>(name: keyof Compartments): Promise<T> {
-    return new Promise((resolve, reject) => {
-      cache.observe$<T>(name).subscribe({
-        next: (val) => resolve(val),
-        error: (err) => reject(err),
-      });
-    });
-  }
+// export function createTypedCacheScenario<Compartments extends Record<string, any>>(
+//   policy: Compartments,
+// ): TypedCacheScenario<Compartments> {
+//   const cache = createTypedCached<Compartments>(policy);
 
-  async function waitForAllCompartments(): Promise<void> {
-    const waits = Object.keys(policy).map((key) => {
-      return new Promise<void>((resolve) => {
-        const compartment = cache.get(key as keyof Compartments);
-        if (compartment.category === DataCategory.NonCritical) {
-          resolve();
-        }
+//   async function waitForAllCompartments(): Promise<void> {
+//     const waits = Object.keys(policy).map((key) => {
+//       return new Promise<void>((resolve) => {
+//         const compartment = cache.get(key as keyof Compartments);
+//         // eslint-disable-next-line prefer-const
+//         let initializedSub: Subscription | undefined;
 
-        // eslint-disable-next-line prefer-const
-        let initializedSub: Subscription | undefined;
+//         function clearSub(): void {
+//           if (!initializedSub) {
+//             return;
+//           }
 
-        function clearSub(): void {
-          if (!initializedSub) {
-            return;
-          }
+//           initializedSub.unsubscribe();
+//         }
+//         initializedSub = compartment
+//           .initialized$()
+//           .pipe(filter((x) => x === true))
+//           .subscribe({
+//             next: () => {
+//               clearSub();
+//               resolve();
+//             },
+//             error: () => {
+//               clearSub();
+//               resolve();
+//             },
+//           });
+//       });
+//     });
 
-          initializedSub.unsubscribe();
-        }
-        initializedSub = compartment
-          .initialized$()
-          .pipe(filter((x) => x === true))
-          .subscribe({
-            next: () => {
-              clearSub();
-              resolve();
-            },
-            error: () => {
-              clearSub();
-              resolve();
-            },
-          });
-      });
-    });
+//     await Promise.all(waits);
+//   }
 
-    await Promise.all(waits);
-  }
-
-  return {
-    cache,
-    waitForAllCompartments,
-  };
-}
+//   return {
+//     cache,
+//     waitForAllCompartments,
+//   };
+// }

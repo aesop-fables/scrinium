@@ -8,9 +8,10 @@ import {
   IServiceModule,
 } from '../bootstrapping';
 import { createDataCacheModule, DataCacheServices, useDataCache } from '../bootstrapping/useDataCache';
-import { createDataCache, DataCategory } from '../DataCache';
+import { createDataCache } from '../DataCache';
 import { ServiceCollection } from '@aesop-fables/containr';
 import { AccountCompartments } from './Common';
+import { ConfiguredDataSource } from '../Compartments';
 
 class TestActivator implements IActivator {
   isActivated = false;
@@ -65,12 +66,11 @@ describe('Bootstrapping', () => {
         const dataCache = createDataCache<AccountCompartments>({
           plans: {
             autoLoad: false,
-            category: DataCategory.Critical,
-            load: async () => [
+            source: new ConfiguredDataSource(async () => [
               { id: 1, title: 'Account 1', investments: [] },
               { id: 2, title: 'Account 2', investments: [] },
               { id: 10, title: 'Account 3', investments: [] },
-            ],
+            ]),
             defaultValue: [],
           },
         });

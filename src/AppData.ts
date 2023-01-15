@@ -1,18 +1,11 @@
 import { BehaviorSubject, concatMap, firstValueFrom, map, Observable } from 'rxjs';
-import {
-  DataCategory,
-  IDataCacheObserver,
-  IDataCompartment,
-  IDataCache,
-  DataCache,
-  createDataCache,
-} from './DataCache';
+import { IDataCompartment } from './Compartments';
+import { IDataCacheObserver, IDataCache, DataCache, createDataCache } from './DataCache';
 
 export interface AppDataCompartmentState {
-  name: string;
+  key: string;
   initialized: boolean;
   hasError: boolean;
-  category: DataCategory;
 }
 
 export interface AppDataState {
@@ -42,10 +35,9 @@ export class AppData implements IDataCacheObserver {
           }
 
           mappedCompartments.push({
-            name: compartment.name(),
+            key: compartment.key,
             initialized,
             hasError,
-            category: compartment.category,
           });
         }
 

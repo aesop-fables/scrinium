@@ -4,7 +4,6 @@ import {
   IAppStorage,
   createDataCache,
   DataCache,
-  DataCategory,
   DataCompartmentOptions,
   AppStorage,
   ProjectionContext,
@@ -13,12 +12,12 @@ import {
   IProjectionFactory,
   createProjection,
 } from '../index';
+import { ConfiguredDataSource } from '../Compartments';
 
 export function createAccountDataCache(): DataCache<AccountCompartments> {
   return createDataCache<AccountCompartments>({
     plans: {
-      category: DataCategory.Critical,
-      load: async () => [],
+      source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
     },
   });
@@ -140,8 +139,7 @@ export function createAccountStorage(policy: AccountCompartments): [IAppStorage,
 export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
   const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>({
     plans: {
-      category: DataCategory.Critical,
-      load: async () => [],
+      source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
     },
   });

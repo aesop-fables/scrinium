@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
-import { DataCategory, DataCompartment, DataCompartmentOptions, IDataCompartment } from './Compartments';
+import { DataCompartment, DataCompartmentOptions, IDataCompartment, DataCompartmentEvents } from './Compartments';
+import { consoleLogger, ILogger } from './Logging';
 
 export interface IDataCacheObserver {
   observe(compartments: IDataCompartment[]): void;
@@ -13,15 +15,15 @@ export interface IDataCache {
 export class DataCache<T> implements IDataCache {
   constructor(private compartments: IDataCompartment[]) {}
 
-  observe$<Output>(name: keyof T): Observable<Output> {
+  observe$<Output>(key: keyof T): Observable<Output> {
     return of(this.compartments).pipe(
       switchMap((compartments) => {
-        const compartment = compartments.find((x) => x.name() === String(name));
+        const compartment = compartments.find((x) => x.key === String(key));
         if (!compartment) {
-          throw new Error(`Could not find compartment: ${String(name)}`);
+          throw new Error(`Could not find compartment: ${String(key)}`);
         }
 
-        return (compartment as DataCompartment<Output, DataCompartmentOptions<Output>>).getValue$();
+        return (compartment as DataCompartment<Output, DataCompartmentOptions<Output>>).value$;
       }),
       distinctUntilChanged(),
     );
@@ -30,12 +32,24 @@ export class DataCache<T> implements IDataCache {
   initialized$(): Observable<boolean> {
     return of(this.compartments).pipe(
       switchMap((compartments) => {
-        const criticalCompartments = compartments.filter((x) => x.category === DataCategory.Critical);
-        return combineLatest(criticalCompartments.map((x) => x.initialized$())).pipe(
+        return combineLatest(compartments.map((x) => x.initialized$())).pipe(
           map((values) => values.every((x) => x === true)),
         );
       }),
     );
+  }
+
+  watch(key: keyof T, event: DataCompartmentEvents, listener: () => void): void {
+    const compartment = this.findCompartment(key) as DataCompartment<any, DataCompartmentOptions<any>>;
+    if (event === DataCompartmentEvents.Reload) {
+      compartment.onReload(listener);
+      return;
+    }
+
+    if (event === DataCompartmentEvents.Reset) {
+      compartment.onReset(listener);
+      return;
+    }
   }
 
   async reloadAll(): Promise<void> {
@@ -44,12 +58,8 @@ export class DataCache<T> implements IDataCache {
     }
   }
 
-  async reload(name: keyof T): Promise<void> {
-    const compartment = this.compartments.find((x) => x.name() === String(name));
-    if (!compartment) {
-      throw new Error(`Could not find compartment: ${String(name)}`);
-    }
-
+  async reload(key: keyof T): Promise<void> {
+    const compartment = this.findCompartment(key);
     return compartment.reload();
   }
 
@@ -59,19 +69,14 @@ export class DataCache<T> implements IDataCache {
     }
   }
 
-  async reset(name: keyof T): Promise<void> {
-    const compartment = this.compartments.find((x) => x.name() === String(name));
-    if (!compartment) {
-      throw new Error(`Could not find compartment: ${String(name)}`);
-    }
-
-    return compartment.reset();
+  async reset(key: keyof T): Promise<void> {
+    await this.withCompartment(key, (compartment) => compartment.reset());
   }
 
-  findCompartment(name: keyof T): IDataCompartment {
-    const compartment = this.compartments.find((x) => x.name() === String(name));
+  findCompartment(key: keyof T): IDataCompartment {
+    const compartment = this.compartments.find((x) => x.key === String(key));
     if (!compartment) {
-      throw new Error(`Could not find compartment: ${String(name)}`);
+      throw new Error(`Could not find compartment: ${String(key)}`);
     }
 
     return compartment;
@@ -81,36 +86,34 @@ export class DataCache<T> implements IDataCache {
     observer.observe(this.compartments);
   }
 
-  async modifyCompartment(name: keyof T, modifier: (compartment: IDataCompartment) => Promise<void>): Promise<void> {
-    const compartment = this.compartments.find((x) => x.name() === String(name));
-    if (!compartment) {
-      throw new Error(`Could not find compartment: ${String(name)}`);
-    }
-
-    await modifier(compartment);
-  }
-
-  async modify<Model>(name: keyof T, modifier: (currentValue: Model) => Promise<Model>): Promise<void> {
-    const compartment = this.compartments.find((x) => x.name() === String(name));
-    if (!compartment) {
-      throw new Error(`Could not find compartment: ${String(name)}`);
-    }
+  async modify<Model>(key: keyof T, modifier: (currentValue: Model) => Promise<Model>): Promise<void> {
+    const compartment = this.findCompartment(key);
 
     const stronglyTypedCompartment = compartment as DataCompartment<Model, DataCompartmentOptions<Model>>;
-    const currentValue = await firstValueFrom(stronglyTypedCompartment.getValue$());
+    const currentValue = await firstValueFrom(stronglyTypedCompartment.value$);
     const newValue = await modifier(currentValue);
 
-    stronglyTypedCompartment.setValue(newValue);
+    stronglyTypedCompartment.next(newValue);
+  }
+
+  withCompartment<Return>(key: keyof T, action: (compartment: IDataCompartment) => Return): Return {
+    const compartment = this.findCompartment(key);
+    return action(compartment);
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDataCache<Compartments extends Record<string, any>>(
   policy: Compartments,
+  logger: ILogger = consoleLogger,
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
-    return new DataCompartment<unknown, DataCompartmentOptions<unknown>>(key, value as DataCompartmentOptions<unknown>);
+    return new DataCompartment<unknown, DataCompartmentOptions<unknown>>(
+      key,
+      value as DataCompartmentOptions<unknown>,
+      logger,
+    );
   });
 
   return new DataCache<Compartments>(compartments);
