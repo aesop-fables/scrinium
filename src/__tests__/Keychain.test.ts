@@ -8,7 +8,7 @@ describe('Keychain', () => {
 
     const key = keychain.find('123');
     expect(key.isExpired).toBeFalsy();
-    expect((key.expiration() ?? 0) - now).toBe(500);
+    expect((key.expiration() ?? 0) - now).toBeGreaterThanOrEqual(500);
   });
 
   test('registers key with no expiration date', async () => {

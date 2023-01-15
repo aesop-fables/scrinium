@@ -1,6 +1,6 @@
 import { firstValueFrom } from 'rxjs';
 import { AppData } from '../AppData';
-import { DataCategory, DataCompartmentOptions } from '../Compartments';
+import { DataCompartmentOptions, DataCompartmentEvents, ConfiguredDataSource } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
 
@@ -23,14 +23,12 @@ test('DataCache > compartments > load > equality > happy path', async () => {
 
   const { createProxy } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => a,
+      source: new ConfiguredDataSource(async () => a),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => b,
+      source: new ConfiguredDataSource(async () => b),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -47,16 +45,14 @@ test('DataCache > compartments > load > autoLoad is false', async () => {
 
   const { createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => a,
+      source: new ConfiguredDataSource(async () => a),
       autoLoad: true,
       defaultValue: [],
-      category: DataCategory.Critical,
     },
     b: {
-      load: async () => b,
+      source: new ConfiguredDataSource(async () => b),
       autoLoad: false,
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -73,20 +69,18 @@ test('DataCache > compartments > autoload > happy path', async () => {
   // autoload is true by default
   createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         ++loadCount;
         return [];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         ++loadCount;
         return [];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -97,20 +91,18 @@ test('DataCache > compartments > initialize > waits for all critical compartment
   // dependency: autoload = true
   const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         await wait(300);
         return [];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.Critical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         await wait(550);
         return [];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.Critical,
     },
   });
 
@@ -131,18 +123,14 @@ test('DataCache > compartments > initialize > failure > should be false', async 
   // dependency: autoload = true
   const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
-        return [];
-      },
+      source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
-      category: DataCategory.Critical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         throw new Error('intentional error');
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.Critical,
     },
   });
 
@@ -175,18 +163,14 @@ test('DataCache > state > relays category and errors', async () => {
   // dependency: autoload = true
   const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
-        return [];
-      },
+      source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         throw new Error('intentional error');
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.Critical,
     },
   });
 
@@ -200,13 +184,11 @@ test('DataCache > state > relays category and errors', async () => {
   const state = await firstValueFrom(appData.state$());
   expect(state.compartments.length).toBe(2);
 
-  const compartmentA = state.compartments.find((x) => x.name === 'a');
+  const compartmentA = state.compartments.find((x) => x.key === 'a');
   expect(compartmentA?.hasError).toBeFalsy();
-  expect(compartmentA?.category).toBe(DataCategory.NonCritical);
 
-  const compartmentB = state.compartments.find((x) => x.name === 'b');
+  const compartmentB = state.compartments.find((x) => x.key === 'b');
   expect(compartmentB?.hasError).toBeTruthy();
-  expect(compartmentB?.category).toBe(DataCategory.Critical);
 });
 
 test('DataCache > observe > publishes default value and then the loaded value', async () => {
@@ -215,18 +197,12 @@ test('DataCache > observe > publishes default value and then the loaded value', 
   const loadedValue: ResponseA[] = [{ name: 'loaded' }];
   const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
-        return loadedValue;
-      },
+      source: new ConfiguredDataSource(async () => loadedValue),
       defaultValue,
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
-        return [{ email: 'loaded@loaded.com' }];
-      },
+      source: new ConfiguredDataSource(async () => [{ email: 'loaded@loaded.com' }]),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -258,20 +234,18 @@ test('DataCache > reload > all', async () => {
 
   const { cache } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         loadCounts.a++;
         return loadedValue;
-      },
+      }),
       defaultValue,
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         loadCounts.b++;
         return [{ email: 'loaded@loaded.com' }];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -295,20 +269,18 @@ test('DataCache > reload > compartment', async () => {
 
   const { cache } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         loadCounts.a++;
         return loadedValue;
-      },
+      }),
       defaultValue,
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         loadCounts.b++;
         return [{ email: 'loaded@loaded.com' }];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -328,18 +300,14 @@ test('DataCache > reset > all', async () => {
 
   const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
-        return loadedValue;
-      },
+      source: new ConfiguredDataSource(async () => loadedValue),
       defaultValue,
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         return [{ email: 'loaded@loaded.com' }];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -360,18 +328,14 @@ test('DataCache > reset > compartment', async () => {
 
   const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
-        return loadedValue;
-      },
+      source: new ConfiguredDataSource(async () => loadedValue),
       defaultValue,
-      category: DataCategory.NonCritical,
     },
     b: {
-      load: async () => {
+      source: new ConfiguredDataSource(async () => {
         return [{ email: 'loaded@loaded.com' }];
-      },
+      }),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
@@ -390,25 +354,19 @@ test('DataCache > reset > invokes onReset', async () => {
 
   const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
     a: {
-      load: async () => {
-        return [];
-      },
+      source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
-      category: DataCategory.NonCritical,
-      onReset: async () => {
-        onResetInvoked = true;
-      },
     },
     b: {
-      load: async () => {
-        return [];
-      },
+      source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
-      category: DataCategory.NonCritical,
     },
   });
 
   await waitForAllCompartments();
+  cache.watch('a', DataCompartmentEvents.Reset, () => {
+    onResetInvoked = true;
+  });
   await cache.reset('a');
 
   expect(onResetInvoked).toBeTruthy();

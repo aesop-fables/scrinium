@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
-import { useProjection, useObservable, DataCategory } from '../index';
+import { useProjection, useObservable } from '../index';
 import {
   AccountProjections,
   AccountSummaryProjection,
@@ -11,6 +11,7 @@ import {
 } from './Common';
 import { InteractionContext } from './InteractionContext';
 import { combineLatest } from 'rxjs';
+import { ConfiguredDataSource } from '../Compartments';
 
 const SampleComponent: React.FC = () => {
   const { accounts$ } = useProjection(AccountProjections);
@@ -39,12 +40,11 @@ describe('Sample Component', () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
         autoLoad: false,
-        category: DataCategory.Critical,
-        load: async () => [
+        source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [] },
           { id: 2, title: 'Account 2', investments: [{ id: 1, title: 'My First Investment', balance: 150 }] },
           { id: 10, title: 'Account 3', investments: [] },
-        ],
+        ]),
         defaultValue: [],
       },
     });
