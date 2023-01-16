@@ -23,7 +23,7 @@ export class DataCache<T> implements IDataCache {
           throw new Error(`Could not find compartment: ${String(key)}`);
         }
 
-        return (compartment as DataCompartment<Output, DataCompartmentOptions<Output>>).value$;
+        return (compartment as DataCompartment<Output>).value$;
       }),
       distinctUntilChanged(),
     );
@@ -40,7 +40,7 @@ export class DataCache<T> implements IDataCache {
   }
 
   watch(key: keyof T, event: DataCompartmentEvents, listener: () => void): void {
-    const compartment = this.findCompartment(key) as DataCompartment<any, DataCompartmentOptions<any>>;
+    const compartment = this.findCompartment(key) as DataCompartment<any>;
     if (event === DataCompartmentEvents.Reload) {
       compartment.onReload(listener);
       return;
@@ -89,7 +89,7 @@ export class DataCache<T> implements IDataCache {
   async modify<Model>(key: keyof T, modifier: (currentValue: Model) => Promise<Model>): Promise<void> {
     const compartment = this.findCompartment(key);
 
-    const stronglyTypedCompartment = compartment as DataCompartment<Model, DataCompartmentOptions<Model>>;
+    const stronglyTypedCompartment = compartment as DataCompartment<Model>;
     const currentValue = await firstValueFrom(stronglyTypedCompartment.value$);
     const newValue = await modifier(currentValue);
 
@@ -109,11 +109,7 @@ export function createDataCache<Compartments extends Record<string, any>>(
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
-    return new DataCompartment<unknown, DataCompartmentOptions<unknown>>(
-      key,
-      value as DataCompartmentOptions<unknown>,
-      logger,
-    );
+    return new DataCompartment<unknown>(key, value as DataCompartmentOptions<unknown>, logger);
   });
 
   return new DataCache<Compartments>(compartments);

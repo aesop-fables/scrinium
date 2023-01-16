@@ -126,14 +126,14 @@ export enum DataCompartmentEvents {
  * Represents an individual compartment of data that exposes lifecycle and observable functions to interact
  * with the cached value(s).
  */
-export class DataCompartment<Model, Options extends DataCompartmentOptions<Model>> implements IDataCompartment {
+export class DataCompartment<Model> implements IDataCompartment {
   private readonly initialized = new BehaviorSubject<boolean>(false);
   private readonly value: BehaviorSubject<Model>;
   private readonly events: EventEmitter;
   /**
    * The options used to configure the compartment.
    */
-  readonly options: Options;
+  readonly options: DataCompartmentOptions<Model>;
   /**
    * The unique identifier of the compartment.
    */
@@ -146,12 +146,11 @@ export class DataCompartment<Model, Options extends DataCompartmentOptions<Model
    * @param logger A configured logger instance.
    * @returns A new instance of DataCompartment.
    */
-  constructor(key: string, options: Options, private readonly logger: ILogger) {
+  constructor(key: string, options: DataCompartmentOptions<Model>, private readonly logger: ILogger) {
     this.key = key;
     this.events = new EventEmitter();
     this.options = {
       autoLoad: true,
-      unsubscribe: true,
       ...options,
     };
 
