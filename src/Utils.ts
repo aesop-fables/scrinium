@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Subscription, filter } from 'rxjs';
-import { DataCompartment, DataCompartmentOptions } from './Compartments';
+import { DataCompartment } from './Compartments';
 import { DataCache, createDataCache } from './DataCache';
 
 export interface SubscriptionProxy<Compartments> {
@@ -35,10 +35,7 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
   async function waitForAllCompartments(): Promise<void> {
     const waits = Object.keys(policy).map((key) => {
       return new Promise<void>((resolve) => {
-        const compartment = cache.findCompartment(key as keyof Compartments) as DataCompartment<
-          any,
-          DataCompartmentOptions<any>
-        >;
+        const compartment = cache.findCompartment(key as keyof Compartments) as DataCompartment<any>;
         if (compartment.options.autoLoad === false) {
           resolve();
           return;
