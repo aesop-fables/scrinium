@@ -8,7 +8,7 @@ export async function wait(timeout: number): Promise<void> {
   });
 }
 
-interface WaitOptions {
+export interface WaitOptions {
   timeoutInMilliseconds: number;
   millisecondPolling: number;
 }

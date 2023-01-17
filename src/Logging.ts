@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-declare type LogFunc = (message?: any, ...optionalParams: any[]) => void;
+export declare type LogFunc = (message?: any, ...optionalParams: any[]) => void;
 
 export enum LogLevel {
   Debug,

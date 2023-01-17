@@ -28,4 +28,14 @@ export * from './hooks';
 // data-projections/tasks
 export * from './tasks';
 
+export * from './Keychain';
+
+export * from './Logging';
+
 export * from './scheduling';
+
+export * from './Compartments';
+
+export * from './Lookup';
+
+export * from './Repository';
