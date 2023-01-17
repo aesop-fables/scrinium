@@ -1,23 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { ConfiguredEntityResolver, createRepository, RepositoryCompartmentOptions } from '../Repository';
+import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
-
-interface Video {
-  id: string;
-  title: string;
-}
-
-interface VideoMetadata {
-  id: string;
-  duration: number;
-}
-
-// In this example, we're pretending that the data we need
-// comes from two separate APIs that we need to merge together
-interface VideoRegistry {
-  videos: RepositoryCompartmentOptions<string, Video>;
-  metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
-}
 
 describe('Repository', () => {
   test('resolves the value the first time', async () => {
