@@ -8,9 +8,10 @@ import {
   AppStorage,
   ProjectionContext,
   createDataCacheModule,
-  connectCache,
+  fromAppStorage,
   IProjectionFactory,
   createProjection,
+  RepositoryCompartmentOptions,
 } from '../index';
 import { ConfiguredDataSource } from '../Compartments';
 
@@ -89,7 +90,7 @@ export class AccountProjections {
 }
 
 export class AccountSummaryProjection {
-  constructor(@connectCache(AccountCompartmentKey) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@fromAppStorage(AccountCompartmentKey) private readonly cache: DataCache<AccountCompartments>) {}
 
   get totalBalance$(): Observable<number> {
     return this.cache.observe$<AccountInfoRest[]>('plans').pipe(
@@ -146,3 +147,20 @@ export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
 
   appStorage.store<AccountCompartments>(CompartmentKeys.plans, dataCache);
 });
+
+export interface Video {
+  id: string;
+  title: string;
+}
+
+export interface VideoMetadata {
+  id: string;
+  duration: number;
+}
+
+// In this example, we're pretending that the data we need
+// comes from two separate APIs that we need to merge together
+export interface VideoRegistry {
+  videos: RepositoryCompartmentOptions<string, Video>;
+  metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
+}

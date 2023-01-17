@@ -1,23 +1,38 @@
 import 'reflect-metadata';
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
-import { useProjection, useObservable } from '../index';
+import {
+  useProjection,
+  useObservable,
+  useRepositoryProjection,
+  createRepository,
+  ConfiguredEntityResolver,
+} from '../index';
 import {
   AccountProjections,
   AccountSummaryProjection,
   createAccountStorage,
   CurrentUser,
   CurrentUserProjection,
+  VideoRegistry,
+  Video,
 } from './Common';
 import { InteractionContext } from './InteractionContext';
 import { combineLatest } from 'rxjs';
 import { ConfiguredDataSource } from '../Compartments';
 
+function useVideoRepositoryProjection(id: string) {
+  return useRepositoryProjection<VideoRegistry, Video>('videos', 'videos', id);
+}
+
 const SampleComponent: React.FC = () => {
   const { accounts$ } = useProjection(AccountProjections);
   const { totalBalance$ } = useProjection(AccountSummaryProjection);
   const { user$ } = useProjection<CurrentUser>(new CurrentUserProjection('Josh'));
-  const [accounts, totalBalance, user] = useObservable(combineLatest([accounts$, totalBalance$, user$])) ?? [[], 0, ''];
+  const { loading$, value$ } = useVideoRepositoryProjection('1');
+  const [accounts, totalBalance, user, loading, video] = useObservable(
+    combineLatest([accounts$, totalBalance$, user$, loading$, value$]),
+  ) ?? [[], 0, '', true, { title: '' }];
 
   return (
     <>
@@ -30,6 +45,10 @@ const SampleComponent: React.FC = () => {
       </div>
       <div>
         <span id="balance">Balance: {totalBalance}</span>
+      </div>
+      <div>
+        <h3>And for your viewing pleasure...</h3>
+        {loading ? <p>loading...</p> : <p>Here is video {video.title}</p>}
       </div>
     </>
   );
@@ -49,6 +68,17 @@ describe('Sample Component', () => {
       },
     });
 
+    const repository = createRepository<VideoRegistry>({
+      videos: {
+        resolver: new ConfiguredEntityResolver(async (id) => ({ id: '1', title: 'Hello' })),
+      },
+      metadata: {
+        resolver: new ConfiguredEntityResolver(async (id) => ({ id: '1', duration: 500 })),
+      },
+    });
+
+    appStorage.store('videos', repository);
+
     render(
       <InteractionContext appStorage={appStorage}>
         <SampleComponent />
@@ -64,5 +94,7 @@ describe('Sample Component', () => {
     await waitFor(() => screen.getByText(/Account 3/i));
 
     await waitFor(() => screen.getByText(/Balance: 150/i));
+
+    await waitFor(() => screen.getByText(/Here is video Hello/i));
   });
 });
