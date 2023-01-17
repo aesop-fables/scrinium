@@ -73,7 +73,7 @@ export function useProjection<Projection>(
   return useConstant(() => createProjection(storage, container, constructor));
 }
 
-class DataCompartmentProjection<Value> {
+export class DataCompartmentProjection<Value> {
   constructor(private readonly compartment: DataCompartment<Value>) {}
 
   get loading$(): Observable<boolean> {
@@ -85,7 +85,7 @@ class DataCompartmentProjection<Value> {
   }
 }
 
-class DataCompartmentProjectionFactory<Value> implements IProjectionFactory<DataCompartmentProjection<Value>> {
+export class DataCompartmentProjectionFactory<Value> implements IProjectionFactory<DataCompartmentProjection<Value>> {
   constructor(
     private readonly storageKey: string,
     private readonly key: string,

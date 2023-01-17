@@ -6,6 +6,7 @@ nukelog.txt
 **/.idea/
 node_modules/
 lib/
+docs/
 
 # files
 .DS_Store
