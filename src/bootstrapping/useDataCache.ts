@@ -1,6 +1,5 @@
-import { IServiceModule, ServiceModule } from '.';
 import { AppStorage, IAppStorage } from '../AppStorage';
-import { IServiceContainer } from '@aesop-fables/containr';
+import { IServiceContainer, IServiceModule, ServiceModule } from '@aesop-fables/containr';
 
 export const DataCacheServices = {
   AppStorage: 'appStorage',
