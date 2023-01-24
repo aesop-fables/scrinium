@@ -42,7 +42,7 @@ export class Lookup<Key extends string | number, Value> implements ILookup<Key, 
   }
   /**
    * Looks up the value or the specified key.
-   * If the value has already been resolved, the cached value will be returned; otherwise, 
+   * If the value has already been resolved, the cached value will be returned; otherwise,
    * the value will be resolved.
    * @param key The key of the value to retrieve.
    */

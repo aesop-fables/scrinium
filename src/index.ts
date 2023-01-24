@@ -17,10 +17,10 @@ export { IObservableHash, LazyObservable, LazyObservableCache, Modifier, Resolve
 export { Keychain } from './Keychain';
 
 // Stack
-export { Stack } from './Stack';
+export { Stack } from '@aesop-fables/containr';
 
 // data-projections/bootstrapping
-export * from './bootstrapping';
+export * from './bootstrapping/useDataCache';
 
 // data-projections/hooks
 export * from './hooks';
