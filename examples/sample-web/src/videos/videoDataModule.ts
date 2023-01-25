@@ -1,14 +1,18 @@
 import { IServiceContainer } from '@aesop-fables/containr';
-import { ConfiguredEntityResolver, createDataCacheModule, createRepository, IAppStorage, RepositoryCompartmentOptions } from '../../../../src';
-import { IVideoApi, VideoMetadataRest, VideoRest } from './VideoApi';
+import { ConfiguredDataSource, ConfiguredEntityResolver, createDataCache, createDataCacheModule, createRepository, DataCompartmentOptions, IAppStorage, RepositoryCompartmentOptions } from '@aesop-fables/scrinium';
+import { IVideoApi, VideoListingItem, VideoMetadataRest, VideoRest } from './VideoApi';
 import { VideoServices } from './VideoServices';
 
-export const VideoData = 'scrinium/examples/video';
-// const videos: VideoRest[] = [{ id: '1', title: 'VideoRest 1' }];
-// const metadata: VideoMetadataRest[] = [{ id: '1', duration: 1000, url: 'http://videos.com/1234' }];
+export const VideoDataCache = 'scrinium/examples/videos/dataCache';
+export const VideoRepository = 'scrinium/examples/videos/repository';
+
 
 // In this example, we're pretending that the data we need
-// comes from two separate APIs that we need to merge together
+// comes from three separate endpoints that we need to merge together
+export interface VideoCompartments {
+  library: DataCompartmentOptions<VideoListingItem[]>;
+}
+
 export interface VideoRegistry {
   videos: RepositoryCompartmentOptions<string, VideoRest>;
   metadata: RepositoryCompartmentOptions<string, VideoMetadataRest>;
@@ -31,5 +35,20 @@ export const withVideoDataModule = createDataCacheModule((appStorage: IAppStorag
     },
   });
 
-  appStorage.store(VideoData, repository);
+  const dataCache = createDataCache<VideoCompartments>({
+    library: {
+      defaultValue: [],
+      source: new ConfiguredDataSource(async () => {
+        const { data } = await api.getLibrary();
+        return data;
+      }),
+      autoLoad: true,
+
+      // TODO -- We probably want to prevent this from loading at all if the user isn't authenticated
+      // dependsOn: isAuthenticated$,
+    }
+  });
+
+  appStorage.store(VideoDataCache, dataCache);
+  appStorage.store(VideoRepository, repository);
 });
