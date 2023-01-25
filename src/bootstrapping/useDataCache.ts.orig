@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { AppStorage, IAppStorage } from '../AppStorage';
 import { IServiceContainer, IServiceModule, ServiceModule } from '@aesop-fables/containr';
+=======
+import { IServiceContainer, IServiceModule, ServiceModule } from '@aesop-fables/containr';
+import { AppStorage, IAppStorage } from '../AppStorage';
+>>>>>>> d1dc2b1 (wIP)
 
 export const DataCacheServices = {
   AppStorage: 'appStorage',

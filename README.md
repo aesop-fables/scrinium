@@ -3,23 +3,9 @@
 Documentation coming...
 
 
-## Cache types:
+## Examples
 
-1. DataCache
-   1. Strongly-typed data-compartments with lazy loading/custom resolvers
-2. LazyCache
-   1. Strongly typed in-memory cache (just get/sets) 
-   2. The LazyObservable stuff lives over here too
-3. Cache
-   1. This is something more like react-query's useQuery hook
+You'll find a sample-web application built with create-react-app in the `examples` dir. 
 
-
-createDataCache<T>()
-
-```typescript
-createCache<T>({
-  [keyof T]: compartmentFor<Something>({
-    
-  })
-});
-```
+Note:
+Make sure that you run `npm run build` in the root repo directory first. 

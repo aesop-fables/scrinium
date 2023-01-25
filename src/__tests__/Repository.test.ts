@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs';
-import { ConfiguredEntityResolver, createRepository, RepositoryCompartmentOptions } from '../Repository';
+import { ConfiguredEntityResolver, createRepository } from '../Repository';
 import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
 

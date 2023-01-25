@@ -49,7 +49,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "@aesop-fables/containr": "^0.1.2",
+    "@aesop-fables/containr": "^0.1.4",
     "@aesop-fables/containr-react": "^0.1.1",
     "react": "^18.2.0",
     "reflect-metadata": "^0.1.13",
