@@ -1,15 +1,15 @@
 import { firstValueFrom } from 'rxjs';
 import { IAppStorage } from '../AppStorage';
+import { createDataCacheModule, DataCacheServices, useDataCache } from '../bootstrapping/useDataCache';
+import { createDataCache } from '../DataCache';
 import {
   BootstrappingServices,
   createContainer,
   createServiceModule,
   IActivator,
   IServiceModule,
-} from '../bootstrapping';
-import { createDataCacheModule, DataCacheServices, useDataCache } from '../bootstrapping/useDataCache';
-import { createDataCache } from '../DataCache';
-import { ServiceCollection } from '@aesop-fables/containr';
+  ServiceCollection,
+} from '@aesop-fables/containr';
 import { AccountCompartments } from './Common';
 import { ConfiguredDataSource } from '../Compartments';
 
