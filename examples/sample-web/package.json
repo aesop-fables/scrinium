@@ -5,7 +5,7 @@
   "dependencies": {
     "@aesop-fables/containr": "^0.1.4",
     "@aesop-fables/containr-react": "^0.1.1",
-    "@aesop-fables/scrinium": "^0.1.0",
+    "@aesop-fables/scrinium": "../../lib",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",

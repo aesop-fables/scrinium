@@ -3,9 +3,10 @@ import logo from './logo.svg';
 import './App.css';
 import { bootstrap } from './Bootstrap';
 import { ServiceProvider } from '@aesop-fables/containr-react';
-import { useObservable, useProjection } from '@aesop-fables/scrinium';
-import { VideoLibrary } from './videos/VideoProjections';
+import { useObservable, useProjection, useRepositoryProjection } from '@aesop-fables/scrinium';
+import { FindVideoByIdProjection, VideoLibrary } from './videos/VideoProjections';
 import { combineLatest } from 'rxjs';
+import { VideoRegistry, VideoRest } from './videos';
 
 const container = bootstrap();
 function App() {
@@ -49,6 +50,25 @@ const VideoGallery: React.FC = () => {
         </li>
       ))}
     </ul>
+    </>
+  )
+};
+
+interface VideoViewerProps {
+  videoId: string;
+}
+
+const VideoViewer: React.FC<VideoViewerProps> = ({ videoId }) => {
+  const { loading$, video$ } = useProjection(new FindVideoByIdProjection(videoId));
+  const [loading, video] = useObservable(combineLatest([loading$, video$])) ?? [true, undefined];
+  if (loading) {
+    return <><p>Loading...</p></>;
+  }
+
+  return (
+    <>
+      <h3>{video?.title}</h3>
+      <VideoPlayer url={video?.url} />
     </>
   )
 };
