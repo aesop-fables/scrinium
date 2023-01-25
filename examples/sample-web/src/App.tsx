@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 import { bootstrap } from './Bootstrap';
 import { ServiceProvider } from '@aesop-fables/containr-react';
+import { useObservable, useProjection } from '@aesop-fables/scrinium';
+import { VideoLibrary } from './videos/VideoProjections';
+import { combineLatest } from 'rxjs';
 
 const container = bootstrap();
 function App() {
@@ -23,9 +26,31 @@ function App() {
             Learn React
           </a>
         </header>
+        <VideoGallery />
       </div>
     </ServiceProvider>
   );
 }
+
+const VideoGallery: React.FC = () => {
+  const { loading$, library$ } = useProjection(VideoLibrary);
+  const [loading, library] = useObservable(combineLatest([loading$, library$])) ?? [true, []];
+
+  if (loading) {
+    return <><p>Loading...</p></>;
+  }
+
+  return (
+    <>
+    <ul>
+      {library.map((item) => (
+        <li key={item.id}>
+          <a href={`/videos/${item.id}`}><h3>{item.title}</h3></a>
+        </li>
+      ))}
+    </ul>
+    </>
+  )
+};
 
 export default App;

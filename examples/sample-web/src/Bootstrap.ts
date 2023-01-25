@@ -1,5 +1,5 @@
 import { createContainer, IServiceContainer } from "@aesop-fables/containr";
-import { useDataCache } from "../../../src";
+import { useDataCache } from "@aesop-fables/scrinium";
 import { withVideoDataModule } from "./videos/videoDataModule";
 
 export function bootstrap(): IServiceContainer {
