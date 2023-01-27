@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@aesop-fables/containr": "^0.1.4",
-    "@aesop-fables/containr-react": "^0.1.1",
+    "@aesop-fables/containr": "^0.1.5",
+    "@aesop-fables/containr-react": "^0.1.2",
     "@aesop-fables/scrinium": "../../lib",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
