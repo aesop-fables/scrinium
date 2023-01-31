@@ -3,18 +3,15 @@ import logo from './logo.svg';
 import './App.css';
 import { bootstrap } from './Bootstrap';
 import { ServiceProvider } from '@aesop-fables/containr-react';
-import { AppStorageProvider, DataCacheServices, IAppStorage, useObservable, useProjection, useRepositoryProjection } from '@aesop-fables/scrinium';
+import { DataCacheServices, IAppStorage, useObservable, useProjection, useRepositoryProjection } from '@aesop-fables/scrinium';
 import { FindVideoByIdProjection, VideoLibrary } from './videos/VideoProjections';
 import { combineLatest } from 'rxjs';
 import { VideoRegistry, VideoRest } from './videos';
 
 const container = bootstrap();
 function App() {
-  const appStorage = container.get<IAppStorage>(DataCacheServices.AppStorage);
-
   return (
     <ServiceProvider rootContainer={container}>
-      <AppStorageProvider storage={appStorage}>
         <div className="App">
           <header className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
@@ -32,7 +29,6 @@ function App() {
           </header>
           <VideoGallery />
         </div>
-      </AppStorageProvider>
     </ServiceProvider>
   );
 }
