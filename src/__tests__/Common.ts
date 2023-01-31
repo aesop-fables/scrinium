@@ -1,5 +1,4 @@
 import { BehaviorSubject, map, Observable } from 'rxjs';
-import 'reflect-metadata';
 import {
   IAppStorage,
   createDataCache,

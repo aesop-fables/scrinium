@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import 'reflect-metadata';
 import { IAppStorage } from '../AppStorage';
 import { useAppStorage } from '../useAppStorage';
 import { IServiceContainer } from '@aesop-fables/containr';
