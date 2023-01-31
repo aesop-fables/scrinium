@@ -7,6 +7,7 @@ nukelog.txt
 node_modules/
 lib/
 docs/
+dist/
 
 # files
 .DS_Store

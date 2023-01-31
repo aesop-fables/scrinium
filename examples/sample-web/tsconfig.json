@@ -21,9 +21,14 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "baseUrl": "./",
   },
   "include": [
-    "src"
+    "./src",
+    "./webpack.config.ts"
   ]
 }
