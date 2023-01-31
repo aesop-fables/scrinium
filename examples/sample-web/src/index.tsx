@@ -1,8 +1,14 @@
+import 'reflect-metadata';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { inject } from '@aesop-fables/containr';
+
+class Something {
+  constructor(@inject('hello')private readonly hello: string) {}
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
