@@ -47,7 +47,7 @@ export class VideoApi implements IVideoApi {
       data: (data.videos as VideoRest[]).find((x) => x.id === id) as VideoRest,
     };
   }
-  
+
   async getMetadata(id: string): Promise<AxiosResponse<VideoMetadataRest>> {
     const response = await this.axios.get('/sample-data.json');
     const { data } = response;
