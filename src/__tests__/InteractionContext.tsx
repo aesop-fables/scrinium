@@ -2,7 +2,7 @@
 import { ServiceCollection } from '@aesop-fables/containr';
 import { ServiceProvider } from '@aesop-fables/containr-react';
 import React from 'react';
-import { AppStorageProvider, IAppStorage } from '..';
+import { IAppStorage } from '..';
 
 export interface InteractionContextProps {
   appStorage: IAppStorage;
@@ -14,9 +14,5 @@ export const InteractionContext: React.FC<InteractionContextProps> = ({ appStora
   services.register<IAppStorage>('appStorage', appStorage);
   const container = services.buildContainer();
 
-  return (
-    <ServiceProvider rootContainer={container}>
-      <AppStorageProvider storage={appStorage}>{props.children}</AppStorageProvider>
-    </ServiceProvider>
-  );
+  return <ServiceProvider rootContainer={container}>{props.children}</ServiceProvider>;
 };

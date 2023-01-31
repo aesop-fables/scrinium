@@ -4,8 +4,7 @@
 export * from './AppData';
 
 // AppStorage
-export { AppStorage, AppStorageProvider, useAppStorage } from './AppStorage';
-export type { AppStorageProviderProps, IAppStorage } from './AppStorage';
+export { AppStorage, IAppStorage } from './AppStorage';
 
 // DataCache
 export { createDataCache, DataCache, IDataCache, IDataCacheObserver } from './DataCache';
@@ -25,6 +24,7 @@ export * from './bootstrapping/useDataCache';
 
 // data-projections/hooks
 export * from './hooks';
+export * from './useAppStorage';
 
 // data-projections/tasks
 export * from './tasks';

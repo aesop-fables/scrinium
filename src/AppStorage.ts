@@ -25,22 +25,4 @@ export class AppStorage implements IAppStorage {
   }
 }
 
-const AppStorageContext = createContext<IAppStorage | undefined>(undefined);
 
-export interface AppStorageProviderProps {
-  storage: IAppStorage;
-  children: JSX.Element;
-}
-
-export const AppStorageProvider: React.FC<AppStorageProviderProps> = ({ children, storage }) => {
-  return <AppStorageContext.Provider value={storage}>{children}</AppStorageContext.Provider>;
-};
-
-export function useAppStorage(): IAppStorage {
-  const storage = useContext(AppStorageContext);
-  if (!storage) {
-    throw new Error('useAppStorage must be used within an AppStorageProvider.');
-  }
-
-  return storage;
-}
