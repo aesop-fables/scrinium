@@ -1,11 +1,19 @@
 import { IServiceContainer } from '@aesop-fables/containr';
-import { ConfiguredDataSource, ConfiguredEntityResolver, createDataCache, createDataCacheModule, createRepository, DataCompartmentOptions, IAppStorage, RepositoryCompartmentOptions } from '@aesop-fables/scrinium';
+import {
+  ConfiguredDataSource,
+  ConfiguredEntityResolver,
+  createDataCache,
+  createDataCacheModule,
+  createRepository,
+  DataCompartmentOptions,
+  IAppStorage,
+  RepositoryCompartmentOptions,
+} from '@aesop-fables/scrinium';
 import { IVideoApi, VideoListingItem, VideoMetadataRest, VideoRest } from './VideoApi';
 import { VideoServices } from './VideoServices';
 
 export const VideoDataCache = 'scrinium/examples/videos/dataCache';
 export const VideoRepository = 'scrinium/examples/videos/repository';
-
 
 // In this example, we're pretending that the data we need
 // comes from three separate endpoints that we need to merge together
@@ -20,6 +28,7 @@ export interface VideoRegistry {
 
 export const withVideoDataModule = createDataCacheModule((appStorage: IAppStorage, container: IServiceContainer) => {
   const api = container.get<IVideoApi>(VideoServices.VideoApi);
+
   const repository = createRepository<VideoRegistry>({
     metadata: {
       resolver: new ConfiguredEntityResolver<string, VideoMetadataRest>(async (key) => {
@@ -46,7 +55,7 @@ export const withVideoDataModule = createDataCacheModule((appStorage: IAppStorag
 
       // TODO -- We probably want to prevent this from loading at all if the user isn't authenticated
       // dependsOn: isAuthenticated$,
-    }
+    },
   });
 
   appStorage.store(VideoDataCache, dataCache);
