@@ -3,32 +3,36 @@ import logo from './logo.svg';
 import './App.css';
 import { bootstrap } from './Bootstrap';
 import { ServiceProvider } from '@aesop-fables/containr-react';
-import { useObservable, useProjection, useRepositoryProjection } from '@aesop-fables/scrinium';
+import { AppStorageProvider, DataCacheServices, IAppStorage, useObservable, useProjection, useRepositoryProjection } from '@aesop-fables/scrinium';
 import { FindVideoByIdProjection, VideoLibrary } from './videos/VideoProjections';
 import { combineLatest } from 'rxjs';
 import { VideoRegistry, VideoRest } from './videos';
 
 const container = bootstrap();
 function App() {
+  const appStorage = container.get<IAppStorage>(DataCacheServices.AppStorage);
+
   return (
     <ServiceProvider rootContainer={container}>
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-        <VideoGallery />
-      </div>
+      <AppStorageProvider storage={appStorage}>
+        <div className="App">
+          <header className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <p>
+              Edit <code>src/App.tsx</code> and save to reload.
+            </p>
+            <a
+              className="App-link"
+              href="https://reactjs.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learn React
+            </a>
+          </header>
+          <VideoGallery />
+        </div>
+      </AppStorageProvider>
     </ServiceProvider>
   );
 }
@@ -68,7 +72,7 @@ const VideoViewer: React.FC<VideoViewerProps> = ({ videoId }) => {
   return (
     <>
       <h3>{video?.title}</h3>
-      <VideoPlayer url={video?.url} />
+      {/* <VideoPlayer url={video?.url} /> */}
     </>
   )
 };
