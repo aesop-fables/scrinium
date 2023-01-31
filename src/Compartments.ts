@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import { BehaviorSubject, delay, Observable } from 'rxjs';
 import { ILogger } from './Logging';
 

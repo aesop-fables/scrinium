@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { IAppStorage } from '../AppStorage';
 import { createDataCacheModule, DataCacheServices, useDataCache } from '../bootstrapping/useDataCache';
