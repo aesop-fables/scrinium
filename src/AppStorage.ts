@@ -1,5 +1,4 @@
-import React, { createContext, useContext } from 'react';
-import { DataCache, IDataCache } from './DataCache';
+import { DataCache } from './DataCache';
 import { IRepository } from './Repository';
 
 export interface IAppStorage {
@@ -24,5 +23,3 @@ export class AppStorage implements IAppStorage {
     this.values[key] = value;
   }
 }
-
-

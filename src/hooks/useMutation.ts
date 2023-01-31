@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IAppStorage } from '../AppStorage';
-import { useAppStorage } from "../useAppStorage";
+import { useAppStorage } from '../useAppStorage';
 import { IServiceContainer } from '@aesop-fables/containr';
 import { useServiceContainer } from '@aesop-fables/containr-react';
 
