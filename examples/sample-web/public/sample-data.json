@@ -1,5 +1,0 @@
-{
-  "videos": [{ "id": "1", "title": "VideoRest 1" }],
-  "listing": [{ "id": "1", "title": "VideoRest 1", "duration": 50 }],
-  "metadata": [{ "id": "1", "title": "VideoRest 1", "duration": 50, "url": "https://videos.com/1234" }]
-}
