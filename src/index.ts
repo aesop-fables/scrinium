@@ -40,3 +40,5 @@ export * from './Compartments';
 export * from './Lookup';
 
 export * from './Repository';
+
+export * from './Utils';

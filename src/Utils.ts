@@ -9,16 +9,38 @@ export interface SubscriptionProxy<Compartments> {
 
 export interface DataCacheScenario<Compartments> {
   cache: DataCache<Compartments>;
+  /**
+   * Provides strongly typed access to the value of the underlying compartment.
+   */
   createProxy: SubscriptionProxy<Compartments>;
   waitForAllCompartments: () => Promise<void>;
 }
 
-// export interface TypedCacheScenario<Compartments> {
-//   cache: ITypedCache<Compartments>;
-//   waitForAllCompartments: () => Promise<void>;
-// }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * A helper function for creating a testing scenario.
+ * @param policy The policy to configure the cache.
+ * @returns Encapsulates the cache and a few helpers for controlling and accessing data for testing purposes.
+ * @example
+ * const a: ResponseA[] = [];
+ * const b: ResponseB[] = [];
+ *
+ * const { createProxy } = createDataCacheScenario<TestStoreCompartments>({
+ *  a: {
+ *   source: new ConfiguredDataSource(async () => a),
+ *   defaultValue: [],
+ *  },
+ *  b: {
+ *   source: new ConfiguredDataSource(async () => b),
+ *   defaultValue: [],
+ *  },
+ * });
+ *
+ * const observedA = await createProxy<ResponseA>('a');
+ * expect(observedA).toStrictEqual(a);
+ *
+ * const observedB = await createProxy<ResponseB>('b');
+ * expect(observedB).toStrictEqual(b);
+ */
 export function createDataCacheScenario<Compartments extends Record<string, any>>(
   policy: Compartments,
 ): DataCacheScenario<Compartments> {
@@ -76,47 +98,3 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
     waitForAllCompartments,
   };
 }
-
-// export function createTypedCacheScenario<Compartments extends Record<string, any>>(
-//   policy: Compartments,
-// ): TypedCacheScenario<Compartments> {
-//   const cache = createTypedCached<Compartments>(policy);
-
-//   async function waitForAllCompartments(): Promise<void> {
-//     const waits = Object.keys(policy).map((key) => {
-//       return new Promise<void>((resolve) => {
-//         const compartment = cache.get(key as keyof Compartments);
-//         // eslint-disable-next-line prefer-const
-//         let initializedSub: Subscription | undefined;
-
-//         function clearSub(): void {
-//           if (!initializedSub) {
-//             return;
-//           }
-
-//           initializedSub.unsubscribe();
-//         }
-//         initializedSub = compartment
-//           .initialized$()
-//           .pipe(filter((x) => x === true))
-//           .subscribe({
-//             next: () => {
-//               clearSub();
-//               resolve();
-//             },
-//             error: () => {
-//               clearSub();
-//               resolve();
-//             },
-//           });
-//       });
-//     });
-
-//     await Promise.all(waits);
-//   }
-
-//   return {
-//     cache,
-//     waitForAllCompartments,
-//   };
-// }
