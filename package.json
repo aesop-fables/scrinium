@@ -34,7 +34,7 @@
     "@types/node": "^18.11.11",
     "@types/react": "^18.0.26",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
-    "@typescript-eslint/parser": "5.49.0",
+    "@typescript-eslint/parser": "5.54.1",
     "esbuild": "^0.16.2",
     "eslint": "8.35.0",
     "eslint-config-prettier": "^8.5.0",
