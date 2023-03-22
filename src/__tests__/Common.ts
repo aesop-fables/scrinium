@@ -11,6 +11,7 @@ import {
   IProjectionFactory,
   createProjection,
   RepositoryCompartmentOptions,
+  fromProjection,
 } from '../index';
 import { ConfiguredDataSource } from '../Compartments';
 
@@ -89,10 +90,10 @@ export class AccountProjections {
 }
 
 export class AccountSummaryProjection {
-  constructor(@fromAppStorage(AccountCompartmentKey) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@fromProjection(AccountProjections) private readonly accounts: AccountProjections) {}
 
   get totalBalance$(): Observable<number> {
-    return this.cache.observe$<AccountInfoRest[]>('plans').pipe(
+    return this.accounts.accounts$.pipe(
       map((accounts) => {
         let balance = 0;
         accounts.forEach((account) => {
