@@ -37,7 +37,7 @@ export function fromProjection<Projection>(
 ) {
   return (target: Object, propertyKey: string | symbol, parameterIndex: number): void => {
     const metadata =
-      (Reflect.getMetadata(fromAppStorageMetadataKey, constructor) as ProjectionParamMetadata[] | undefined) ?? [];
+      (Reflect.getMetadata(fromAppStorageMetadataKey, target) as ProjectionParamMetadata[] | undefined) ?? [];
     metadata.push({ parameterIndex, strategy: 'projection', target: constructor });
     Reflect.defineMetadata(fromAppStorageMetadataKey, metadata, target);
   };
