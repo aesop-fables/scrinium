@@ -18,9 +18,9 @@
     reflect-metadata "^0.1.13"
 
 "@aesop-fables/containr@^0.2.0", "@aesop-fables/containr@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.2.3.tgz#d495f39e38cc2b96a1e187fe34ae1e236b7a4d14"
-  integrity sha512-U4bpI9o8+OPC6lo0JcPCJa38IDCyRGD+M7K+n4Owt/uf/wdBJ8hHcR5LEq3TtNr6OjkeAy0+oPPedhgvNJTtow==
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.2.4.tgz#969358c89e0aa79a895a7d9639922a42d9ac53a4"
+  integrity sha512-slXDO+Y6CiJjyfek6ypyPXMkIekgV4noWEOkeEyydOaliLRpisLoIGm3vR2bzpEp9reDJiuZE4vNnmiIA9wRgg==
   dependencies:
     jest-mock-extended "^3.0.1"
     reflect-metadata "^0.1.13"
