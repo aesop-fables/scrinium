@@ -71,6 +71,11 @@ export interface DataCompartmentOptions<T> {
    * The data source used to fill a compartment.
    */
   source: IDataCompartmentSource<T>;
+  /**
+   * Whether to automatically unsubscribe from the dependsOn subscription.
+   * @default false
+   */
+  unsubscribe?: boolean;
 }
 
 export interface IDataCompartment {
@@ -172,7 +177,11 @@ export class DataCompartment<Model> implements IDataCompartment {
         }
 
         this.logger.debug(`DataCompartment(${key}): dependencies resolved. Initializing...`);
-        this.initialize().then(() => subscription?.unsubscribe());
+        this.initialize().then(() => {
+          if (this.options.unsubscribe) {
+            subscription?.unsubscribe();
+          }
+        });
       },
       error: (err) => this.initialized.error(err),
     });
