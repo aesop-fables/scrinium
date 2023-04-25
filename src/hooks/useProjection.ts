@@ -24,7 +24,7 @@ interface ProjectionParamMetadata extends OrderableParameter {
 }
 
 export function fromAppStorage(storageKey: string) {
-  return (target: Object, propertyKey: string | symbol, parameterIndex: number): void => {
+  return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
     const metadata =
       (Reflect.getMetadata(fromAppStorageMetadataKey, target) as ProjectionParamMetadata[] | undefined) ?? [];
     metadata.push({ parameterIndex, strategy: 'storage', key: storageKey });
@@ -35,7 +35,7 @@ export function fromAppStorage(storageKey: string) {
 export function fromProjection<Projection>(
   constructor: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,
 ) {
-  return (target: Object, propertyKey: string | symbol, parameterIndex: number): void => {
+  return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
     const metadata =
       (Reflect.getMetadata(fromAppStorageMetadataKey, target) as ProjectionParamMetadata[] | undefined) ?? [];
     metadata.push({ parameterIndex, strategy: 'projection', target: constructor });
