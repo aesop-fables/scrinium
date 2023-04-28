@@ -5,6 +5,12 @@ import { ILogger } from './Logging';
 
 export declare type EventListener = (listener: () => void) => void;
 
+export declare type CompartmentComparer<T> = (a: T, b: T) => boolean;
+
+export function defaultComparer<T>(a: T, b: T): boolean {
+  return a === b;
+}
+
 export interface RefreshOptions {
   /**
    * Delay in milliseconds between each reload of the data source.
@@ -76,6 +82,12 @@ export interface DataCompartmentOptions<T> {
    * @default false
    */
   unsubscribe?: boolean;
+  /**
+   * The comparer to use to determine whether to publish the next value.
+   * Publishes if the value is false.
+   * @default defaultComparer
+   */
+  comparer?: CompartmentComparer<T>;
 }
 
 export interface IDataCompartment {
@@ -156,6 +168,7 @@ export class DataCompartment<Model> implements IDataCompartment {
     this.events = new EventEmitter();
     this.options = {
       autoLoad: true,
+      comparer: defaultComparer,
       ...options,
     };
 
@@ -214,13 +227,19 @@ export class DataCompartment<Model> implements IDataCompartment {
     return this.value.pipe();
   }
   /**
-   * Forcibly replaces the cached value and emits the specified value.
+   * Attempts to update the cached value (if the comparer detects an update).
    * @param value The value to store and emit.
    */
   next(value: Model): void {
-    this.value.next(value);
-  }
+    let shouldPublish = true;
+    if (this.options.comparer) {
+      shouldPublish = !this.options.comparer(this.value.value, value);
+    }
 
+    if (shouldPublish) {
+      this.value.next(value);
+    }
+  }
   setData(value: never): void {
     this.next(value as Model);
   }
