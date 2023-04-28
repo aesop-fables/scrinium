@@ -7,7 +7,6 @@ import {
   AppStorage,
   ProjectionContext,
   createDataCacheModule,
-  fromAppStorage,
   IProjectionFactory,
   createProjection,
   RepositoryCompartmentOptions,
