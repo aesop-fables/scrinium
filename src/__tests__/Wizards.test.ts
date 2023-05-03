@@ -1,13 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import 'reflect-metadata';
-import { WizardStep, WizardStepSource } from '../Wizards';
+import { IWizardStepSource, WizardStep, WizardStepSource, createWizard } from '../Wizards';
 import { firstValueFrom } from 'rxjs';
-import { AccountCompartments, AccountInfo, AccountInfoRest, createOperationScenario } from './Common';
+import { AccountCompartments, AccountInfo, AccountInfoRest, InvestmentInfo, createOperationScenario } from './Common';
+import { DataCache } from '../DataCache';
 
 interface TestStepData {
   firstName: string;
   lastName: string;
 }
+
+interface TestWizardParams {}
 
 const DefaultTestStepData: TestStepData = {
   firstName: '',
@@ -17,9 +21,13 @@ const DefaultTestStepData: TestStepData = {
 describe('WizardStep', () => {
   describe('isDirty()', () => {
     test('positive path', async () => {
-      const step = new WizardStep<TestStepData>({
+      const step = new WizardStep<TestStepData, TestWizardParams>({
+        key: 'step1',
         defaultValue: DefaultTestStepData,
-        source: new WizardStepSource<TestStepData>(async () => ({ firstName: 'Test', lastName: 'User' })),
+        source: new WizardStepSource<TestStepData, TestWizardParams>(async () => ({
+          firstName: 'Test',
+          lastName: 'User',
+        })),
         operation: {
           async execute(value: TestStepData) {
             // no-op
@@ -27,7 +35,7 @@ describe('WizardStep', () => {
         },
       });
 
-      await step.resetState();
+      await step.resetState({});
       step.save({ firstName: 'Another', lastName: 'User' });
 
       expect(step.isDirty()).toBeTruthy();
@@ -35,8 +43,12 @@ describe('WizardStep', () => {
 
     test('negative path', async () => {
       const step = new WizardStep<TestStepData>({
+        key: 'step1',
         defaultValue: DefaultTestStepData,
-        source: new WizardStepSource<TestStepData>(async () => ({ firstName: 'Test', lastName: 'User' })),
+        source: new WizardStepSource<TestStepData, TestWizardParams>(async () => ({
+          firstName: 'Test',
+          lastName: 'User',
+        })),
         operation: {
           async execute(value: TestStepData) {
             // no-op
@@ -44,7 +56,7 @@ describe('WizardStep', () => {
         },
       });
 
-      await step.resetState();
+      await step.resetState({});
       expect(step.isDirty()).toBeFalsy();
     });
   });
@@ -52,8 +64,12 @@ describe('WizardStep', () => {
   describe('changes$', () => {
     test('Publishes changes', async () => {
       const step = new WizardStep<TestStepData>({
+        key: 'step1',
         defaultValue: DefaultTestStepData,
-        source: new WizardStepSource<TestStepData>(async () => ({ firstName: 'Test', lastName: 'User' })),
+        source: new WizardStepSource<TestStepData, TestWizardParams>(async () => ({
+          firstName: 'Test',
+          lastName: 'User',
+        })),
         operation: {
           async execute(value: TestStepData) {
             // no-op
@@ -61,7 +77,7 @@ describe('WizardStep', () => {
         },
       });
 
-      await step.resetState();
+      await step.resetState({});
       step.save({ firstName: 'Another', lastName: 'User' });
 
       const changes = await firstValueFrom(step.changes$);
@@ -72,14 +88,18 @@ describe('WizardStep', () => {
     });
   });
 
-  describe('Integration', () => {
-    test('successful operation', async () => {
-      const { cache, createProxy, waitForAllCompartments } = createOperationScenario();
+  describe('initialized$', () => {
+    test('false if reset has not been called', async () => {
+      const { cache, waitForAllCompartments } = createOperationScenario();
       await waitForAllCompartments();
-
       const step = new WizardStep<AccountInfo>({
+        key: 'step1',
         defaultValue: { id: 1, investments: [], name: '' },
-        source: new WizardStepSource<AccountInfo>(async () => ({ id: 1, investments: [], name: 'Title' })),
+        source: new WizardStepSource<AccountInfo, TestWizardParams>(async () => ({
+          id: 1,
+          investments: [],
+          name: 'Title',
+        })),
         operation: {
           async execute(value: AccountInfo) {
             await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
@@ -94,7 +114,69 @@ describe('WizardStep', () => {
         },
       });
 
-      await step.resetState();
+      const initialized = await firstValueFrom(step.initialized$);
+      expect(initialized).toBeFalsy();
+    });
+
+    test('true after reset has been called', async () => {
+      const { cache, waitForAllCompartments } = createOperationScenario();
+      await waitForAllCompartments();
+      const step = new WizardStep<AccountInfo>({
+        key: 'step1',
+        defaultValue: { id: 1, investments: [], name: '' },
+        source: new WizardStepSource<AccountInfo, TestWizardParams>(async () => ({
+          id: 1,
+          investments: [],
+          name: 'Title',
+        })),
+        operation: {
+          async execute(value: AccountInfo) {
+            await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
+              const existing = plans.find((x) => x.id === 1);
+              if (existing) {
+                existing.title = value.name;
+              }
+
+              return plans;
+            });
+          },
+        },
+      });
+
+      await step.resetState({});
+      const initialized = await firstValueFrom(step.initialized$);
+      expect(initialized).toBeTruthy();
+    });
+  });
+
+  describe('Integration', () => {
+    test('successful operation', async () => {
+      const { cache, createProxy, waitForAllCompartments } = createOperationScenario();
+      await waitForAllCompartments();
+
+      const step = new WizardStep<AccountInfo>({
+        key: 'step1',
+        defaultValue: { id: 1, investments: [], name: '' },
+        source: new WizardStepSource<AccountInfo, TestWizardParams>(async () => ({
+          id: 1,
+          investments: [],
+          name: 'Title',
+        })),
+        operation: {
+          async execute(value: AccountInfo) {
+            await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
+              const existing = plans.find((x) => x.id === 1);
+              if (existing) {
+                existing.title = value.name;
+              }
+
+              return plans;
+            });
+          },
+        },
+      });
+
+      await step.resetState({});
       step.save({ id: 1, name: 'New Title, who dis?', investments: [] });
 
       const operation = step.buildOperation();
@@ -110,8 +192,13 @@ describe('WizardStep', () => {
       await waitForAllCompartments();
 
       const step = new WizardStep<AccountInfo>({
+        key: 'step1',
         defaultValue: { id: 1, investments: [], name: '' },
-        source: new WizardStepSource<AccountInfo>(async () => ({ id: 1, investments: [], name: 'Title' })),
+        source: new WizardStepSource<AccountInfo, TestWizardParams>(async () => ({
+          id: 1,
+          investments: [],
+          name: 'Title',
+        })),
         operation: {
           async execute(value: AccountInfo) {
             await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
@@ -126,7 +213,7 @@ describe('WizardStep', () => {
         },
       });
 
-      await step.resetState();
+      await step.resetState({});
       step.save({ id: 1, name: 'New Title, who dis?', investments: [] });
 
       const operation = step.buildOperation();
@@ -135,6 +222,85 @@ describe('WizardStep', () => {
 
       const current = await createProxy<AccountInfoRest[]>('plans');
       expect(current).toEqual(accounts);
+    });
+  });
+});
+
+interface CreateAccountInfoScreen {
+  id?: number;
+  name: string;
+}
+
+interface AccountInvestmentsScreen {
+  investments: InvestmentInfo[];
+}
+
+interface StartCreateAccountWizardParams {
+  planId?: number;
+}
+
+interface CreateAccountWizard {
+  info: CreateAccountInfoScreen;
+  // investments: AccountInvestmentsScreen;
+}
+
+class CreateAccountWizardSource implements IWizardStepSource<CreateAccountInfoScreen, StartCreateAccountWizardParams> {
+  constructor(private readonly cache: DataCache<AccountCompartments>) {}
+
+  async load(params: StartCreateAccountWizardParams): Promise<CreateAccountInfoScreen> {
+    if (!params.planId) {
+      return {
+        name: '',
+      };
+    }
+
+    const accounts = await firstValueFrom(this.cache.observe$<AccountInfoRest[]>('plans'));
+    const account = accounts.find((x) => x.id === params.planId);
+    if (!account) {
+      throw new Error('Invalid account');
+    }
+
+    return {
+      id: account.id,
+      name: account.title,
+    };
+  }
+}
+
+describe('createWizard', () => {
+  describe('Integration', () => {
+    test('all operations successful', async () => {
+      const { cache, createProxy, waitForAllCompartments } = createOperationScenario();
+      const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
+        info: {
+          key: 'info',
+          defaultValue: { id: undefined, name: '' },
+          // operation: How do we get DI here?
+          source: new CreateAccountWizardSource(cache),
+          operation: {
+            async execute(value) {
+              await cache.modify<AccountInfoRest[]>('plans', async (currentValue) => {
+                return [...currentValue, { id: 2, title: value.name ?? '', investments: [] }];
+              });
+            },
+          },
+        },
+      });
+
+      await waitForAllCompartments();
+      await wizard.start({ planId: undefined });
+      const step = wizard.findStep('info') as WizardStep<CreateAccountInfoScreen, StartCreateAccountWizardParams>;
+      if (!step) {
+        throw new Error('Could not find step');
+      }
+
+      await step.save({ name: 'Hello' });
+      await wizard.save();
+
+      const current = await createProxy<AccountInfoRest[]>('plans');
+      expect(current.length).toBe(2);
+      expect(current[0]).toEqual({ id: 1, title: 'Title', investments: [] });
+      expect(current[1]).toEqual({ id: 2, title: 'Hello', investments: [] });
     });
   });
 });

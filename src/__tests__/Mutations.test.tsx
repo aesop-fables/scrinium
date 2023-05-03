@@ -11,6 +11,7 @@ import {
   ProjectionContext,
   MutationContext,
   IMutation,
+  executeTransaction,
 } from '../index';
 import { AccountCompartmentKey, AccountCompartments, AccountInfoRest, createAccountStorage } from './Common';
 import { InteractionContext } from './InteractionContext';
