@@ -44,3 +44,5 @@ export * from './Repository';
 export * from './Utils';
 
 export * from './Transactions';
+
+export * from './Wizards';

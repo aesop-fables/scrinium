@@ -11,6 +11,8 @@ import {
   createProjection,
   RepositoryCompartmentOptions,
   fromProjection,
+  DataCacheScenario,
+  createDataCacheScenario,
 } from '../index';
 import { ConfiguredDataSource } from '../Compartments';
 
@@ -162,4 +164,18 @@ export interface VideoMetadata {
 export interface VideoRegistry {
   videos: RepositoryCompartmentOptions<string, Video>;
   metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
+}
+
+export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
+  const accounts: AccountInfoRest[] = [{ id: 1, title: 'Title', investments: [] }];
+  return {
+    ...createDataCacheScenario<AccountCompartments>({
+      plans: {
+        source: new ConfiguredDataSource(async () => accounts),
+        autoLoad: true,
+        defaultValue: [],
+      },
+    }),
+    accounts,
+  };
 }
