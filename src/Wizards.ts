@@ -72,6 +72,12 @@ export class WizardStep<Model extends object, Params = any> implements IWizardSt
     return this.previous.value;
   }
 
+  rollbackToPrevious(): void {
+    const previous = this.previous.value;
+    this.previous.next(undefined);
+    this.current.next(previous as Model);
+  }
+
   save(value: Model): void {
     this.previous.next(this.current.value);
     this.current.next(value);
@@ -131,8 +137,7 @@ class WizardTransactionOperation<Model extends object> implements ITransactionOp
   }
 
   async rollback(): Promise<void> {
-    const previous = this.step.previousModel as Model;
-    await this.inner.execute(previous, [], previous);
+    this.step.rollbackToPrevious();
   }
 }
 

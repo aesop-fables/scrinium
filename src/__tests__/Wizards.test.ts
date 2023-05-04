@@ -188,7 +188,7 @@ describe('WizardStep', () => {
     });
 
     test('rolled back operation', async () => {
-      const { cache, createProxy, waitForAllCompartments, accounts } = createOperationScenario();
+      const { cache, waitForAllCompartments } = createOperationScenario();
       await waitForAllCompartments();
 
       const step = new WizardStep<AccountInfo>({
@@ -220,8 +220,7 @@ describe('WizardStep', () => {
       await operation.commit();
       await operation.rollback();
 
-      const current = await createProxy<AccountInfoRest[]>('plans');
-      expect(current).toEqual(accounts);
+      expect(step.model).toEqual({ id: 1, investments: [], name: 'Title' });
     });
   });
 });
