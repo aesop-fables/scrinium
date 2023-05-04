@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ITransactionOperation, executeTransaction } from './Transactions';
-import { BehaviorSubject, combineLatest, firstValueFrom, Observable, map } from 'rxjs';
+import { BehaviorSubject, combineLatest, firstValueFrom, Observable, map, switchMap, of } from 'rxjs';
 
 export interface IWizardStepSource<T, Params> {
   load(params: Params): Promise<T>;
@@ -143,14 +143,33 @@ class WizardTransactionOperation<Model extends object> implements ITransactionOp
 
 // Wizards are configured similarly to a data cache because they have their own state management
 export class Wizard<State, Params> {
+  private readonly current = new BehaviorSubject<string | undefined>(undefined);
+
   constructor(private readonly steps: IWizardStep<Params>[]) {}
 
   async start(params: Params): Promise<void> {
     await Promise.all(this.steps.map((step) => step.resetState(params)));
   }
 
+  selectStep(key: keyof State): void {
+    this.current.next(key as string);
+  }
+
   findStep(key: keyof State): IWizardStep<Params> | undefined {
     return this.steps.find((x) => x.key === key);
+  }
+
+  get current$(): Observable<IWizardStep<Params> | undefined> {
+    return this.current.pipe(
+      switchMap((key) => {
+        const step = this.findStep(key as keyof State);
+        if (step) {
+          return of<IWizardStep<Params>>(step);
+        }
+
+        return of(undefined);
+      }),
+    );
   }
 
   get initialized$(): Observable<boolean> {

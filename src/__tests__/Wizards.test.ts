@@ -268,6 +268,29 @@ class CreateAccountWizardSource implements IWizardStepSource<CreateAccountInfoSc
 
 describe('createWizard', () => {
   describe('Integration', () => {
+    test('selects the step', async () => {
+      const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
+        info: {
+          key: 'info',
+          defaultValue: { id: undefined, name: '' },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ id: 1, name: 'test'})),
+          operation: {
+            async execute(value) {
+              // no-op
+            },
+          },
+        },
+      });
+
+      expect(await firstValueFrom(wizard.current$)).toBeUndefined();
+
+      wizard.selectStep('info');
+
+      const current = await firstValueFrom(wizard.current$);
+      expect(current?.key).toBe('info');
+    });
+
     test('all operations successful', async () => {
       const { cache, createProxy, waitForAllCompartments } = createOperationScenario();
       const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
