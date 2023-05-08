@@ -274,7 +274,7 @@ describe('createWizard', () => {
           key: 'info',
           defaultValue: { id: undefined, name: '' },
           // operation: How do we get DI here?
-          source: new WizardStepSource(async () => ({ id: 1, name: 'test'})),
+          source: new WizardStepSource(async () => ({ id: 1, name: 'test' })),
           operation: {
             async execute(value) {
               // no-op
