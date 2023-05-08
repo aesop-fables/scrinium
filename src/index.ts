@@ -19,30 +19,17 @@ export { Keychain } from './Keychain';
 // Stack
 export { Stack } from '@aesop-fables/containr';
 
-// data-projections/bootstrapping
-export * from './bootstrapping/useDataCache';
-
-// data-projections/hooks
-export * from './hooks';
-export * from './useAppStorage';
-
-// data-projections/tasks
-export * from './tasks';
-
-export * from './Keychain';
-
-export * from './Logging';
-
-export * from './scheduling';
-
+export * from './bootstrapping';
 export * from './Compartments';
-
+export * from './hooks';
+export * from './ISubject';
+export * from './Keychain';
+export * from './Logging';
 export * from './Lookup';
-
 export * from './Repository';
-
-export * from './Utils';
-
+export * from './scheduling';
+export * from './tasks';
 export * from './Transactions';
-
+export * from './useAppStorage';
+export * from './Utils';
 export * from './Wizards';
