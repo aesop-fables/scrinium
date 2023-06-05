@@ -17,10 +17,18 @@
     react "^18.2.0"
     reflect-metadata "^0.1.13"
 
-"@aesop-fables/containr@^0.2.0", "@aesop-fables/containr@^0.2.3":
+"@aesop-fables/containr@^0.2.0":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.2.5.tgz#db2dd38194041adfece9e7dfd9537eb914004529"
   integrity sha512-GrIHpMnHo55yy1rZCviNdLzllqywohxXOoCFEMQcKLRMgE5d2ND8Sod337YEULJDQf210qzaLlKeY9ba621phg==
+  dependencies:
+    jest-mock-extended "^3.0.1"
+    reflect-metadata "^0.1.13"
+
+"@aesop-fables/containr@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.3.0.tgz#68001193798c9a658b1a3e639684c54c175e2fe0"
+  integrity sha512-dyEdDNkxFBu9ezePveCCrujXtGyKx6g3llDuRkP4hcoETf3RsdLZG5S3k3yuDYcWJqxr1aqb7DMKywiTPg7CgA==
   dependencies:
     jest-mock-extended "^3.0.1"
     reflect-metadata "^0.1.13"

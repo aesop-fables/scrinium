@@ -1,6 +1,6 @@
 {
   "name": "@aesop-fables/scrinium",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A fully observable data projection/mutation layer for react, built on top of rxjs",
   "type": "commonjs",
   "exports": {
@@ -25,7 +25,7 @@
     "postversion": "git push && git push --tags"
   },
   "devDependencies": {
-    "@aesop-fables/containr": "^0.2.3",
+    "@aesop-fables/containr": "^0.3.0",
     "@aesop-fables/containr-react": "^0.2.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -57,8 +57,8 @@
     "lib/**/*"
   ],
   "peerDependencies": {
-    "@aesop-fables/containr": ">= 0.2.x",
-    "@aesop-fables/containr-react": ">= 0.3.x",
+    "@aesop-fables/containr": ">= 0.3.x",
+    "@aesop-fables/containr-react": ">= 0.3.1",
     "events": "3.x",
     "react": ">= 17.x",
     "reflect-metadata": "0.1.x",
