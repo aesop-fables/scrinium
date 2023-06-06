@@ -25,8 +25,8 @@
     "postversion": "git push && git push --tags"
   },
   "devDependencies": {
-    "@aesop-fables/containr": "^0.3.0",
-    "@aesop-fables/containr-react": "^0.2.1",
+    "@aesop-fables/containr": "^0.3.2",
+    "@aesop-fables/containr-react": "^0.3.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/events": "^3.0.0",

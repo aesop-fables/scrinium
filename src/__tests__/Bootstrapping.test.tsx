@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { IAppStorage } from '../AppStorage';
-import { createDataCacheModule, DataCacheServices, useDataCache } from '../bootstrapping/useDataCache';
+import { createDataCacheModule, useDataCache } from '../bootstrapping/useDataCache';
 import { createDataCache } from '../DataCache';
 import {
   BootstrappingServices,
@@ -13,6 +13,7 @@ import {
 } from '@aesop-fables/containr';
 import { AccountCompartments } from './Common';
 import { ConfiguredDataSource } from '../Compartments';
+import { ScriniumServices } from '../ScriniumServices';
 
 class TestActivator implements IActivator {
   isActivated = false;
@@ -82,7 +83,7 @@ describe('Bootstrapping', () => {
       const configureAppStorage = useDataCache([withAccountStorage]);
       const container = createContainer([configureAppStorage]);
 
-      const appStorage = container.get<IAppStorage>(DataCacheServices.AppStorage);
+      const appStorage = container.get<IAppStorage>(ScriniumServices.AppStorage);
       const cache = appStorage.retrieve<AccountCompartments>(accountsKey);
       await cache.reload('plans');
 

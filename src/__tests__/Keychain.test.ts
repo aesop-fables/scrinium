@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Keychain, wait } from '..';
 
 describe('Keychain', () => {

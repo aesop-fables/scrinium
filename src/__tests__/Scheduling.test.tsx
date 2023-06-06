@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { createInterval, IInterval, ISchedulable, wait, waitUntil } from '..';
 
 describe('Scheduling', () => {
