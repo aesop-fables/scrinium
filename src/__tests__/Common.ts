@@ -10,10 +10,11 @@ import {
   IProjectionFactory,
   createProjection,
   RepositoryCompartmentOptions,
-  fromProjection,
   DataCacheScenario,
   createDataCacheScenario,
-} from '../index';
+  fromProjection,
+  injectProjectionContext,
+} from '..';
 import { ConfiguredDataSource } from '../Compartments';
 
 export function createAccountDataCache(): DataCache<AccountCompartments> {
@@ -78,7 +79,7 @@ export const AccountCompartmentKey = 'test-accounts';
 export class AccountProjections {
   readonly cache: DataCache<AccountCompartments>;
 
-  constructor(context: ProjectionContext) {
+  constructor(@injectProjectionContext() private readonly context: ProjectionContext) {
     const { storage } = context;
     this.cache = storage.retrieve<AccountCompartments>(AccountCompartmentKey);
   }
@@ -121,7 +122,7 @@ export class CurrentUserProjection implements IProjectionFactory<CurrentUser> {
 export class CurrentUser {
   private readonly user = new BehaviorSubject('');
 
-  constructor(_context: ProjectionContext, name: string) {
+  constructor(name: string) {
     this.user.next(name);
   }
 

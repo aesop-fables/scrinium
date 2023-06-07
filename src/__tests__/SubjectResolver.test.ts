@@ -1,7 +1,8 @@
 import 'reflect-metadata';
-import { ServiceCollection, inject } from '@aesop-fables/containr';
-import { ISubject, SubjectResolver } from '../ISubject';
+import { Scopes, ServiceCollection, inject } from '@aesop-fables/containr';
+import { ISubject, ISubjectResolver, SubjectResolver, injectSubject } from '../ISubject';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { DataCacheServices } from '../bootstrapping/DataCacheServices';
 
 const messageCache = 'MessageCache';
 const sampleKey = 'sampleKey';
@@ -9,19 +10,19 @@ interface IMessageCache {
   latestMessage(): string;
 }
 
-describe('SubjectResolver', () => {
-  let sampleCount = 0;
-  class SampleSubject implements ISubject<string> {
-    constructor(@inject(messageCache) private readonly cache: IMessageCache) {
-      ++sampleCount;
-    }
-
-    createObservable(): Observable<string> {
-      const subject = new BehaviorSubject<string>(this.cache.latestMessage());
-      return subject.pipe();
-    }
+let sampleCount = 0;
+class SampleSubject implements ISubject<string> {
+  constructor(@inject(messageCache) private readonly cache: IMessageCache) {
+    ++sampleCount;
   }
 
+  createObservable(): Observable<string> {
+    const subject = new BehaviorSubject<string>(this.cache.latestMessage());
+    return subject.pipe();
+  }
+}
+
+describe('SubjectResolver', () => {
   beforeEach(() => {
     sampleCount = 0;
   });
@@ -34,8 +35,8 @@ describe('SubjectResolver', () => {
       },
     };
     const services = new ServiceCollection();
-    services.register<IMessageCache>(messageCache, cache);
-    services.use(sampleKey, SampleSubject);
+    services.singleton<IMessageCache>(messageCache, cache);
+    services.autoResolve(sampleKey, SampleSubject, Scopes.Transient);
 
     const resolver = new SubjectResolver(services.buildContainer());
     const observable$ = resolver.resolveSubjectByKey<string>(sampleKey);
@@ -51,7 +52,7 @@ describe('SubjectResolver', () => {
       },
     };
     const services = new ServiceCollection();
-    services.register<IMessageCache>(messageCache, cache);
+    services.singleton<IMessageCache>(messageCache, cache);
 
     const resolver = new SubjectResolver(services.buildContainer());
     const observable$ = resolver.resolveSubject(SampleSubject);
@@ -67,7 +68,7 @@ describe('SubjectResolver', () => {
       },
     };
     const services = new ServiceCollection();
-    services.register<IMessageCache>(messageCache, cache);
+    services.singleton<IMessageCache>(messageCache, cache);
 
     const resolver = new SubjectResolver(services.buildContainer());
     resolver.resolveSubject(SampleSubject);
@@ -75,5 +76,32 @@ describe('SubjectResolver', () => {
     resolver.resolveSubject(SampleSubject);
 
     expect(sampleCount).toBe(1);
+  });
+});
+
+describe('@injectSubject', () => {
+  class SampleService {
+    constructor(@injectSubject(sampleKey) private readonly message$: Observable<string>) {}
+
+    message(): Promise<string> {
+      return firstValueFrom(this.message$);
+    }
+  }
+
+  test('resolves the subject by key and creates the observable', async () => {
+    const message = 'Hello, World!';
+    const cache: IMessageCache = {
+      latestMessage() {
+        return message;
+      },
+    };
+    const services = new ServiceCollection();
+    services.autoResolve<ISubjectResolver>(DataCacheServices.SubjectResolver, SubjectResolver, Scopes.Transient);
+    services.singleton<IMessageCache>(messageCache, cache);
+    services.autoResolve(sampleKey, SampleSubject, Scopes.Transient);
+
+    const container = services.buildContainer();
+    const sample = container.resolve(SampleService);
+    expect(await sample.message()).toBe(message);
   });
 });
