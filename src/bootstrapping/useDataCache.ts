@@ -3,14 +3,11 @@ import {
   IServiceContainer,
   IServiceModule,
   IServiceRegistry,
+  Scopes,
   ServiceCollection,
   ServiceModule,
 } from '@aesop-fables/containr';
-
-export const DataCacheServices = {
-  AppStorage: '@aesop-fables/scrinium/appStorage',
-  SubjectResolver: '@aesop-fables/scrinium/subjectResolver',
-};
+import { DataCacheServices } from './DataCacheServices';
 
 export interface IAppStorageModule {
   configureAppStorage(appStorage: IAppStorage, container: IServiceContainer): void;
@@ -27,11 +24,15 @@ export function createDataCacheModule(
 export class DataCacheRegistry implements IServiceRegistry {
   constructor(private readonly modules: IAppStorageModule[] = []) {}
   configureServices(services: ServiceCollection): void {
-    services.register<IAppStorage>(DataCacheServices.AppStorage, (container) => {
-      const appStorage = new AppStorage();
-      this.modules.forEach((module) => module.configureAppStorage(appStorage, container));
-      return appStorage;
-    });
+    services.factory<IAppStorage>(
+      DataCacheServices.AppStorage,
+      (container) => {
+        const appStorage = new AppStorage();
+        this.modules.forEach((module) => module.configureAppStorage(appStorage, container));
+        return appStorage;
+      },
+      Scopes.Singleton,
+    );
   }
 }
 

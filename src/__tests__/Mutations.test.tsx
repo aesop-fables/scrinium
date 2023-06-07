@@ -11,7 +11,7 @@ import {
   ProjectionContext,
   MutationContext,
   IMutation,
-  executeTransaction,
+  injectProjectionContext,
 } from '../index';
 import { AccountCompartmentKey, AccountCompartments, AccountInfoRest, createAccountStorage } from './Common';
 import { InteractionContext } from './InteractionContext';
@@ -30,8 +30,8 @@ interface AccountSummaryDto {
 class AccountSummariesProjection {
   readonly cache: DataCache<AccountCompartments>;
 
-  constructor(context: ProjectionContext) {
-    const { storage } = context;
+  constructor(@injectProjectionContext() private readonly context: ProjectionContext) {
+    const { storage } = this.context;
     this.cache = storage.retrieve<AccountCompartments>(AccountCompartmentKey);
   }
 
@@ -57,7 +57,7 @@ interface AccountsSummaryReport {
 class AccountsSummaryProjection {
   readonly inner: AccountSummariesProjection;
 
-  constructor(context: ProjectionContext) {
+  constructor(@injectProjectionContext() private readonly context: ProjectionContext) {
     this.inner = new AccountSummariesProjection(context);
   }
 
