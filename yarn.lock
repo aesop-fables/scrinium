@@ -13,9 +13,9 @@
   integrity sha512-fNhaG9z0khEHC6edtQuaeZNwtgCQEgQLXYnXpgc/J4Tc3BPweizKU3ntSJaiNihx+BVlQUCZwJp0QrKvEO38Fw==
 
 "@aesop-fables/containr@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.3.2.tgz#5e37b80b2ae5196b28841e5c1fc19a74ef2aa47c"
-  integrity sha512-W+77DutvTcfXAhMrQcxdfIJqu2rYo4uotfaOHfN9Z/M8FYA1w0DdUZpwxIrMSMV2DCp8OVsSoW/eFFYsLGaPaQ==
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.3.4.tgz#fd47ac71e4ac2a7af9b8926bdad394ef39937e32"
+  integrity sha512-HHDi05MmA76nhc0CRJRYihFrX3j/J8W7mQgjcIfQ38Fk+4Zwri31oQZPhd5OUF2Q+9BH4kieu874eu5VOHuPuw==
   dependencies:
     jest-mock-extended "^3.0.1"
     reflect-metadata "^0.1.13"
