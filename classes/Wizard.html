@@ -25,9 +25,13 @@
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
-<li><span class="target">Wizard</span></li></ul></section><aside class="tsd-sources">
+<li><span class="target">Wizard</span></li></ul></section>
+<section class="tsd-panel">
+<h4>Implements</h4>
+<ul class="tsd-hierarchy">
+<li><a href="../interfaces/IWizard.html" class="tsd-signature-type tsd-kind-interface">IWizard</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L145">src/Wizards.ts:145</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L160">src/Wizards.ts:160</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -40,7 +44,7 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="Wizard.html#current" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>current</span></a>
-<a href="Wizard.html#steps" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>steps</span></a>
+<a href="Wizard.html#steps" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>steps</span></a>
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Accessors</h3>
@@ -75,19 +79,20 @@
 <h5><span class="tsd-kind-parameter">steps</span>: <a href="../interfaces/IWizardStep.html" class="tsd-signature-type tsd-kind-interface">IWizardStep</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">Params</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Wizard.html" class="tsd-signature-type tsd-kind-class">Wizard</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">State</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type tsd-kind-type-parameter">Params</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L148">src/Wizards.ts:148</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L163">src/Wizards.ts:163</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="current" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>current</span><a href="#current" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">current</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">BehaviorSubject</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L146">src/Wizards.ts:146</a></li></ul></aside></section>
-<section class="tsd-panel tsd-member tsd-is-private"><a id="steps" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>steps</span><a href="#steps" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L161">src/Wizards.ts:161</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member"><a id="steps" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>steps</span><a href="#steps" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">steps</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/IWizardStep.html" class="tsd-signature-type tsd-kind-interface">IWizardStep</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">Params</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
+<p>Implementation of <a href="../interfaces/IWizard.html">IWizard</a>.<a href="../interfaces/IWizard.html#steps">steps</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L148">src/Wizards.ts:148</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L163">src/Wizards.ts:163</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member"><a id="current_" class="tsd-anchor"></a>
@@ -97,7 +102,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Observable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/IWizardStep.html" class="tsd-signature-type tsd-kind-interface">IWizardStep</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">Params</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L162">src/Wizards.ts:162</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L177">src/Wizards.ts:177</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="initialized_" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>initialized$</span><a href="#initialized_" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -105,7 +110,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Observable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L175">src/Wizards.ts:175</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L190">src/Wizards.ts:190</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="findStep" class="tsd-anchor"></a>
@@ -120,7 +125,7 @@
 <h5><span class="tsd-kind-parameter">key</span>: <span class="tsd-signature-symbol">keyof </span><span class="tsd-signature-type tsd-kind-type-parameter">State</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/IWizardStep.html" class="tsd-signature-type tsd-kind-interface">IWizardStep</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">Params</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L158">src/Wizards.ts:158</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L173">src/Wizards.ts:173</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="save" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>save</span><a href="#save" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -128,7 +133,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L183">src/Wizards.ts:183</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L198">src/Wizards.ts:198</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="selectStep" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>select<wbr/>Step</span><a href="#selectStep" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -141,7 +146,7 @@
 <h5><span class="tsd-kind-parameter">key</span>: <span class="tsd-signature-symbol">keyof </span><span class="tsd-signature-type tsd-kind-type-parameter">State</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L154">src/Wizards.ts:154</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L169">src/Wizards.ts:169</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="start" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>start</span><a href="#start" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -154,7 +159,7 @@
 <h5><span class="tsd-kind-parameter">params</span>: <span class="tsd-signature-type tsd-kind-type-parameter">Params</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/a5f141d/src/Wizards.ts#L150">src/Wizards.ts:150</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/aesop-fables/scrinium/blob/f6a54b3/src/Wizards.ts#L165">src/Wizards.ts:165</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -176,7 +181,7 @@
 <ul>
 <li><a href="#constructor" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-512-path"></use><use href="#icon-512-text"></use></svg><span>constructor</span></a></li>
 <li><a href="#current" class="tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>current</span></a></li>
-<li><a href="#steps" class="tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>steps</span></a></li>
+<li><a href="#steps" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>steps</span></a></li>
 <li><a href="#current_" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-262144-path"></use><use href="#icon-262144-text"></use></svg><span>current$</span></a></li>
 <li><a href="#initialized_" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-262144-path"></use><use href="#icon-262144-text"></use></svg><span>initialized$</span></a></li>
 <li><a href="#findStep" class=""><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>find<wbr/>Step</span></a></li>
@@ -239,7 +244,9 @@
 <li><a href="../interfaces/ISubject.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>ISubject</span></a></li>
 <li><a href="../interfaces/ISubjectResolver.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>ISubject<wbr/>Resolver</span></a></li>
 <li><a href="../interfaces/ITransactionOperation.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>ITransaction<wbr/>Operation</span></a></li>
+<li><a href="../interfaces/IWizard.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>IWizard</span></a></li>
 <li><a href="../interfaces/IWizardOperation.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>IWizard<wbr/>Operation</span></a></li>
+<li><a href="../interfaces/IWizardOperationContext.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>IWizard<wbr/>Operation<wbr/>Context</span></a></li>
 <li><a href="../interfaces/IWizardStep.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>IWizard<wbr/>Step</span></a></li>
 <li><a href="../interfaces/IWizardStepSource.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>IWizard<wbr/>Step<wbr/>Source</span></a></li>
 <li><a href="../interfaces/MutationContext.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Mutation<wbr/>Context</span></a></li>
