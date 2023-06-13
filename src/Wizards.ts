@@ -20,10 +20,10 @@ export interface UpdateWizardState {
   previous: any;
 }
 
-export interface IWizardStep<Params> {
+export interface IWizardStep<Params = any> {
   // Resets the state of the step which effectively does two things: 1. It sets the value of the underlying observable to the defaultValue defined for the step 2. It calls load() on the configured IWizardStepSource
   resetState(params: Params): Promise<void>;
-  buildOperation(): ITransactionOperation;
+  buildOperation(wizard: IWizard): ITransactionOperation;
   isDirty(): boolean;
   changes$: Observable<UpdateWizardState[]>;
   initialized$: Observable<boolean>;
@@ -37,11 +37,18 @@ export interface WizardStepOptions<Model, Params> {
   operation: IWizardOperation<Model>;
 }
 
-export interface IWizardOperation<Model> {
-  execute(values: Partial<Model>, changes: UpdateWizardState[], current: Model): Promise<void>;
+export interface IWizardOperationContext<Model> {
+  values: Partial<Model>;
+  changes: UpdateWizardState[];
+  current: Model;
+  wizard: IWizard;
 }
 
-export class WizardStep<Model extends object, Params = any> implements IWizardStep<Params> {
+export interface IWizardOperation<Model> {
+  execute(context: IWizardOperationContext<Model>): Promise<void>;
+}
+
+export class WizardStep<Model extends object = any, Params = any> implements IWizardStep<Params> {
   private readonly current: BehaviorSubject<Model>;
   private readonly initialized = new BehaviorSubject<boolean>(false);
   private readonly previous: BehaviorSubject<Model | undefined> = new BehaviorSubject<Model | undefined>(undefined);
@@ -89,12 +96,12 @@ export class WizardStep<Model extends object, Params = any> implements IWizardSt
     this.initialized.next(true);
   }
 
-  buildOperation(): ITransactionOperation {
+  buildOperation(wizard: IWizard): ITransactionOperation {
     if (typeof this.options.operation === 'function') {
       throw new Error('Method not implemented.');
     }
 
-    return new WizardTransactionOperation(this, this.options.operation);
+    return new WizardTransactionOperation(wizard, this, this.options.operation);
   }
 
   isDirty(): boolean {
@@ -127,13 +134,17 @@ export class WizardStep<Model extends object, Params = any> implements IWizardSt
 }
 
 class WizardTransactionOperation<Model extends object> implements ITransactionOperation {
-  constructor(private readonly step: WizardStep<Model>, private readonly inner: IWizardOperation<Model>) {}
+  constructor(
+    private readonly wizard: IWizard,
+    private readonly step: WizardStep<Model>,
+    private readonly inner: IWizardOperation<Model>,
+  ) {}
 
   async commit(): Promise<void> {
     const current = this.step.model;
     const values = this.step.createPatchModel();
     const changes = await firstValueFrom(this.step.changes$);
-    await this.inner.execute(values, changes, current);
+    await this.inner.execute({ values, changes, current, wizard: this.wizard });
   }
 
   async rollback(): Promise<void> {
@@ -141,11 +152,15 @@ class WizardTransactionOperation<Model extends object> implements ITransactionOp
   }
 }
 
+export interface IWizard {
+  steps: IWizardStep[];
+}
+
 // Wizards are configured similarly to a data cache because they have their own state management
-export class Wizard<State, Params> {
+export class Wizard<State, Params> implements IWizard {
   private readonly current = new BehaviorSubject<string | undefined>(undefined);
 
-  constructor(private readonly steps: IWizardStep<Params>[]) {}
+  constructor(readonly steps: IWizardStep<Params>[]) {}
 
   async start(params: Params): Promise<void> {
     await Promise.all(this.steps.map((step) => step.resetState(params)));
@@ -181,14 +196,14 @@ export class Wizard<State, Params> {
   }
 
   async save(): Promise<void> {
-    await executeTransaction(...this.steps.map((x) => x.buildOperation()));
+    await executeTransaction(...this.steps.map((x) => x.buildOperation(this)));
   }
 }
 
 // We need a simple function for diffing objects
 export function diffState<T extends object>(a: T, b: T): UpdateWizardState[] {
   const changes: UpdateWizardState[] = [];
-  const leftKeys = Object.keys(a);
+  const leftKeys = Object.keys(a ?? {}); // const leftKeys = Object.keys(a ?? {});
 
   leftKeys.forEach((x) => {
     const current = a ? a[x as keyof T] : undefined;

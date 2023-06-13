@@ -29,7 +29,7 @@ describe('WizardStep', () => {
           lastName: 'User',
         })),
         operation: {
-          async execute(value: TestStepData) {
+          async execute() {
             // no-op
           },
         },
@@ -50,7 +50,7 @@ describe('WizardStep', () => {
           lastName: 'User',
         })),
         operation: {
-          async execute(value: TestStepData) {
+          async execute() {
             // no-op
           },
         },
@@ -71,7 +71,7 @@ describe('WizardStep', () => {
           lastName: 'User',
         })),
         operation: {
-          async execute(value: TestStepData) {
+          async execute() {
             // no-op
           },
         },
@@ -101,11 +101,11 @@ describe('WizardStep', () => {
           name: 'Title',
         })),
         operation: {
-          async execute(value: AccountInfo) {
+          async execute({ values }) {
             await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
               const existing = plans.find((x) => x.id === 1);
               if (existing) {
-                existing.title = value.name;
+                existing.title = values.name as string;
               }
 
               return plans;
@@ -130,11 +130,11 @@ describe('WizardStep', () => {
           name: 'Title',
         })),
         operation: {
-          async execute(value: AccountInfo) {
+          async execute({ values }) {
             await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
               const existing = plans.find((x) => x.id === 1);
               if (existing) {
-                existing.title = value.name;
+                existing.title = values.name as string;
               }
 
               return plans;
@@ -163,11 +163,11 @@ describe('WizardStep', () => {
           name: 'Title',
         })),
         operation: {
-          async execute(value: AccountInfo) {
+          async execute({ values }) {
             await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
               const existing = plans.find((x) => x.id === 1);
               if (existing) {
-                existing.title = value.name;
+                existing.title = values.name as string;
               }
 
               return plans;
@@ -179,7 +179,7 @@ describe('WizardStep', () => {
       await step.resetState({});
       step.save({ id: 1, name: 'New Title, who dis?', investments: [] });
 
-      const operation = step.buildOperation();
+      const operation = step.buildOperation({ steps: [] });
       await operation.commit();
 
       const current = await createProxy<AccountInfoRest[]>('plans');
@@ -200,11 +200,11 @@ describe('WizardStep', () => {
           name: 'Title',
         })),
         operation: {
-          async execute(value: AccountInfo) {
+          async execute({ values }) {
             await cache.modify<AccountInfoRest[]>('plans', async (plans) => {
               const existing = plans.find((x) => x.id === 1);
               if (existing) {
-                existing.title = value.name;
+                existing.title = values.name as string;
               }
 
               return plans;
@@ -216,7 +216,7 @@ describe('WizardStep', () => {
       await step.resetState({});
       step.save({ id: 1, name: 'New Title, who dis?', investments: [] });
 
-      const operation = step.buildOperation();
+      const operation = step.buildOperation({ steps: [] });
       await operation.commit();
       await operation.rollback();
 
@@ -240,7 +240,7 @@ interface StartCreateAccountWizardParams {
 
 interface CreateAccountWizard {
   info: CreateAccountInfoScreen;
-  // investments: AccountInvestmentsScreen;
+  investments: AccountInvestmentsScreen;
 }
 
 class CreateAccountWizardSource implements IWizardStepSource<CreateAccountInfoScreen, StartCreateAccountWizardParams> {
@@ -281,6 +281,17 @@ describe('createWizard', () => {
             },
           },
         },
+        investments: {
+          key: 'investments',
+          defaultValue: { investments: [] },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ investments: [] })),
+          operation: {
+            async execute() {
+              // no-op
+            },
+          },
+        },
       });
 
       expect(await firstValueFrom(wizard.current$)).toBeUndefined();
@@ -300,10 +311,21 @@ describe('createWizard', () => {
           // operation: How do we get DI here?
           source: new CreateAccountWizardSource(cache),
           operation: {
-            async execute(value) {
+            async execute({ values }) {
               await cache.modify<AccountInfoRest[]>('plans', async (currentValue) => {
-                return [...currentValue, { id: 2, title: value.name ?? '', investments: [] }];
+                return [...currentValue, { id: 2, title: values.name ?? '', investments: [] }];
               });
+            },
+          },
+        },
+        investments: {
+          key: 'investments',
+          defaultValue: { investments: [] },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ investments: [] })),
+          operation: {
+            async execute() {
+              // no-op
             },
           },
         },
