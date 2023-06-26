@@ -84,7 +84,12 @@ export function useMutation<Data>(mutation: IMutation<Data> | Mutation<Data>): M
     container,
     storage,
     mutator,
-    onStatusChanged: (x) => setStatus(x),
+    onStatusChanged: (x) => {
+      if (x === MutationStatus.Executing) {
+        setError(undefined);
+      }
+      setStatus(x);
+    },
     onError: (err) => setError(err),
   });
 
