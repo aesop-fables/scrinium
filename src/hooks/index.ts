@@ -4,3 +4,4 @@ export { default as useConstant } from './useConstant';
 export * from './useConstant';
 export * from './useObservable';
 export * from './useMutation';
+export * from './useSubject';
