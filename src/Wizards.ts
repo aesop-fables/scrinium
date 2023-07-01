@@ -159,11 +159,13 @@ export interface IWizard {
 // Wizards are configured similarly to a data cache because they have their own state management
 export class Wizard<State, Params> implements IWizard {
   private readonly current = new BehaviorSubject<string | undefined>(undefined);
+  private readonly isStarted = new BehaviorSubject(false);
 
   constructor(readonly steps: IWizardStep<Params>[]) {}
 
   async start(params: Params): Promise<void> {
     await Promise.all(this.steps.map((step) => step.resetState(params)));
+    this.isStarted.next(true);
   }
 
   selectStep(key: keyof State): void {
@@ -195,8 +197,25 @@ export class Wizard<State, Params> implements IWizard {
     );
   }
 
-  async save(): Promise<void> {
+  get isStarted$(): Observable<boolean> {
+    return this.isStarted.pipe();
+  }
+
+  async commit(): Promise<void> {
     await executeTransaction(...this.steps.map((x) => x.buildOperation(this)));
+  }
+
+  async commitStep(key: keyof State): Promise<void> {
+    const step = this.steps.find((x) => x.key === key);
+    if (!step) {
+      throw new Error(`Cannot find step ${key as string}`);
+    }
+
+    await executeTransaction(step.buildOperation(this));
+  }
+
+  save(): Promise<void> {
+    return this.commit();
   }
 }
 

@@ -302,6 +302,39 @@ describe('createWizard', () => {
       expect(current?.key).toBe('info');
     });
 
+    test('isStarted$', async () => {
+      const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
+        info: {
+          key: 'info',
+          defaultValue: { id: undefined, name: '' },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ id: 1, name: 'test' })),
+          operation: {
+            async execute(value) {
+              // no-op
+            },
+          },
+        },
+        investments: {
+          key: 'investments',
+          defaultValue: { investments: [] },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ investments: [] })),
+          operation: {
+            async execute() {
+              // no-op
+            },
+          },
+        },
+      });
+
+      expect(await firstValueFrom(wizard.isStarted$)).toBeFalsy();
+
+      await wizard.start({ planId: 1 });
+
+      expect(await firstValueFrom(wizard.isStarted$)).toBeTruthy();
+    });
+
     test('all operations successful', async () => {
       const { cache, createProxy, waitForAllCompartments } = createOperationScenario();
       const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
@@ -345,6 +378,45 @@ describe('createWizard', () => {
       expect(current.length).toBe(2);
       expect(current[0]).toEqual({ id: 1, title: 'Title', investments: [] });
       expect(current[1]).toEqual({ id: 2, title: 'Hello', investments: [] });
+    });
+
+    test('individual operation successful', async () => {
+      const { cache, waitForAllCompartments } = createOperationScenario();
+      let executed = false;
+      const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
+        info: {
+          key: 'info',
+          defaultValue: { id: undefined, name: '' },
+          source: new CreateAccountWizardSource(cache),
+          operation: {
+            async execute({ values }) {
+              throw new Error('Not implemented');
+            },
+          },
+        },
+        investments: {
+          key: 'investments',
+          defaultValue: { investments: [] },
+          source: new WizardStepSource(async () => ({ investments: [] })),
+          operation: {
+            async execute() {
+              executed = true;
+            },
+          },
+        },
+      });
+
+      await waitForAllCompartments();
+      await wizard.start({ planId: undefined });
+      const step = wizard.findStep('investments') as WizardStep<
+        AccountInvestmentsScreen,
+        StartCreateAccountWizardParams
+      >;
+
+      await step.save({ investments: [{ id: 1, name: 'Test', balance: 0 }] });
+      await wizard.commitStep('investments');
+
+      expect(executed).toBeTruthy();
     });
   });
 });
