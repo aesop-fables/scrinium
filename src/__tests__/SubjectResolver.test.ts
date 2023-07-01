@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Scopes, ServiceCollection, inject } from '@aesop-fables/containr';
 import { ISubject, ISubjectResolver, SubjectResolver, injectSubject } from '../ISubject';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { DataCacheServices } from '../bootstrapping/DataCacheServices';
+import { ScriniumServices } from '../ScriniumServices';
 
 const messageCache = 'MessageCache';
 const sampleKey = 'sampleKey';
@@ -96,7 +96,7 @@ describe('@injectSubject', () => {
       },
     };
     const services = new ServiceCollection();
-    services.autoResolve<ISubjectResolver>(DataCacheServices.SubjectResolver, SubjectResolver, Scopes.Transient);
+    services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Transient);
     services.singleton<IMessageCache>(messageCache, cache);
     services.autoResolve(sampleKey, SampleSubject, Scopes.Transient);
 
