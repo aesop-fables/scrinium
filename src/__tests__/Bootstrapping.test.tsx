@@ -4,7 +4,6 @@ import { IAppStorage } from '../AppStorage';
 import { createDataCacheModule, useDataCache } from '../bootstrapping/useDataCache';
 import { createDataCache } from '../DataCache';
 import {
-  AutoResolver,
   BootstrappingServices,
   createContainer,
   createServiceModule,
@@ -107,7 +106,8 @@ describe('Bootstrapping', () => {
       constructor(@inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage) {}
 
       get isAuthenticated$(): Observable<boolean> {
-        return of(false);
+        console.log('authContext');
+        return of(true);
       }
     }
 
@@ -118,10 +118,13 @@ describe('Bootstrapping', () => {
       const cache = createDataCache<SampleCompartments>({
         test: {
           defaultValue: '',
-          source: new ConfiguredDataSource(async () => 'Hello, World!'),
-          autoLoad: false,
+          source: new ConfiguredDataSource(async () => {
+            console.log('Loading sample data');
+            return 'Hello, World!';
+          }),
+          autoLoad: true,
           dependsOn: context.isAuthenticated$,
-          unsubscribe: false,
+          unsubscribe: true,
         },
       });
 
@@ -137,6 +140,20 @@ describe('Bootstrapping', () => {
 
       const appStorage = container.get<IAppStorage>(ScriniumServices.AppStorage);
       const sampleCache = appStorage.retrieve<SampleCompartments>(sampleDataKey);
+
+      const waitForSampleCacheToInitialize = () => {
+        return new Promise<boolean>((resolve) => {
+          sampleCache.initialized$().subscribe({
+            next: (value: boolean) => {
+              resolve(value);
+            },
+          });
+        });
+      };
+
+      await waitForSampleCacheToInitialize();
+      const initialized = await firstValueFrom(sampleCache.initialized$());
+      expect(initialized).toBeTruthy();
 
       const value = await firstValueFrom(sampleCache.observe$<string>('test'));
       expect(value).toEqual('Hello, World!');
