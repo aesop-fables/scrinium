@@ -1,13 +1,16 @@
 import { AppStorage, IAppStorage } from '../AppStorage';
 import {
+  BootstrappingServices,
+  IActivator,
   IServiceContainer,
   IServiceModule,
   IServiceRegistry,
-  Scopes,
   ServiceCollection,
   ServiceModule,
+  inject,
+  injectContainer,
 } from '@aesop-fables/containr';
-import { DataCacheServices } from './DataCacheServices';
+import { ScriniumServices } from '../ScriniumServices';
 
 export interface IAppStorageModule {
   configureAppStorage(appStorage: IAppStorage, container: IServiceContainer): void;
@@ -21,18 +24,18 @@ export function createDataCacheModule(
   };
 }
 
+const appStorageModulesKey = 'scrinium/settings';
+
+export interface ScriniumBootstrappingOptions {
+  modules: IAppStorageModule[];
+}
+
 export class DataCacheRegistry implements IServiceRegistry {
   constructor(private readonly modules: IAppStorageModule[] = []) {}
   configureServices(services: ServiceCollection): void {
-    services.factory<IAppStorage>(
-      DataCacheServices.AppStorage,
-      (container) => {
-        const appStorage = new AppStorage();
-        this.modules.forEach((module) => module.configureAppStorage(appStorage, container));
-        return appStorage;
-      },
-      Scopes.Singleton,
-    );
+    services.singleton<ScriniumBootstrappingOptions>(appStorageModulesKey, { modules: this.modules });
+    services.singleton<IAppStorage>(ScriniumServices.AppStorage, new AppStorage());
+    services.arrayAutoResolve(BootstrappingServices.Activators, DataCacheActivator);
   }
 }
 
@@ -40,4 +43,22 @@ export function useDataCache(modules: IAppStorageModule[] = []): IServiceModule 
   return new ServiceModule('dataCache', (services) => {
     services.include(new DataCacheRegistry(modules));
   });
+}
+
+export class DataCacheActivator implements IActivator {
+  constructor(
+    @injectContainer() private readonly container: IServiceContainer,
+    @inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage,
+    @inject(appStorageModulesKey) private readonly settings: ScriniumBootstrappingOptions,
+  ) {}
+
+  activate(): void {
+    this.settings.modules.forEach((module) => {
+      try {
+        module.configureAppStorage(this.appStorage, this.container);
+      } catch (e) {
+        console.log(module, e);
+      }
+    });
+  }
 }
