@@ -1,18 +1,14 @@
 import { Scopes, createServiceModuleWithOptions } from '@aesop-fables/containr';
-import { DataCacheRegistry, IAppStorageModule } from './useDataCache';
-import { DataCacheServices } from './DataCacheServices';
+import { DataCacheRegistry, ScriniumBootstrappingOptions } from './useDataCache';
 import { ISubjectResolver, SubjectResolver } from '../ISubject';
+import { ScriniumServices } from '../ScriniumServices';
 
 export * from './useDataCache';
-
-export interface ScriniumBootstrappingOptions {
-  modules: IAppStorageModule[];
-}
 
 export const useScrinium = createServiceModuleWithOptions<ScriniumBootstrappingOptions>(
   '@aesop-fables/scrinium',
   (services, options) => {
     services.include(new DataCacheRegistry(options.modules));
-    services.autoResolve<ISubjectResolver>(DataCacheServices.SubjectResolver, SubjectResolver, Scopes.Transient);
+    services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Transient);
   },
 );
