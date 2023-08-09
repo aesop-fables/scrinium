@@ -1,19 +1,22 @@
 import 'reflect-metadata';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, of } from 'rxjs';
 import { IAppStorage } from '../AppStorage';
 import { createDataCacheModule, useDataCache } from '../bootstrapping/useDataCache';
 import { createDataCache } from '../DataCache';
 import {
+  AutoResolver,
   BootstrappingServices,
   createContainer,
   createServiceModule,
   IActivator,
+  inject,
   IServiceModule,
   ServiceCollection,
 } from '@aesop-fables/containr';
 import { AccountCompartments } from './Common';
-import { ConfiguredDataSource } from '../Compartments';
+import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
 import { ScriniumServices } from '../ScriniumServices';
+import { useScrinium } from '../bootstrapping';
 
 class TestActivator implements IActivator {
   isActivated = false;
@@ -88,6 +91,55 @@ describe('Bootstrapping', () => {
       await cache.reload('plans');
 
       expect(await firstValueFrom(cache.observe$('plans'))).toHaveLength(3);
+    });
+  });
+
+  describe('Integration', () => {
+    interface SampleCompartments {
+      test: DataCompartmentOptions<string>;
+    }
+
+    interface IAuthenticationContext {
+      isAuthenticated$: Observable<boolean>;
+    }
+
+    class AuthenticationContext implements IAuthenticationContext {
+      constructor(@inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage) {}
+
+      get isAuthenticated$(): Observable<boolean> {
+        return of(false);
+      }
+    }
+
+    const sampleDataKey = 'test';
+
+    const withSampleData = createDataCacheModule((appStorage, container) => {
+      const context = container.resolve(AuthenticationContext);
+      const cache = createDataCache<SampleCompartments>({
+        test: {
+          defaultValue: '',
+          source: new ConfiguredDataSource(async () => 'Hello, World!'),
+          autoLoad: false,
+          dependsOn: context.isAuthenticated$,
+          unsubscribe: false,
+        },
+      });
+
+      appStorage.store(sampleDataKey, cache);
+    });
+
+    test('Allow app storage modules to inject IAppStorage', async () => {
+      const container = createContainer([
+        useScrinium({
+          modules: [withSampleData],
+        }),
+      ]);
+
+      const appStorage = container.get<IAppStorage>(ScriniumServices.AppStorage);
+      const sampleCache = appStorage.retrieve<SampleCompartments>(sampleDataKey);
+
+      const value = await firstValueFrom(sampleCache.observe$<string>('test'));
+      expect(value).toEqual('Hello, World!');
     });
   });
 });
