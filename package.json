@@ -1,6 +1,6 @@
 {
   "name": "@aesop-fables/scrinium",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "description": "A fully observable data projection/mutation layer for react, built on top of rxjs",
   "type": "commonjs",
   "exports": {
