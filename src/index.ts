@@ -23,6 +23,7 @@ export * from './AppStorage';
 export * from './bootstrapping';
 export * from './Compartments';
 export * from './hooks';
+export * from './IListener';
 export * from './ISubject';
 export * from './Keychain';
 export * from './Lookup';
