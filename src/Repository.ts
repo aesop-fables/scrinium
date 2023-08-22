@@ -6,7 +6,6 @@ import {
   RefreshOptions,
   TimeoutOptions,
 } from './Compartments';
-import { ConsoleLogger } from './Logging';
 import { Hash, ILookup, Lookup } from './Lookup';
 /**
  * Represents a data source used to resolve an entity by key.
@@ -130,7 +129,7 @@ export function createRepository<Registry extends Record<string, any>>(registry:
         source: new ConfiguredDataSource(async () => entityOptions.resolver.resolve(id)),
       };
 
-      return new DataCompartment<unknown>(key, options, new ConsoleLogger());
+      return new DataCompartment<unknown>(key, options);
     });
   });
 

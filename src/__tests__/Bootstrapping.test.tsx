@@ -114,7 +114,6 @@ describe('Bootstrapping', () => {
     const sampleDataKey = 'test';
 
     const withSampleData = createDataCacheModule((appStorage, container) => {
-      const context = container.resolve(AuthenticationContext);
       const cache = createDataCache<SampleCompartments>({
         test: {
           defaultValue: '',
@@ -123,8 +122,6 @@ describe('Bootstrapping', () => {
             return 'Hello, World!';
           }),
           autoLoad: true,
-          dependsOn: context.isAuthenticated$,
-          unsubscribe: true,
         },
       });
 

@@ -25,7 +25,6 @@ export * from './Compartments';
 export * from './hooks';
 export * from './ISubject';
 export * from './Keychain';
-export * from './Logging';
 export * from './Lookup';
 export * from './Projections';
 export * from './Repository';
