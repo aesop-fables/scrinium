@@ -5,3 +5,4 @@ export * from './useConstant';
 export * from './useObservable';
 export * from './useMutation';
 export * from './useSubject';
+export * from './useListener';
