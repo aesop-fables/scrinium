@@ -1,11 +1,9 @@
 import 'reflect-metadata';
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
-import { createRepository, ConfiguredEntityResolver, ISubject, useSubject } from '../index';
-import { createAccountStorage, VideoRegistry } from './Common';
+import { render, screen, waitFor } from '@testing-library/react';
+import { ISubject, useSubject } from '../index';
 import { InteractionContext } from './InteractionContext';
 import { Observable, of } from 'rxjs';
-import { ConfiguredDataSource } from '../Compartments';
 import { ServiceCollection, inject } from '@aesop-fables/containr';
 
 interface User {
