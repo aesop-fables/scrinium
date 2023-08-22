@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
 import { BehaviorSubject, delay, Observable } from 'rxjs';
-import { ILogger } from './Logging';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -65,11 +64,6 @@ export interface DataCompartmentOptions<T> {
    */
   defaultValue: T;
   /**
-   * Observed conditions (predicate) that must resolve as true in order for a data compartment to load.
-   * @example isAuthenticated$
-   */
-  dependsOn?: Observable<boolean>;
-  /**
    * Optional configuration for controlling how frequently the data is reloaded.
    */
   retention?: RefreshOptions | TimeoutOptions;
@@ -77,11 +71,6 @@ export interface DataCompartmentOptions<T> {
    * The data source used to fill a compartment.
    */
   source: IDataCompartmentSource<T>;
-  /**
-   * Whether to automatically unsubscribe from the dependsOn subscription.
-   * @default false
-   */
-  unsubscribe?: boolean;
   /**
    * The comparer to use to determine whether to publish the next value.
    * Publishes if the value is false.
@@ -91,9 +80,6 @@ export interface DataCompartmentOptions<T> {
 }
 
 export interface IDataCompartment {
-  // setData: (value: never) => void;
-  // getData: () => unknown;
-
   /**
    * The unique identifier of the compartment.
    */
@@ -160,10 +146,9 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Constructs a new instance of DataCompartment.
    * @param key The identifier of the compartment.
    * @param options The options used to configured the behavior of the compartment.
-   * @param logger A configured logger instance.
    * @returns A new instance of DataCompartment.
    */
-  constructor(key: string, options: DataCompartmentOptions<Model>, private readonly logger: ILogger) {
+  constructor(key: string, options: DataCompartmentOptions<Model>) {
     this.key = key;
     this.events = new EventEmitter();
     this.options = {
@@ -173,31 +158,11 @@ export class DataCompartment<Model> implements IDataCompartment {
     };
 
     this.value = new BehaviorSubject<Model>(options.defaultValue);
-    this.logger.debug(`DataCompartment(${key}): Configuring ${key}. Autoload: ${this.options.autoLoad}`);
     if (!this.options.autoLoad) {
       return;
     }
 
-    if (!this.options.dependsOn) {
-      this.initialize();
-      return;
-    }
-
-    const subscription = this.options.dependsOn.subscribe({
-      next: (val: boolean) => {
-        if (!val) {
-          return;
-        }
-
-        this.logger.debug(`DataCompartment(${key}): dependencies resolved. Initializing...`);
-        this.initialize().then(() => {
-          if (this.options.unsubscribe) {
-            subscription?.unsubscribe();
-          }
-        });
-      },
-      error: (err) => this.initialized.error(err),
-    });
+    this.initialize();
   }
   /**
    * Initializes the compartment.
@@ -208,7 +173,6 @@ export class DataCompartment<Model> implements IDataCompartment {
       this.next(value);
       this.initialized.next(true);
     } catch (e) {
-      this.logger.error(`DataCompartment(${this.key}): Compartment failed to load`, e);
       this.initialized.error(e);
     }
   }

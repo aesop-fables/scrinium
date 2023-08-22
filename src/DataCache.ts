@@ -2,7 +2,6 @@
 import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { DataCompartment, DataCompartmentOptions, IDataCompartment, DataCompartmentEvents } from './Compartments';
-import { consoleLogger, ILogger } from './Logging';
 
 export interface IDataCacheObserver {
   observe(compartments: IDataCompartment[]): void;
@@ -105,11 +104,10 @@ export class DataCache<T> implements IDataCache {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDataCache<Compartments extends Record<string, any>>(
   policy: Compartments,
-  logger: ILogger = consoleLogger,
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
-    return new DataCompartment<unknown>(key, value as DataCompartmentOptions<unknown>, logger);
+    return new DataCompartment<unknown>(key, value as DataCompartmentOptions<unknown>);
   });
 
   return new DataCache<Compartments>(compartments);
