@@ -32,7 +32,12 @@ export class FromAppStorageInterceptor implements IInterceptor<any> {
 
   resolve(currentValue: any | undefined): any {
     const appStorage = currentValue as IAppStorage;
-    return appStorage.retrieve<any>(this.key);
+    const cache = appStorage.retrieve<any>(this.key);
+    if (typeof cache === 'undefined') {
+      console.error(`@fromAppStorage("${this.key}") returned undefined.`);
+    }
+
+    return cache;
   }
 }
 
