@@ -1,11 +1,17 @@
-# Data Projections 
+# @aesop-fables/scrinium
 
-Documentation coming...
+`scrinium` is a fully observable data projection/mutation layer for react, built on top of rxjs.
 
+## Installation
+```
+npm install @aesop-fables/scrinium
+```
+```
+yarn add @aesop-fables/scrinium
+```
 
-## Examples
-
+## Example
 You'll find a sample-web application built with create-react-app in the `examples` dir. 
 
 Note:
-Make sure that you run `npm run build` in the root repo directory first. 
+Make sure that you run `yarn build` in the root repo directory first. 
