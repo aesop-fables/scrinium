@@ -13,6 +13,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      checks: write
     env:
       CI: true
     steps:
