@@ -159,6 +159,30 @@ test('DataCache > compartments > initialize > failure > should be false', async 
   expect(initialized).toBeFalsy();
 });
 
+test('DataCache > compartments > initialize > failure > should invoke onError callback', async () => {
+  // dependency: autoload = true
+  let theError: Error | undefined;
+  const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
+    a: {
+      source: new ConfiguredDataSource(async () => []),
+      defaultValue: [],
+    },
+    b: {
+      source: new ConfiguredDataSource(async () => {
+        throw new Error('intentional error');
+      }),
+      defaultValue: [],
+      onError: (e) => {
+        theError = e;
+      },
+    },
+  });
+
+  await waitForAllCompartments();
+
+  expect(theError?.message).toEqual('intentional error');
+});
+
 test('DataCache > state > relays category and errors', async () => {
   // dependency: autoload = true
   const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
