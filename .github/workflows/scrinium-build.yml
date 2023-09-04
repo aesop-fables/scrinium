@@ -1,7 +1,11 @@
 name: scrinium:build
 
 on:
-  pull_request
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
 
 jobs:
   build:
@@ -9,10 +13,23 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      CI: true
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
-      - run: npm install
-      - run: npm run build
+          node-version: 18
+      - run: yarn install
+      - run: yarn build
+      - name: Run Tests
+        id: test
+        run: yarn test:ci
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test Report
+          path: reports/jest-*.xml
+          reporter: jest-junit
