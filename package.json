@@ -1,6 +1,6 @@
 {
   "name": "@aesop-fables/scrinium",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A fully observable data projection/mutation layer for react, built on top of rxjs",
   "type": "commonjs",
   "exports": {
@@ -41,7 +41,7 @@
     "eslint-plugin-jest": "27.2.1",
     "eslint-plugin-prettier": "^4.2.1",
     "events": "^3.3.0",
-    "jest": "29.5.0",
+    "jest": "^29.6.4",
     "jest-environment-jsdom": "^29.3.1",
     "jest-mock-extended": "^3.0.1",
     "prettier": "^2.8.1",
