@@ -77,6 +77,11 @@ export interface DataCompartmentOptions<T> {
    * @default defaultComparer
    */
   comparer?: CompartmentComparer<T>;
+  /**
+   * Optional callback when an error occurs while loading the compartment.
+   * @param error The error thrown by the source.
+   */
+  onError?: (error: Error) => void;
 }
 
 export interface IDataCompartment {
@@ -173,6 +178,12 @@ export class DataCompartment<Model> implements IDataCompartment {
       this.next(value);
       this.initialized.next(true);
     } catch (e) {
+      if (this.options.onError) {
+        this.options.onError(e as Error);
+      } else {
+        console.log(`%c scrinium: Error loading compartment '${this.key}'`, 'background: #250201; color: #E27E7B;')
+        console.error(e);
+      }
       this.initialized.error(e);
     }
   }
