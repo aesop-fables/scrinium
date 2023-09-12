@@ -239,6 +239,18 @@ export function diffState<T extends object>(a: T, b: T): UpdateWizardState[] {
     });
   });
 
+  const newProperties = Object.keys(b ?? {}).filter((x) => typeof (a ?? {})[x as keyof T] === 'undefined');
+  newProperties.forEach((x) => {
+    const current = a ? a[x as keyof T] : undefined;
+    const next = b ? b[x as keyof T] : undefined;
+
+    changes.push({
+      property: x,
+      value: next,
+      previous: current,
+    });
+  });
+
   return changes;
 }
 

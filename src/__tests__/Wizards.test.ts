@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import 'reflect-metadata';
-import { IWizardStepSource, WizardStep, WizardStepSource, createWizard } from '../Wizards';
+import { IWizardStepSource, WizardStep, WizardStepSource, createWizard, diffState } from '../Wizards';
 import { firstValueFrom } from 'rxjs';
 import { AccountCompartments, AccountInfo, AccountInfoRest, InvestmentInfo, createOperationScenario } from './Common';
 import { DataCache } from '../DataCache';
@@ -17,6 +17,45 @@ const DefaultTestStepData: TestStepData = {
   firstName: '',
   lastName: '',
 };
+
+describe('diffState', () => {
+  test('detects changes from left', () => {
+    const left: TestStepData = {
+      firstName: 'Temp',
+      lastName: 'Employee',
+    };
+
+    const right = {};
+
+    const changes = diffState(left, right);
+    expect(changes.length).toEqual(2);
+    expect(changes[0].property).toEqual('firstName');
+    expect(changes[0].previous).toEqual('Temp');
+    expect(changes[0].value).toBeUndefined();
+
+    expect(changes[1].property).toEqual('lastName');
+    expect(changes[1].previous).toEqual('Employee');
+    expect(changes[1].value).toBeUndefined();
+  });
+
+  test('detects changes from right', () => {
+    const left = {};
+    const right: TestStepData = {
+      firstName: 'Temp',
+      lastName: 'Employee',
+    };
+
+    const changes = diffState(left, right);
+    expect(changes.length).toEqual(2);
+    expect(changes[0].property).toEqual('firstName');
+    expect(changes[0].previous).toBeUndefined();
+    expect(changes[0].value).toEqual('Temp');
+
+    expect(changes[1].property).toEqual('lastName');
+    expect(changes[1].previous).toBeUndefined();
+    expect(changes[1].value).toEqual('Employee');
+  });
+});
 
 describe('WizardStep', () => {
   describe('isDirty()', () => {
