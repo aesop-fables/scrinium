@@ -34,18 +34,19 @@ export interface WizardStepOptions<Model, Params> {
   key: string;
   source: IWizardStepSource<Model, Params>;
   defaultValue: Model;
-  operation: IWizardOperation<Model>;
+  operation: IWizardOperation<Model, Params>;
 }
 
-export interface IWizardOperationContext<Model> {
+export interface IWizardOperationContext<Model, Params> {
   values: Partial<Model>;
   changes: UpdateWizardState[];
   current: Model;
   wizard: IWizard;
+  params: Params;
 }
 
-export interface IWizardOperation<Model> {
-  execute(context: IWizardOperationContext<Model>): Promise<void>;
+export interface IWizardOperation<Model, Params> {
+  execute(context: IWizardOperationContext<Model, Params>): Promise<void>;
 }
 
 export class WizardStep<Model extends object = any, Params = any> implements IWizardStep<Params> {
@@ -133,18 +134,19 @@ export class WizardStep<Model extends object = any, Params = any> implements IWi
   }
 }
 
-class WizardTransactionOperation<Model extends object> implements ITransactionOperation {
+class WizardTransactionOperation<Model extends object, Params> implements ITransactionOperation {
   constructor(
     private readonly wizard: IWizard,
     private readonly step: WizardStep<Model>,
-    private readonly inner: IWizardOperation<Model>,
+    private readonly inner: IWizardOperation<Model, Params>,
   ) {}
 
   async commit(): Promise<void> {
     const current = this.step.model;
     const values = this.step.createPatchModel();
     const changes = await firstValueFrom(this.step.changes$);
-    await this.inner.execute({ values, changes, current, wizard: this.wizard });
+    const params = await firstValueFrom((this.wizard as Wizard<any, Params>).params$);
+    await this.inner.execute({ values, changes, current, params: params as Params, wizard: this.wizard });
   }
 
   async rollback(): Promise<void> {
@@ -160,12 +162,14 @@ export interface IWizard {
 export class Wizard<State, Params> implements IWizard {
   private readonly current = new BehaviorSubject<string | undefined>(undefined);
   private readonly isStarted = new BehaviorSubject(false);
+  private readonly params = new BehaviorSubject<Params | undefined>(undefined);
 
   constructor(readonly steps: IWizardStep<Params>[]) {}
 
   async start(params: Params): Promise<void> {
     await Promise.all(this.steps.map((step) => step.resetState(params)));
     this.isStarted.next(true);
+    this.params.next(params);
   }
 
   selectStep(key: keyof State): void {
@@ -174,6 +178,10 @@ export class Wizard<State, Params> implements IWizard {
 
   findStep(key: keyof State): IWizardStep<Params> | undefined {
     return this.steps.find((x) => x.key === key);
+  }
+
+  get params$(): Observable<Params | undefined> {
+    return this.params.pipe();
   }
 
   get current$(): Observable<IWizardStep<Params> | undefined> {

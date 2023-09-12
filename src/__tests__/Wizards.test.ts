@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import 'reflect-metadata';
-import { IWizardStepSource, WizardStep, WizardStepSource, createWizard, diffState } from '../Wizards';
-import { firstValueFrom } from 'rxjs';
+import { IWizard, IWizardStepSource, WizardStep, WizardStepSource, createWizard, diffState } from '../Wizards';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { AccountCompartments, AccountInfo, AccountInfoRest, InvestmentInfo, createOperationScenario } from './Common';
 import { DataCache } from '../DataCache';
 
@@ -218,7 +218,10 @@ describe('WizardStep', () => {
       await step.resetState({});
       step.save({ id: 1, name: 'New Title, who dis?', investments: [] });
 
-      const operation = step.buildOperation({ steps: [] });
+      const operation = step.buildOperation({
+        steps: [],
+        params$: new BehaviorSubject<TestWizardParams | undefined>(undefined),
+      } as IWizard);
       await operation.commit();
 
       const current = await createProxy<AccountInfoRest[]>('plans');
@@ -255,7 +258,10 @@ describe('WizardStep', () => {
       await step.resetState({});
       step.save({ id: 1, name: 'New Title, who dis?', investments: [] });
 
-      const operation = step.buildOperation({ steps: [] });
+      const operation = step.buildOperation({
+        steps: [],
+        params$: new BehaviorSubject<TestWizardParams | undefined>(undefined),
+      } as IWizard);
       await operation.commit();
       await operation.rollback();
 
@@ -372,6 +378,39 @@ describe('createWizard', () => {
       await wizard.start({ planId: 1 });
 
       expect(await firstValueFrom(wizard.isStarted$)).toBeTruthy();
+    });
+
+    test('params$', async () => {
+      const wizard = createWizard<CreateAccountWizard, StartCreateAccountWizardParams>({
+        info: {
+          key: 'info',
+          defaultValue: { id: undefined, name: '' },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ id: 1, name: 'test' })),
+          operation: {
+            async execute(value) {
+              // no-op
+            },
+          },
+        },
+        investments: {
+          key: 'investments',
+          defaultValue: { investments: [] },
+          // operation: How do we get DI here?
+          source: new WizardStepSource(async () => ({ investments: [] })),
+          operation: {
+            async execute() {
+              // no-op
+            },
+          },
+        },
+      });
+
+      expect(await firstValueFrom(wizard.params$)).toBeUndefined();
+
+      await wizard.start({ planId: 1 });
+
+      expect(await firstValueFrom(wizard.params$)).toEqual({ planId: 1 });
     });
 
     test('all operations successful', async () => {
