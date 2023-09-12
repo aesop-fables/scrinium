@@ -181,7 +181,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       if (this.options.onError) {
         this.options.onError(e as Error);
       } else {
-        console.log(`%c scrinium: Error loading compartment '${this.key}'`, 'background: #250201; color: #E27E7B;')
+        console.log(`%c scrinium: Error loading compartment '${this.key}'`, 'background: #250201; color: #E27E7B;');
         console.error(e);
       }
       this.initialized.error(e);

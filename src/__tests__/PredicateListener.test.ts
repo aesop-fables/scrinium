@@ -26,7 +26,7 @@ describe('PredicateListener', () => {
 
     expect(invoked).toBeFalsy();
   });
-  
+
   test('onNext is called when when the predicate publishes true', async () => {
     let invoked = false;
     const predicate$ = new BehaviorSubject(false);
