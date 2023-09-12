@@ -21,6 +21,7 @@ export interface UpdateWizardState {
 }
 
 export interface IWizardStep<Params = any> {
+  reset(): void;
   // Resets the state of the step which effectively does two things: 1. It sets the value of the underlying observable to the defaultValue defined for the step 2. It calls load() on the configured IWizardStepSource
   resetState(params: Params): Promise<void>;
   buildOperation(wizard: IWizard): ITransactionOperation;
@@ -132,6 +133,12 @@ export class WizardStep<Model extends object = any, Params = any> implements IWi
 
     return partial;
   }
+
+  reset() {
+    this.current.next(this.options.defaultValue);
+    this.previous.next(undefined);
+    this.initialized.next(false);
+  }
 }
 
 class WizardTransactionOperation<Model extends object, Params> implements ITransactionOperation {
@@ -220,6 +227,10 @@ export class Wizard<State, Params> implements IWizard {
     }
 
     await executeTransaction(step.buildOperation(this));
+  }
+
+  resetAll() {
+    this.steps.forEach((x) => x.reset());
   }
 
   save(): Promise<void> {
