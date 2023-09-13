@@ -233,6 +233,10 @@ export class Wizard<State, Params> implements IWizard {
     this.steps.forEach((x) => x.reset());
   }
 
+  updateParams(params: Params) {
+    this.params.next(params);
+  }
+
   save(): Promise<void> {
     return this.commit();
   }
