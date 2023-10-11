@@ -55,6 +55,12 @@ export interface RepositoryCompartmentOptions<Key, Entity> extends IRepositoryCo
  */
 export interface IRepository<Registry> {
   /**
+   * Clears the cached value for the specified key/id.
+   * @param key The key of the compartment to clear.
+   * @param id The id of the entity to clear.
+   */
+  clear<Key extends string | number>(key: keyof Registry, id: Key): void;
+  /**
    * Gets a data compartment that is configured to retrieve the specific entity.
    * @param key The key of the compartment to retrieve.
    * @param id The id of the entity to retrieve.
@@ -75,16 +81,31 @@ export class Repository<Registry> implements IRepository<Registry> {
     });
   }
   /**
+   * Clears the cached value for the specified key/id.
+   * @param key The key of the compartment to clear.
+   * @param id The id of the entity to clear.
+   */
+  clear<Key extends string | number>(key: keyof Registry, id: Key): void {
+    const lookup = this.findLookup<Response>(key);
+    lookup.clear(id);
+  }
+  /**
    * Gets a data compartment that is configured to retrieve the specific entity.
    * @param key The key of the compartment to retrieve.
    * @param id The id of the entity to retrieve.
    */
   get<Key extends string | number, Response>(key: keyof Registry, id: Key): DataCompartment<Response> {
+    const lookup = this.findLookup<Response>(key);
+    return lookup.find(id as string | number);
+  }
+
+  private findLookup<Response>(key: keyof Registry): ILookup<string | number, DataCompartment<Response>> {
     const lookup = this.compartments[key as string] as ILookup<string | number, DataCompartment<Response>>;
     if (!lookup) {
       throw new Error(`Could not find compartment "${String(key)}".`);
     }
-    return lookup.find(id as string | number);
+
+    return lookup;
   }
 }
 /**
