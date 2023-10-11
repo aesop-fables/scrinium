@@ -19,6 +19,11 @@ export interface ILookup<Key extends string | number, Value> {
    * @param value The value to override.
    */
   inject(key: Key, value: Value): void;
+  /**
+   * Clears the specified key and invalidates the cache.
+   * @param key The key to invalidate.
+   */
+  clear(key: Key): void;
 }
 /**
  * Represents a simple hash (JSON object).
@@ -54,5 +59,12 @@ export class Lookup<Key extends string | number, Value> implements ILookup<Key, 
     }
 
     return value;
+  }
+  /**
+   * Clears the specified key and invalidates the cache.
+   * @param key The key to invalidate.
+   */
+  clear(key: Key): void {
+    delete this.values[key];
   }
 }
