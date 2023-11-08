@@ -95,6 +95,11 @@ export interface IDataCompartment {
    */
   initialized$: () => Observable<boolean>;
   /**
+   * Provides an observable that emits true when the compartment is loading.
+   * @returns An observable that emits true when initialization is complete.
+   */
+  loading$: Observable<boolean>;
+  /**
    * Registers the specified listener for the reload event.
    * @param listener The listener to be invoked
    */
@@ -136,6 +141,7 @@ export enum DataCompartmentEvents {
  */
 export class DataCompartment<Model> implements IDataCompartment {
   private readonly initialized = new BehaviorSubject<boolean>(false);
+  private readonly loading = new BehaviorSubject<boolean>(false);
   private readonly value: BehaviorSubject<Model>;
   private readonly events: EventEmitter;
   /**
@@ -174,6 +180,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    */
   private async initialize(): Promise<void> {
     try {
+      this.loading.next(true);
       const value = await this.options.source.load();
       this.next(value);
       this.initialized.next(true);
@@ -185,6 +192,8 @@ export class DataCompartment<Model> implements IDataCompartment {
         console.error(e);
       }
       this.initialized.error(e);
+    } finally {
+      this.loading.next(false);
     }
   }
   /**
@@ -192,7 +201,14 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   initialized$(): Observable<boolean> {
-    return this.initialized.pipe(delay(1));
+    return this.initialized.pipe();
+  }
+  /**
+   * Provides an observable that emits true when the compartment is loading.
+   * @returns An observable that emits true when initialization is complete.
+   */
+  get loading$(): Observable<boolean> {
+    return this.loading.pipe();
   }
   /**
    * Provides an observable that emits the value resolved from the configured source.
@@ -241,7 +257,6 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Note: This triggers the `reload` event.
    */
   async reload(): Promise<void> {
-    this.initialized.next(false);
     await this.initialize();
 
     this.events.emit(DataCompartmentEvents.Reload);

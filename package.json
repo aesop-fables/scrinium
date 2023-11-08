@@ -1,6 +1,6 @@
 {
   "name": "@aesop-fables/scrinium",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "A fully observable data projection/mutation layer for react, built on top of rxjs",
   "type": "commonjs",
   "exports": {
@@ -32,14 +32,14 @@
     "@testing-library/react": "^13.4.0",
     "@types/events": "^3.0.0",
     "@types/jest": "^29.4.0",
-    "@types/node": "^18.11.11",
+    "@types/node": "^20.8.10",
     "@types/react": "^18.0.26",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "5.59.8",
-    "esbuild": "^0.17.15",
+    "esbuild": "^0.19.5",
     "eslint": "8.47.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-jest": "27.2.1",
+    "eslint-plugin-jest": "27.6.0",
     "eslint-plugin-prettier": "^4.2.1",
     "events": "^3.3.0",
     "jest": "^29.6.4",
@@ -52,7 +52,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "ts-jest": "29.1.1",
-    "typedoc": "^0.24.6",
+    "typedoc": "^0.25.3",
     "typescript": "4.9.5"
   },
   "files": [
