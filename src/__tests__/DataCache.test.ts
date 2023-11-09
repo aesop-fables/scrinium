@@ -134,8 +134,6 @@ test('DataCache > compartments > initialize > failure > should be false', async 
     },
   });
 
-  await waitForAllCompartments();
-
   let hasError = false;
   let initialized = false;
   try {

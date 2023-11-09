@@ -201,7 +201,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   initialized$(): Observable<boolean> {
-    return this.initialized.pipe();
+    return this.initialized.pipe(delay(1));
   }
   /**
    * Provides an observable that emits true when the compartment is loading.
