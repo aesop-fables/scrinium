@@ -1,28 +1,37 @@
 import { useState, useEffect } from 'react';
-import { Observable } from 'rxjs';
+import { Observable, timeout } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noOp = () => {};
 
-function useObservable<T>(observable: Observable<T>, error?: (x: unknown) => void): T | undefined {
+export declare type ObservableOptions = {
+  onError?: (x: unknown) => void;
+  timeout?: number;
+};
+
+export function useObservable<T>(observable: Observable<T>, options?: ObservableOptions): T | undefined {
   const [state, setState] = useState<T>();
   const [err, setErr] = useState<unknown>();
 
   useEffect(() => {
-    const sub = observable.subscribe({ next: setState, error: (e) => setErr(e) });
+    let target = observable;
+    if (options?.timeout) {
+      target = target.pipe(timeout({ each: options.timeout }));
+    }
+    const sub = target.subscribe({ next: setState, error: (e) => setErr(e) });
     return () => sub.unsubscribe();
   }, []); // the effect only runs once
 
   useEffect(() => {
-    if (err && error) {
-      error(err);
+    if (err && options?.onError) {
+      options.onError(err);
     }
-  }, [err, error]);
+  }, [err, options?.onError]);
 
   return state;
 }
 
-const useSubscription = <T>(
+export const useSubscription = <T>(
   observable: Observable<T>,
   next: (x: T) => void,
   error?: (x: unknown) => void,
@@ -37,5 +46,3 @@ const useSubscription = <T>(
     return () => sub.unsubscribe();
   }, [observable]); // the effect only runs once
 };
-
-export { useObservable, useSubscription };
