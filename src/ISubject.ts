@@ -6,8 +6,9 @@ import {
   injectContainer,
   interceptorChainFor,
 } from '@aesop-fables/containr';
-import { Observable } from 'rxjs';
-import { DataCacheServices } from './bootstrapping/DataCacheServices';
+import { Observable, combineLatest, filter, map } from 'rxjs';
+import { ScriniumServices } from './ScriniumServices';
+import { getPredicateMetadata } from './Predicate';
 
 /**
  * Subjects are essentially factories for observables.
@@ -34,7 +35,21 @@ export class SubjectResolver implements ISubjectResolver {
       this.cache[key] = subject;
     }
 
-    return subject.createObservable();
+    const target$ = subject.createObservable();
+    const predicateCtor = getPredicateMetadata(clazz);
+    let predicate$: Observable<boolean> | undefined = undefined;
+    if (typeof predicateCtor === 'string') {
+      predicate$ = this.resolveSubjectByKey<boolean>(predicateCtor as string);
+    }
+
+    if (typeof predicate$ !== 'undefined') {
+      return combineLatest([predicate$, target$]).pipe(
+        filter(([predicate]) => predicate),
+        map(([, target]) => target),
+      );
+    }
+
+    return target$;
   }
 
   resolveSubjectByKey<T>(key: string): Observable<T> {
@@ -52,7 +67,7 @@ export class SubjectResolutionInterceptor<T = any> implements IInterceptor<Obser
       errors.pop();
     }
 
-    const resolver = container.get<ISubjectResolver>(DataCacheServices.SubjectResolver);
+    const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
     return resolver.resolveSubjectByKey(this.key);
   }
 }

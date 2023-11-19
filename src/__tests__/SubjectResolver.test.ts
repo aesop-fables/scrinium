@@ -1,8 +1,14 @@
 import 'reflect-metadata';
-import { Scopes, ServiceCollection, inject } from '@aesop-fables/containr';
+import { Scopes, ServiceCollection, createContainer, createServiceModule, inject } from '@aesop-fables/containr';
 import { ISubject, ISubjectResolver, SubjectResolver, injectSubject } from '../ISubject';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, timeout } from 'rxjs';
 import { ScriniumServices } from '../ScriniumServices';
+import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
+import { IAppStorage, fromAppStorage } from '../AppStorage';
+import { DataCache, createDataCache } from '../DataCache';
+import { Predicate, predicate } from '../Predicate';
+import { createDataCacheModule } from '../bootstrapping/useDataCache';
+import { useScrinium } from '../bootstrapping';
 
 const messageCache = 'MessageCache';
 const sampleKey = 'sampleKey';
@@ -76,6 +82,117 @@ describe('SubjectResolver', () => {
     resolver.resolveSubject(SampleSubject);
 
     expect(sampleCount).toBe(1);
+  });
+});
+
+interface AccountDto {
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface Preference {
+  key: string;
+  value?: string;
+}
+
+const accountsKey = 'accounts';
+
+interface AccountCompartments {
+  account: DataCompartmentOptions<AccountDto | undefined>;
+}
+
+const preferencesKey = 'preferences';
+
+interface PreferenceCompartments {
+  preferences: DataCompartmentOptions<Preference[]>;
+}
+
+class AccountLoadedPredicate implements Predicate {
+  constructor(@fromAppStorage(accountsKey) private readonly cache: DataCache<AccountCompartments>) {}
+
+  createObservable(): Observable<boolean> {
+    return this.cache.initialized$();
+  }
+}
+
+const predicateKey = 'predicateSubject';
+
+@predicate(predicateKey)
+class PreferencesSubject implements ISubject<Preference[]> {
+  constructor(@fromAppStorage(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
+
+  createObservable() {
+    return this.cache.observe$<Preference[]>('preferences');
+  }
+}
+
+const withAccountData = createDataCacheModule((storage) => {
+  const cache = createDataCache<AccountCompartments>({
+    account: {
+      autoLoad: false,
+      defaultValue: undefined,
+      source: new ConfiguredDataSource(async () => {
+        return {
+          username: 'tuser',
+          firstName: 'Test',
+          lastName: 'User',
+        };
+      }),
+    },
+  });
+
+  storage.store(accountsKey, cache);
+});
+
+const withPreferencesData = createDataCacheModule((storage) => {
+  const cache = createDataCache<PreferenceCompartments>({
+    preferences: {
+      autoLoad: true,
+      defaultValue: [],
+      source: new ConfiguredDataSource(async () => {
+        return [{ key: 'foo', value: 'bar' }];
+      }),
+    },
+  });
+
+  storage.store(preferencesKey, cache);
+});
+
+describe('SubjectResolver w/ decorators', () => {
+  test('invokes the predicate decorator', async () => {
+    const predicateServices = createServiceModule('test', (services) => {
+      services.autoResolve(predicateKey, AccountLoadedPredicate, Scopes.Singleton);
+    });
+    const container = createContainer([
+      useScrinium({
+        modules: [withAccountData, withPreferencesData],
+      }),
+      predicateServices,
+    ]);
+
+    const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
+    const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
+    const accountCache = storage.retrieve<AccountCompartments>(accountsKey);
+    const preferenceCache = storage.retrieve<PreferenceCompartments>(preferencesKey);
+
+    const subject$ = resolver.resolveSubject(PreferencesSubject);
+    let hasError = false;
+
+    try {
+      await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
+    } catch {
+      hasError = true;
+    }
+
+    expect(hasError).toBeTruthy();
+
+    await accountCache.reloadAll();
+
+    const preferences = await firstValueFrom(preferenceCache.observe$<Preference>('preferences'));
+    const resolvedPreferences = await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
+
+    expect(preferences).toEqual(resolvedPreferences);
   });
 });
 
