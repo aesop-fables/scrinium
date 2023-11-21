@@ -1,14 +1,23 @@
 import 'reflect-metadata';
 import { Scopes, ServiceCollection, createContainer, createServiceModule, inject } from '@aesop-fables/containr';
-import { ISubject, ISubjectResolver, SubjectResolver, injectSubject } from '../ISubject';
 import { BehaviorSubject, Observable, firstValueFrom, timeout } from 'rxjs';
-import { ScriniumServices } from '../ScriniumServices';
-import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
-import { IAppStorage, fromAppStorage } from '../AppStorage';
-import { DataCache, createDataCache } from '../DataCache';
-import { Predicate, predicate } from '../Predicate';
-import { createDataCacheModule } from '../bootstrapping/useDataCache';
-import { useScrinium } from '../bootstrapping';
+import {
+  ConfiguredDataSource,
+  createDataCache,
+  createDataCacheModule,
+  DataCache,
+  DataCompartmentOptions,
+  fromAppStorage,
+  IAppStorage,
+  injectSubject,
+  ISubject,
+  ISubjectResolver,
+  predicate,
+  Predicate,
+  ScriniumServices,
+  SubjectResolver,
+  useScrinium,
+} from '..';
 
 const messageCache = 'MessageCache';
 const sampleKey = 'sampleKey';
@@ -160,7 +169,7 @@ const withPreferencesData = createDataCacheModule((storage) => {
 });
 
 describe('SubjectResolver w/ decorators', () => {
-  test('invokes the predicate decorator', async () => {
+  test('invokes the predicate decorator by class', async () => {
     const predicateServices = createServiceModule('test', (services) => {
       services.autoResolve(predicateKey, AccountLoadedPredicate, Scopes.Singleton);
     });
