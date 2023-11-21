@@ -9,6 +9,6 @@ export const useScrinium = createServiceModuleWithOptions<ScriniumBootstrappingO
   '@aesop-fables/scrinium',
   (services, options) => {
     services.include(new DataCacheRegistry(options.modules));
-    services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Transient);
+    services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Singleton);
   },
 );
