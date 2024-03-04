@@ -54,7 +54,21 @@ export class SubjectResolver implements ISubjectResolver {
 
   resolveSubjectByKey<T>(key: string): Observable<T> {
     const subject = this.container.get<ISubject<T>>(key);
-    return subject.createObservable();
+    const target$ = subject.createObservable();
+    const predicateCtor = getPredicateMetadata(subject.constructor);
+    let predicate$: Observable<boolean> | undefined = undefined;
+    if (typeof predicateCtor === 'string') {
+      predicate$ = this.resolveSubjectByKey<boolean>(predicateCtor as string);
+    }
+
+    if (typeof predicate$ !== 'undefined') {
+      return combineLatest([predicate$, target$]).pipe(
+        filter(([predicate]) => predicate),
+        map(([, target]) => target),
+      );
+    }
+
+    return target$;
   }
 }
 
