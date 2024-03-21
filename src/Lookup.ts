@@ -24,6 +24,11 @@ export interface ILookup<Key extends string | number, Value> {
    * @param key The key to invalidate.
    */
   clear(key: Key): void;
+  /**
+   * Clears all keys and invalidates the cache.
+   * @param key The key to invalidate.
+   */
+  clearAll(): void;
 }
 /**
  * Represents a simple hash (JSON object).
@@ -66,5 +71,14 @@ export class Lookup<Key extends string | number, Value> implements ILookup<Key, 
    */
   clear(key: Key): void {
     delete this.values[key];
+  }
+  /**
+   * Clears all keys and invalidates the cache.
+   * @param key The key to invalidate.
+   */
+  clearAll(): void {
+    for (const key in this.values) {
+      delete this.values[key];
+    }
   }
 }

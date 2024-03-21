@@ -91,4 +91,36 @@ describe('Repository', () => {
 
     expect(nrInvocations).toEqual(2);
   });
+
+  test('invalidates all and reloads the values', async () => {
+    const videos: Video[] = [
+      { id: '1', title: 'Video 1' },
+      { id: '2', title: 'Video 2' },
+    ];
+    const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
+    let nrInvocations = 0;
+    const repository = createRepository<VideoRegistry>({
+      metadata: {
+        resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
+          return metadata.find((x) => x.id === key) as VideoMetadata;
+        }),
+      },
+      videos: {
+        resolver: new ConfiguredEntityResolver<string, Video>(async (key) => {
+          nrInvocations++;
+          return videos.find((x) => x.id === key) as Video;
+        }),
+      },
+    });
+
+    repository.get<string, Video>('videos', '1');
+    repository.get<string, Video>('videos', '2');
+    repository.clearAll('videos');
+    repository.get<string, Video>('videos', '1');
+    repository.get<string, Video>('videos', '2');
+
+    await wait(200);
+
+    expect(nrInvocations).toEqual(4);
+  });
 });
