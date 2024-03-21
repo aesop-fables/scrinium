@@ -61,6 +61,11 @@ export interface IRepository<Registry> {
    */
   clear<Key extends string | number>(key: keyof Registry, id: Key): void;
   /**
+   * Clears all cached values for the specified key.
+   * @param key The key of the compartment to clear.
+   */
+  clearAll(key: keyof Registry): void;
+  /**
    * Gets a data compartment that is configured to retrieve the specific entity.
    * @param key The key of the compartment to retrieve.
    * @param id The id of the entity to retrieve.
@@ -88,6 +93,14 @@ export class Repository<Registry> implements IRepository<Registry> {
   clear<Key extends string | number>(key: keyof Registry, id: Key): void {
     const lookup = this.findLookup<Response>(key);
     lookup.clear(id);
+  }
+  /**
+   * Clears all the cached values for the specified key.
+   * @param key The key of the compartment to clear.
+   */
+  clearAll(key: keyof Registry): void {
+    const lookup = this.findLookup<Response>(key);
+    lookup.clearAll();
   }
   /**
    * Gets a data compartment that is configured to retrieve the specific entity.
