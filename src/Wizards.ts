@@ -174,6 +174,7 @@ export class Wizard<State, Params> implements IWizard {
   constructor(readonly steps: IWizardStep<Params>[]) {}
 
   async start(params: Params): Promise<void> {
+    this.current.next(undefined);
     await Promise.all(this.steps.map((step) => step.resetState(params)));
     this.isStarted.next(true);
     this.params.next(params);
