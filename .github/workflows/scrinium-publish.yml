@@ -96,6 +96,8 @@ jobs:
       checks: write
     env:
       CI: true
+      NEXT_VERSION: ${{ needs.get-version.outputs.NEXT_VERSION }}
+      NEXT_VERSION_NO_PREFIX: ${{ needs.get-version.outputs.NEXT_VERSION_NO_PREFIX }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
