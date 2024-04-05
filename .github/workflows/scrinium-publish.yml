@@ -1,6 +1,3 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
-
 name: scrinium:publish
 
 on:
@@ -8,25 +5,127 @@ on:
     types: [created]
 
 jobs:
-  publish:
+  setup-build-workflow:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
+
+    outputs:
+      IS_PRERELEASE: ${{ steps.set-vars.outputs.IS_PRERELEASE }}
+      IS_MERGE_TO_MAIN: ${{ steps.set-vars.outputs.IS_MERGE_TO_MAIN }}
+      IS_MERGE_TO_DEVELOP: ${{ steps.set-vars.outputs.IS_MERGE_TO_DEVELOP }}
+      REF_TO_BUILD_AND_TAG: ${{ steps.set-vars.outputs.REF_TO_BUILD_AND_TAG }}
+      IS_DEPENDABOT_PR: ${{ steps.actor_check.outputs.IS_DEPENDABOT_PR }}
+
+    steps:
+      - name: Set default env variables
+        id: set-vars
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const targetRef = '${{ github.base_ref }}';
+            const sourceRef = '${{ github.head_ref }}';
+            const mergeRef = '${{ github.ref }}';
+
+            const prIsDraft = '${{ github.event.pull_request.draft }}' === 'true';
+            const prMergedToMain = mergeRef === 'refs/heads/main';
+
+            const isPreRelease = !prMergedToMain
+
+            // For a detailed explanation of why we use different refs for different scenarios
+            // see https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+            const refToBuildAndTag = isPreRelease ? sourceRef : mergeRef;
+
+            Object.entries({
+              IS_PRERELEASE: isPreRelease,
+              IS_MERGE_TO_MAIN: prMergedToMain,
+              REF_TO_BUILD_AND_TAG: refToBuildAndTag,
+            }).forEach(pair => {
+              core.setOutput(...pair);
+              console.info(...pair);
+            });
+
+      - name: Check if Dependabot PR
+        id: actor_check
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const actor = '${{ github.actor}}';
+            const knownDependabotNames = [
+              'dependabot[bot]',
+              'dependabot'
+            ];
+            const isDependabotPR = knownDependabotNames.includes(actor);
+            core.info(`Is Dependabot PR: ${isDependabotPR}`);
+            core.setOutput('IS_DEPENDABOT_PR', isDependabotPR);
+
+  get-version:
+    runs-on: ubuntu-latest
+    needs: [setup-build-workflow]
+
+    outputs:
+      NEXT_VERSION: ${{ steps.get-version.outputs.NEXT_VERSION }}
+      NEXT_VERSION_NO_PREFIX: ${{ steps.get-version.outputs.NEXT_VERSION_NO_PREFIX }}
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm run build
-      - run: npm publish --access public
+          fetch-depth: 0 # Includes all history for all branches and tags
+
+      - id: get-version
+        uses: joemcbride/git-version-lite@v3.0.0
+        with:
+          calculate-prerelease-version: ${{ needs.setup-build-workflow.outputs.IS_PRERELEASE }}
+          branch-name: ${{ needs.setup-build-workflow.outputs.REF_TO_BUILD_AND_TAG }}
+          tag-prefix: scrinium-
+          fallback-to-no-prefix-search: false
+          default-release-type: minor
+          create-ref: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: |
+          echo "The next version is ${{ env.NEXT_VERSION }}"
+          echo "The next version without the prefix is ${{ env.NEXT_VERSION_NO_PREFIX }}"
+
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: [get-version, setup-build-workflow]
+    permissions:
+      contents: read
+      packages: write
+      checks: write
+    env:
+      CI: true
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set Version
+        run: |
+          sed -i.bak -e 's/"version": .*"/"version": '\"${{ env.NEXT_VERSION }}\"'/g' "./package.json"
+
+      - name: Restore
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+
+      - name: Publish
+        run:  npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.SECRET_TOKEN}}
-      - run: npm run docs
-      - name: docs
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+
+      - name: Cleanup
+        if: always()
+        continue-on-error: true
+        run: |
+          rm package.json.bak
+
+      - name: Status
+        if: always()
+        continue-on-error: true
+        run: echo "🍏 This job's status is ${{ job.status }}."
