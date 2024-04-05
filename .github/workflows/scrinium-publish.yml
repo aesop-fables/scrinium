@@ -112,10 +112,10 @@ jobs:
           sed -i.bak -e 's/"version": .*"/"version": '\"${{ env.NEXT_VERSION_NO_PREFIX }}\"'/g' "./package.json"
 
       - name: Restore
-        run: yarn install
+        run: npm install
 
       - name: Build
-        run: yarn build
+        run: npm run build
 
       - name: Publish
         run:  npm publish --access public
