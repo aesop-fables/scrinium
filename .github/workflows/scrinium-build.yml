@@ -1,9 +1,6 @@
 name: scrinium:build
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
@@ -102,31 +99,3 @@ jobs:
         if: always()
         continue-on-error: true
         run: echo "🍏 This job's status is ${{ job.status }}."
-
-  get-version:
-    runs-on: ubuntu-latest
-    needs: [build, setup-build-workflow]
-
-    outputs:
-      NEXT_VERSION: ${{ steps.get-version.outputs.NEXT_VERSION }}
-      NEXT_VERSION_NO_PREFIX: ${{ steps.get-version.outputs.NEXT_VERSION_NO_PREFIX }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Includes all history for all branches and tags
-
-      - id: get-version
-        uses: joemcbride/git-version-lite@v3.0.0
-        with:
-          calculate-prerelease-version: ${{ needs.setup-build-workflow.outputs.IS_PRERELEASE }}
-          branch-name: ${{ needs.setup-build-workflow.outputs.REF_TO_BUILD_AND_TAG }}
-          tag-prefix: scrinium-
-          fallback-to-no-prefix-search: false
-          default-release-type: minor
-          create-ref: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - run: |
-          echo "The next version is ${{ env.NEXT_VERSION }}"
-          echo "The next version without the prefix is ${{ env.NEXT_VERSION_NO_PREFIX }}"
