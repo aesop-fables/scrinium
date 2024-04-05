@@ -109,7 +109,7 @@ jobs:
 
       - name: Set Version
         run: |
-          sed -i.bak -e 's/"version": .*"/"version": '\"${{ env.NEXT_VERSION }}\"'/g' "./package.json"
+          sed -i.bak -e 's/"version": .*"/"version": '\"${{ env.NEXT_VERSION_NO_PREFIX }}\"'/g' "./package.json"
 
       - name: Restore
         run: yarn install
