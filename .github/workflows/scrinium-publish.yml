@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Set default env variables
         id: set-vars
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const targetRef = '${{ github.base_ref }}';
@@ -46,7 +46,7 @@ jobs:
 
       - name: Check if Dependabot PR
         id: actor_check
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const actor = '${{ github.actor}}';
