@@ -72,7 +72,7 @@ jobs:
           fetch-depth: 0 # Includes all history for all branches and tags
 
       - id: get-version
-        uses: joemcbride/git-version-lite@v3.0.0
+        uses: joemcbride/git-version-lite@v3.2.0
         with:
           calculate-prerelease-version: ${{ needs.setup-build-workflow.outputs.IS_PRERELEASE }}
           branch-name: ${{ needs.setup-build-workflow.outputs.REF_TO_BUILD_AND_TAG }}
