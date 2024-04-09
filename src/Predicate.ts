@@ -12,7 +12,6 @@ const metadataKey = Symbol('@aesop-fables/scrinium/predicates/metadata');
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const getPredicateMetadata = (constructor: Constructor) => {
   const metadata = Reflect.getMetadata(metadataKey, constructor);
-  console.log('metadata', metadata);
   return metadata as PredicateIdentifier | undefined;
 };
 
