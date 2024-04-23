@@ -12,7 +12,7 @@
   resolved "https://registry.yarnpkg.com/@adobe/css-tools/-/css-tools-4.3.3.tgz#90749bde8b89cd41764224f5aac29cd4138f75ff"
   integrity sha512-rE0Pygv0sEZ4vBWHlAgJLGDU7Pm8xoO6p3wsEceb7GYAjScrOHpEo8KK/eVkAcnSM+slAEtXjA2JpdjLp4fJQQ==
 
-"@aesop-fables/containr-react@^0.4.0":
+"@aesop-fables/containr-react@^0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@aesop-fables/containr-react/-/containr-react-0.4.1.tgz#db24f3f4266b97f6442182936e36b5a6a2d8ca88"
   integrity sha512-IvpfAJ2rViYiq4gWc069z/YFaOup2yoiLGMbgVSqcYlhSrxuAQrUat1b7FBbg4em3jlcuJJ9qdVBPCjdsTiXbQ==
