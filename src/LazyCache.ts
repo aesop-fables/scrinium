@@ -40,7 +40,10 @@ export class LazyObservable<T> {
 export class LazyObservableCache<T> {
   private readonly values: IObservableHash<T>;
 
-  constructor(private defaultValue: T, private resolver: Resolver<T>) {
+  constructor(
+    private defaultValue: T,
+    private resolver: Resolver<T>,
+  ) {
     this.values = {};
   }
 

@@ -3,7 +3,10 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { PredicateListener } from '..';
 
 class ConfiguredPredicateListener extends PredicateListener {
-  constructor(predicate$: Observable<boolean>, private readonly callback: () => void) {
+  constructor(
+    predicate$: Observable<boolean>,
+    private readonly callback: () => void,
+  ) {
     super(predicate$);
   }
 
