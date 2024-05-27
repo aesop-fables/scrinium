@@ -108,8 +108,17 @@ export interface IApplicationState {
   compartments: DataCompartmentState[];
 }
 
+// const subject = new ApplicationStateSubject();
+// visit the app storage and find all of the compartments?
+// services.autoResolve('', ApplicationStateSubject, )
+
 export class ApplicationStateSubject implements ISubject<IApplicationState> {
   createObservable(): Observable<IApplicationState> {
     throw new Error('Method not implemented.');
   }
 }
+
+export interface IApplicationStateSubjectFactory {
+  createApplicationStateSubject(): ApplicationStateSubject;
+}
+
