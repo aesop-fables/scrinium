@@ -1,10 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IInterceptor, interceptorChainFor, registerDependency } from '@aesop-fables/containr';
-import { DataCache } from './DataCache';
+import { DataCache, IDataCache } from './DataCache';
 import { IRepository } from './Repository';
 import { ScriniumServices } from './ScriniumServices';
 
+export interface IAppStorageState {
+  dataCaches: IDataCache[];
+  repositories: IRepository<any>[];
+}
+
 export interface IAppStorage {
+  state: IAppStorageState;
   repository<Policy>(key: string): IRepository<Policy>;
   retrieve<Policy>(key: string): DataCache<Policy>;
   store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void;
@@ -31,7 +37,6 @@ export class AppStorage implements IAppStorage {
       );
 
       this.repositories[key] = value as IRepository<Policy>;
-      return;
     }
 
     this.values[key] = value;
@@ -39,6 +44,14 @@ export class AppStorage implements IAppStorage {
 
   storeRepository<Registry>(key: string, value: IRepository<Registry>): void {
     this.repositories[key] = value;
+  }
+
+  get state(): IAppStorageState {
+    const repositoryKeys = Object.keys(this.repositories);
+    return {
+      dataCaches: Object.values(this.values).filter((x) => repositoryKeys.indexOf(x) === -1),
+      repositories: Object.values(this.repositories),
+    };
   }
 }
 
