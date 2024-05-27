@@ -108,9 +108,12 @@ export interface IApplicationState {
   compartments: DataCompartmentState[];
 }
 
-// const subject = new ApplicationStateSubject();
-// visit the app storage and find all of the compartments?
-// services.autoResolve('', ApplicationStateSubject, )
+// TODO: Convert appStorage.state to IApplicationState
+// How? Easy...first, we ignore repositories. Then:
+// 1. Create a dataCache observer 
+// 2. use that against all of the caches in appStorage.state
+// 3. That state is then available to anyone (we just have to make sure we capture errors correctly) - should just be able to adapt the AppData class for 1/2
+// 4. We can write something in DM for now to handle querying against the IApplicationState
 
 export class ApplicationStateSubject implements ISubject<IApplicationState> {
   createObservable(): Observable<IApplicationState> {
@@ -121,4 +124,3 @@ export class ApplicationStateSubject implements ISubject<IApplicationState> {
 export interface IApplicationStateSubjectFactory {
   createApplicationStateSubject(): ApplicationStateSubject;
 }
-
