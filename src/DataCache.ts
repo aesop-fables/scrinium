@@ -2,17 +2,14 @@
 import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { DataCompartment, DataCompartmentOptions, IDataCompartment, DataCompartmentEvents } from './Compartments';
-
-export interface IDataCacheObserver {
-  observe(compartments: IDataCompartment[]): void;
-}
+import { IDataCacheObserver } from './IDataCacheObserver';
 
 export interface IDataCache {
   observeWith: (observer: IDataCacheObserver) => void;
 }
 
 export class DataCache<T> implements IDataCache {
-  constructor(private compartments: IDataCompartment[]) {}
+  constructor(private readonly compartments: IDataCompartment[]) {}
 
   observe$<Output>(key: keyof T): Observable<Output> {
     return of(this.compartments).pipe(
@@ -83,6 +80,17 @@ export class DataCache<T> implements IDataCache {
 
   observeWith(observer: IDataCacheObserver): void {
     observer.observe(this.compartments);
+  }
+
+  toHash(): string {
+    const hash: Record<string, string> = {};
+    this.compartments.forEach((compartment) => {
+      hash[compartment.key] = JSON.stringify(compartment.options.defaultValue);
+    });
+
+    return Object.entries(hash)
+      .map(([key, val]) => `${key}=${val}`)
+      .join(';');
   }
 
   async modify<Model>(key: keyof T, modifier: (currentValue: Model) => Promise<Model>): Promise<void> {

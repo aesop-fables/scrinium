@@ -1,6 +1,22 @@
 import { BehaviorSubject, concatMap, firstValueFrom, map, Observable } from 'rxjs';
 import { IDataCompartment } from './Compartments';
-import { IDataCacheObserver, IDataCache, DataCache, createDataCache } from './DataCache';
+import { IDataCache, DataCache, createDataCache } from './DataCache';
+import { IDataCacheObserver } from './IDataCacheObserver';
+
+// TODO:
+// 1. Make a value type to represent the hash (maybe we flip the hash generation to be in the value type)
+// 2. AppData should let you query by dataCache
+
+// Shouldn't we just be building up an internal application state anyway? 🤔
+
+// configure((options) => options.scan([hash1, hash2]));
+
+// function blah() {
+//   something.createAppStorageQuery({
+//     scan: [hash1, hash2],
+//     keys: [],
+//   });
+// }
 
 export interface AppDataCompartmentState {
   key: string;
