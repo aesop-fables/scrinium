@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BehaviorSubject, concatMap, firstValueFrom, map, Observable } from 'rxjs';
-import { IDataCompartment } from './Compartments';
+import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCache, DataCache, createDataCache } from './DataCache';
 import { IDataCacheObserver } from './IDataCacheObserver';
+import { DataCacheHash } from './DataCacheHash';
+import { ISubject } from './ISubject';
 
 // TODO:
 // 1. Make a value type to represent the hash (maybe we flip the hash generation to be in the value type)
@@ -85,3 +88,28 @@ export function createObservedDataCache<Compartments extends Record<string, any>
 }
 
 export default appData;
+
+// Pretend like we have a new file and let's free write?
+
+// This represents the state but will likely act as a query dispatcher
+// export interface IApplicationState {
+//   executeQuery(): Promise<void>;
+// }
+
+export interface DataCompartmentState {
+  key: string;
+  options: DataCompartmentOptions<any>;
+  hash: DataCacheHash;
+  initialized: boolean;
+  hasError: boolean;
+}
+
+export interface IApplicationState {
+  compartments: DataCompartmentState[];
+}
+
+export class ApplicationStateSubject implements ISubject<IApplicationState> {
+  createObservable(): Observable<IApplicationState> {
+    throw new Error('Method not implemented.');
+  }
+}

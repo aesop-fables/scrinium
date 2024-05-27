@@ -82,17 +82,6 @@ export class DataCache<T> implements IDataCache {
     observer.observe(this.compartments);
   }
 
-  toHash(): string {
-    const hash: Record<string, string> = {};
-    this.compartments.forEach((compartment) => {
-      hash[compartment.key] = JSON.stringify(compartment.options.defaultValue);
-    });
-
-    return Object.entries(hash)
-      .map(([key, val]) => `${key}=${val}`)
-      .join(';');
-  }
-
   async modify<Model>(key: keyof T, modifier: (currentValue: Model) => Promise<Model>): Promise<void> {
     const compartment = this.findCompartment(key);
 
