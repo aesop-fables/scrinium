@@ -8,14 +8,16 @@ export interface IAppStorage {
   repository<Policy>(key: string): IRepository<Policy>;
   retrieve<Policy>(key: string): DataCache<Policy>;
   store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void;
+  storeRepository<Registry>(key: string, value: IRepository<Registry>): void;
 }
 
 export class AppStorage implements IAppStorage {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private values: Record<string, any> = {};
+  private repositories: Record<string, IRepository<any>> = {};
 
   repository<Policy>(key: string): IRepository<Policy> {
-    return this.values[key] as IRepository<Policy>;
+    return this.repositories[key] as IRepository<Policy>;
   }
 
   retrieve<Policy>(key: string): DataCache<Policy> {
@@ -23,7 +25,20 @@ export class AppStorage implements IAppStorage {
   }
 
   store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void {
+    if (typeof (value as IRepository<Policy>).get === 'function') {
+      console.warn(
+        `Warning: registering a repository through the store() function is deprecated and will be removed soon. Please use storeRepository instead.`,
+      );
+
+      this.repositories[key] = value as IRepository<Policy>;
+      return;
+    }
+
     this.values[key] = value;
+  }
+
+  storeRepository<Registry>(key: string, value: IRepository<Registry>): void {
+    this.repositories[key] = value;
   }
 }
 
