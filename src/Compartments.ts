@@ -110,6 +110,10 @@ export interface IDataCompartment {
    */
   onReset(listener: EventListener): void;
   /**
+   * The options used to configure the compartment.
+   */
+  options: DataCompartmentOptions<any>;
+  /**
    * Reloads the compartment.
    * Note: This triggers the `reload` event.
    */
