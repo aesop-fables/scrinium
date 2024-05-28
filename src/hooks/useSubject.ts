@@ -3,10 +3,13 @@ import { useService } from '@aesop-fables/containr-react';
 import useConstant from './useConstant';
 import { ISubject, ISubjectResolver } from '../ISubject';
 import { ScriniumServices } from '../ScriniumServices';
-import { useObservable } from './useObservable';
+import { ObservableOptions, useObservable } from './useObservable';
 
 // TODO -- Make the useObservable options available here
-export function useSubject<T>(keyOrConstructor: string | Newable<ISubject<T>>): T | undefined {
+export function useSubject<T>(
+  keyOrConstructor: string | Newable<ISubject<T>>,
+  options?: ObservableOptions,
+): T | undefined {
   const resolver = useService<ISubjectResolver>(ScriniumServices.SubjectResolver);
   const subject$ = useConstant(() => {
     if (typeof keyOrConstructor === 'string') {
@@ -16,5 +19,5 @@ export function useSubject<T>(keyOrConstructor: string | Newable<ISubject<T>>): 
     return resolver.resolveSubject<T>(keyOrConstructor);
   });
 
-  return useObservable(subject$);
+  return useObservable(subject$, options);
 }

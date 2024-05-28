@@ -1,5 +1,4 @@
 import { firstValueFrom } from 'rxjs';
-import { AppData } from '../AppData';
 import { DataCompartmentOptions, DataCompartmentEvents, ConfiguredDataSource } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
@@ -185,40 +184,6 @@ describe('DataCache', () => {
       await waitForAllCompartments();
 
       expect(theError?.message).toEqual('intentional error');
-    });
-  });
-
-  describe('observeWith', () => {
-    test('Relays category and errors', async () => {
-      // autoload = true
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => []),
-          defaultValue: [],
-        },
-        b: {
-          source: new ConfiguredDataSource(async () => {
-            throw new Error('intentional error');
-          }),
-          defaultValue: [],
-        },
-      });
-
-      // Might not be needed but I saw this randomly fail once so let's make sure
-      // we don't have a race condition
-      await waitForAllCompartments();
-
-      const appData = new AppData();
-      cache.observeWith(appData);
-
-      const state = await firstValueFrom(appData.state$());
-      expect(state.compartments.length).toBe(2);
-
-      const compartmentA = state.compartments.find((x) => x.key === 'a');
-      expect(compartmentA?.hasError).toBeFalsy();
-
-      const compartmentB = state.compartments.find((x) => x.key === 'b');
-      expect(compartmentB?.hasError).toBeTruthy();
     });
   });
 

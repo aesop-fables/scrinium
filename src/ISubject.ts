@@ -74,8 +74,6 @@ export class SubjectResolver implements ISubjectResolver {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class SubjectResolutionInterceptor<T = any> implements IInterceptor<Observable<T>> {
-  private _value: Observable<T> | undefined;
-
   constructor(private readonly key: string) {}
 
   resolve(currentValue: Observable<T> | undefined, container: IServiceContainer, errors: Stack<Error>): Observable<T> {
@@ -83,12 +81,8 @@ export class SubjectResolutionInterceptor<T = any> implements IInterceptor<Obser
       errors.pop();
     }
 
-    if (typeof this._value === 'undefined') {
-      const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
-      this._value = resolver.resolveSubjectByKey(this.key);
-    }
-
-    return this._value;
+    const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
+    return resolver.resolveSubjectByKey(this.key);
   }
 }
 
