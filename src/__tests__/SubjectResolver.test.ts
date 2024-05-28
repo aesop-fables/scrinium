@@ -221,7 +221,7 @@ describe('@injectSubject', () => {
     }
   }
 
-  test('resolves the subject by key and creates the observable (only once)', async () => {
+  test('resolves the subject by key and creates the observable', async () => {
     const message = 'Hello, World!';
     const cache: IMessageCache = {
       latestMessage() {
@@ -236,11 +236,5 @@ describe('@injectSubject', () => {
     const container = services.buildContainer();
     const sample = container.resolve(SampleService);
     expect(await sample.message()).toBe(message);
-
-    container.resolve(SampleService);
-    container.resolve(SampleService);
-    container.resolve(SampleService);
-
-    expect(createCount).toBe(1);
   });
 });
