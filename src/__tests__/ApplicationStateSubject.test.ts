@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from '../AppData';
 import { AppStorage } from '../AppStorage';
