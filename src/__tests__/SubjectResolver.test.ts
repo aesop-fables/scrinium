@@ -26,14 +26,13 @@ interface IMessageCache {
 }
 
 let sampleCount = 0;
-let createCount = 0;
+
 class SampleSubject implements ISubject<string> {
   constructor(@inject(messageCache) private readonly cache: IMessageCache) {
     ++sampleCount;
   }
 
   createObservable(): Observable<string> {
-    ++createCount;
     const subject = new BehaviorSubject<string>(this.cache.latestMessage());
     return subject.pipe();
   }
@@ -210,7 +209,6 @@ describe('SubjectResolver w/ decorators', () => {
 describe('@injectSubject', () => {
   beforeEach(() => {
     sampleCount = 0;
-    createCount = 0;
   });
 
   class SampleService {
