@@ -3,6 +3,7 @@ import { IInterceptor, interceptorChainFor, registerDependency } from '@aesop-fa
 import { DataCache, IDataCache } from './DataCache';
 import { IRepository } from './Repository';
 import { ScriniumServices } from './ScriniumServices';
+import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
 
 export interface IAppStorageState {
   dataCaches: IDataCache[];
@@ -10,7 +11,7 @@ export interface IAppStorageState {
 }
 
 export interface IAppStorage {
-  state: IAppStorageState;
+  state$: Observable<IAppStorageState>;
   repository<Policy>(key: string): IRepository<Policy>;
   retrieve<Policy>(key: string): DataCache<Policy>;
   store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void;
@@ -19,15 +20,15 @@ export interface IAppStorage {
 
 export class AppStorage implements IAppStorage {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private values: Record<string, any> = {};
-  private repositories: Record<string, IRepository<any>> = {};
+  private readonly values = new BehaviorSubject<Record<string, any>>({});
+  private readonly repositories = new BehaviorSubject<Record<string, IRepository<any>>>({});
 
   repository<Policy>(key: string): IRepository<Policy> {
-    return this.repositories[key] as IRepository<Policy>;
+    return this.repositories.value[key] as IRepository<Policy>;
   }
 
   retrieve<Policy>(key: string): DataCache<Policy> {
-    return this.values[key] as DataCache<Policy>;
+    return this.values.value[key] as DataCache<Policy>;
   }
 
   store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void {
@@ -36,22 +37,35 @@ export class AppStorage implements IAppStorage {
         `Warning: registering a repository through the store() function is deprecated and will be removed soon. Please use storeRepository instead.`,
       );
 
-      this.repositories[key] = value as IRepository<Policy>;
+      this.repositories.next({
+        ...this.repositories.value,
+        [key]: value as IRepository<Policy>,
+      });
     }
 
-    this.values[key] = value;
+    this.values.next({
+      ...this.values.value,
+      [key]: value,
+    });
   }
 
   storeRepository<Registry>(key: string, value: IRepository<Registry>): void {
-    this.repositories[key] = value;
+    this.repositories.next({
+      ...this.repositories.value,
+      [key]: value,
+    });
   }
 
-  get state(): IAppStorageState {
-    const repositoryKeys = Object.keys(this.repositories);
-    return {
-      dataCaches: Object.values(this.values).filter((x) => repositoryKeys.indexOf(x) === -1),
-      repositories: Object.values(this.repositories),
-    };
+  get state$(): Observable<IAppStorageState> {
+    return combineLatest([this.repositories, this.values]).pipe(
+      map(([repositories, values]) => {
+        const repositoryKeys = Object.keys(repositories);
+        return {
+          dataCaches: Object.values(values).filter((x) => repositoryKeys.indexOf(x) === -1),
+          repositories: Object.values(repositories),
+        };
+      }),
+    );
   }
 }
 

@@ -16,6 +16,10 @@ export class DataCacheHash implements IDataCacheObserver {
       .join(';');
   }
 
+  equals(hash: DataCacheHash) {
+    return this._hash === hash._hash;
+  }
+
   toString() {
     return this._hash ?? '';
   }

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BehaviorSubject, concatMap, firstValueFrom, map, Observable } from 'rxjs';
+import { BehaviorSubject, concatMap, distinctUntilChanged, firstValueFrom, map, mergeMap, Observable, of, switchMap } from 'rxjs';
 import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCache, DataCache, createDataCache } from './DataCache';
 import { IDataCacheObserver } from './IDataCacheObserver';
 import { DataCacheHash } from './DataCacheHash';
 import { ISubject } from './ISubject';
+import { IAppStorage } from './AppStorage';
 
 // TODO:
 // 1. Make a value type to represent the hash (maybe we flip the hash generation to be in the value type)
@@ -99,7 +100,7 @@ export default appData;
 export interface DataCompartmentState {
   key: string;
   options: DataCompartmentOptions<any>;
-  hash: DataCacheHash;
+  hash: string;
   initialized: boolean;
   hasError: boolean;
 }
@@ -110,17 +111,53 @@ export interface IApplicationState {
 
 // TODO: Convert appStorage.state to IApplicationState
 // How? Easy...first, we ignore repositories. Then:
-// 1. Create a dataCache observer 
+// 1. Create a dataCache observer
 // 2. use that against all of the caches in appStorage.state
 // 3. That state is then available to anyone (we just have to make sure we capture errors correctly) - should just be able to adapt the AppData class for 1/2
 // 4. We can write something in DM for now to handle querying against the IApplicationState
 
-export class ApplicationStateSubject implements ISubject<IApplicationState> {
-  createObservable(): Observable<IApplicationState> {
-    throw new Error('Method not implemented.');
-  }
-}
+export class ApplicationState implements ISubject<IApplicationState> {
+  constructor(private readonly appStorage: IAppStorage) {}
 
-export interface IApplicationStateSubjectFactory {
-  createApplicationStateSubject(): ApplicationStateSubject;
+  createObservable(): Observable<IApplicationState> {
+    return this.appStorage.state$.pipe(
+      mergeMap(async (state) => {
+        const mappedCompartments: DataCompartmentState[] = [];
+        for (let i = 0; i < state.dataCaches.length; i++) {
+          const cache = state.dataCaches[i];
+          const hash = DataCacheHash.from(cache);
+          const compartments: IDataCompartment[] = [];
+          cache.observeWith({
+            observe(c) {
+              compartments.push(...c);
+            },
+          });
+
+          for (let j = 0; j < compartments.length; j++) {
+            const compartment = compartments[j];
+            let hasError = false;
+            let initialized = false;
+
+            try {
+              initialized = await firstValueFrom(compartment.initialized$());
+            } catch (e) {
+              hasError = true;
+            }
+
+            mappedCompartments.push({
+              key: compartment.key,
+              hasError,
+              hash,
+              initialized,
+              options: compartment.options,
+            });
+          }
+        }
+
+        return {
+          compartments: mappedCompartments,
+        };
+      }),
+    );
+  }
 }
