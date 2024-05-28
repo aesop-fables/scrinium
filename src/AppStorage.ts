@@ -61,7 +61,9 @@ export class AppStorage implements IAppStorage {
       map(([repositories, values]) => {
         const repositoryKeys = Object.keys(repositories);
         return {
-          dataCaches: Object.values(values).filter((x) => repositoryKeys.indexOf(x) === -1),
+          dataCaches: Object.entries(values)
+            .filter(([x]) => repositoryKeys.indexOf(x) === -1)
+            .map(([, val]) => val),
           repositories: Object.values(repositories),
         };
       }),
