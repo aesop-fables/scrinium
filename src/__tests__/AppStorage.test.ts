@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { AppStorage } from '../AppStorage';
 import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
 import { ConfiguredEntityResolver, createRepository } from '../Repository';
@@ -50,7 +51,8 @@ describe('AppStorage', () => {
     storage.store('cache', cache);
     storage.storeRepository('repo', repository);
 
-    const { state } = storage;
+    const { state$ } = storage;
+    const state = await firstValueFrom(state$);
     expect(state.dataCaches.length).toBe(1);
     expect(state.dataCaches[0]).toBe(cache);
 
