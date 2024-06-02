@@ -11,9 +11,13 @@ export interface IAppStorageState {
 }
 
 export interface IAppStorage {
-  state$: Observable<IAppStorageState>;
+  clearAll(): void;
+  clearDataCaches(): void;
+  clearRepositories(): void;
+
   repository<Policy>(key: string): IRepository<Policy>;
   retrieve<Policy>(key: string): DataCache<Policy>;
+  state$: Observable<IAppStorageState>;
   store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void;
   storeRepository<Registry>(key: string, value: IRepository<Registry>): void;
 }
@@ -68,6 +72,18 @@ export class AppStorage implements IAppStorage {
         };
       }),
     );
+  }
+
+  clearAll(): void {
+
+  }
+
+  clearDataCaches(): void {
+
+  }
+
+  clearRepositories(): void {
+    Object.values(this.repositories.value).forEach((repo) => repo.reset());
   }
 }
 
