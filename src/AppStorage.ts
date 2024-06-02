@@ -74,12 +74,21 @@ export class AppStorage implements IAppStorage {
     );
   }
 
-  clearAll(): void {
-
+  async clearAll(): Promise<void> {
+    this.clearRepositories();
+    await this.clearDataCaches();
   }
 
-  clearDataCaches(): void {
+  async clearDataCaches(): Promise<void> {
+    await Promise.all(
+      Object.values(this.values.value).map(async (cache) => {
+        if (typeof cache.resetAll === 'function') {
+          await cache.resetAll();
+        }
 
+        return Promise.resolve();
+      }),
+    );
   }
 
   clearRepositories(): void {
