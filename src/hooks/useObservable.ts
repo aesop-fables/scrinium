@@ -39,7 +39,7 @@ export function useObservable<T>(observable: Observable<T>, options?: Observable
     }
 
     return target;
-  }, [observable, resolvedOptions]);
+  }, [resolvedOptions]);
 
   useEffect(() => {
     const sub = target$.subscribe({ next: setState, error: (e) => setErr(e) });
