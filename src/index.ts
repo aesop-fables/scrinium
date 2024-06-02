@@ -22,6 +22,7 @@ export { Stack } from '@aesop-fables/containr';
 export * from './AppStorage';
 export * from './bootstrapping';
 export * from './Compartments';
+export * from './Decorators';
 export * from './hooks';
 export * from './IListener';
 export * from './ISubject';

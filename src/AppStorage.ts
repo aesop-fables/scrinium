@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IInterceptor, interceptorChainFor, registerDependency } from '@aesop-fables/containr';
 import { DataCache, IDataCache } from './DataCache';
 import { IRepository } from './Repository';
-import { ScriniumServices } from './ScriniumServices';
 import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
 
 export interface IAppStorageState {
@@ -94,27 +92,4 @@ export class AppStorage implements IAppStorage {
   clearRepositories(): void {
     Object.values(this.repositories.value).forEach((repo) => repo.reset());
   }
-}
-
-export class FromAppStorageInterceptor implements IInterceptor<any> {
-  constructor(private readonly key: string) {}
-
-  resolve(currentValue: any | undefined): any {
-    const appStorage = currentValue as IAppStorage;
-    const cache = appStorage.retrieve<any>(this.key);
-    if (typeof cache === 'undefined') {
-      console.error(`@fromAppStorage("${this.key}") returned undefined.`);
-    }
-
-    return cache;
-  }
-}
-
-export function fromAppStorage(storageKey: string) {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.AppStorage, parameterIndex);
-    const chain = interceptorChainFor(constructor, parameterIndex);
-    chain.add(new FromAppStorageInterceptor(storageKey));
-  };
 }

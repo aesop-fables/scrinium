@@ -7,7 +7,7 @@ import {
   createDataCacheModule,
   DataCache,
   DataCompartmentOptions,
-  fromAppStorage,
+  injectDataCache,
   IAppStorage,
   injectSubject,
   ISubject,
@@ -119,7 +119,7 @@ interface PreferenceCompartments {
 }
 
 class AccountLoadedPredicate implements Predicate {
-  constructor(@fromAppStorage(accountsKey) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@injectDataCache(accountsKey) private readonly cache: DataCache<AccountCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$();
@@ -130,7 +130,7 @@ const predicateKey = 'predicateSubject';
 
 @predicate(predicateKey)
 class PreferencesSubject implements ISubject<Preference[]> {
-  constructor(@fromAppStorage(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');

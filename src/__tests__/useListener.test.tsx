@@ -6,7 +6,6 @@ import {
   DataCache,
   DataCacheRegistry,
   DataCompartmentOptions,
-  IAppStorage,
   IListener,
   ISubject,
   ISubjectResolver,
@@ -14,7 +13,7 @@ import {
   SubjectResolver,
   createDataCache,
   createDataCacheModule,
-  fromAppStorage,
+  injectDataCache,
   injectSubject,
   useAppStorage,
   useListener,
@@ -134,11 +133,7 @@ class PrincipalUser {
 }
 
 class PrincipalUserSubject implements ISubject<PrincipalUser> {
-  // constructor(@fromAppStorage(userCompartmentKey) private readonly userData: UserData) {}
-  private readonly userData: UserData;
-  constructor(@inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage) {
-    this.userData = this.appStorage.retrieve<UserCompartments>(userCompartmentKey);
-  }
+  constructor(@injectDataCache(userCompartmentKey) private readonly userData: UserData) {}
 
   createObservable(): Observable<PrincipalUser> {
     return combineLatest([
@@ -153,7 +148,7 @@ class TestAppListener implements IListener, Partial<Observer<boolean>> {
 
   constructor(
     @injectSubject(TestServices.authSubject) private readonly isAuthenticated$: Observable<boolean>,
-    @fromAppStorage(userCompartmentKey) private readonly userData: UserData,
+    @injectDataCache(userCompartmentKey) private readonly userData: UserData,
   ) {}
 
   start(): Subscription {

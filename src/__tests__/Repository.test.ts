@@ -1,7 +1,13 @@
+import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
-import { ConfiguredEntityResolver, createRepository } from '../Repository';
+import { ConfiguredEntityResolver, IRepository, createRepository } from '../Repository';
 import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
+import { injectRepository } from '../Decorators';
+import { createContainer } from '@aesop-fables/containr';
+import { useScrinium } from '../bootstrapping';
+import { IAppStorage } from '../AppStorage';
+import { ScriniumServices } from '../ScriniumServices';
 
 describe('Repository', () => {
   test('resolves the value the first time', async () => {
@@ -157,4 +163,37 @@ describe('Repository', () => {
 
     expect(nrInvocations).toEqual(4);
   });
+
+  test('stores and resolves the repository', async () => {
+    const videos: Video[] = [];
+    const metadata: VideoMetadata[] = [];
+    const repository = createRepository<VideoRegistry>({
+      metadata: {
+        resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
+          return metadata.find((x) => x.id === key) as VideoMetadata;
+        }),
+      },
+      videos: {
+        resolver: new ConfiguredEntityResolver<string, Video>(async (key) => {
+          return videos.find((x) => x.id === key) as Video;
+        }),
+      },
+    });
+
+    const container = createContainer([useScrinium({ modules: [] })]);
+    const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
+    storage.storeRepository(repositoryKey, repository);
+
+    const sample = container.resolve(SampleService);
+    sample.execute();
+  });
 });
+
+const repositoryKey = 'videoRepository';
+class SampleService {
+  constructor(@injectRepository(repositoryKey) private readonly repository: IRepository<VideoRegistry>) {}
+
+  execute() {
+    this.repository.reset();
+  }
+}
