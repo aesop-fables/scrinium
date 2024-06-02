@@ -2,7 +2,7 @@ import { Scopes, createServiceModuleWithOptions } from '@aesop-fables/containr';
 import { DataCacheRegistry, ScriniumBootstrappingOptions } from './useDataCache';
 import { ISubjectResolver, SubjectResolver } from '../ISubject';
 import { ScriniumServices } from '../ScriniumServices';
-import { ApplicationState } from '../AppData';
+import { ApplicationState } from '../ApplicationState';
 
 export * from './useDataCache';
 

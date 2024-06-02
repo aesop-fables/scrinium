@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
-import { ApplicationState } from '../AppData';
+import { ApplicationState } from '../ApplicationState';
 import { AppStorage } from '../AppStorage';
 import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
