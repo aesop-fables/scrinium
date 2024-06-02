@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import 'reflect-metadata';
-import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react';
+import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 import { ObservableOptions, useSubject } from '../hooks';
 import { ServiceProvider } from '@aesop-fables/containr-react';
 import { IServiceContainer, createContainer, createServiceModule } from '@aesop-fables/containr';
@@ -8,7 +8,7 @@ import React from 'react';
 import { ISubject } from '../ISubject';
 import { BehaviorSubject } from 'rxjs';
 import { render, screen } from '@testing-library/react';
-import { ObservableProvider } from '../ObservableProvider';
+import { ObservableProvider } from '..';
 import { useScrinium } from '../bootstrapping';
 
 type AppProps = {
