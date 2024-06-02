@@ -71,15 +71,20 @@ export interface IRepository<Registry> {
    * @param id The id of the entity to retrieve.
    */
   get<Key extends string | number, Response>(key: keyof Registry, id: Key): DataCompartment<Response>;
+  /**
+   * Resets the repository by clearing all caches.
+   */
+  reset(): void;
 }
 /**
  * Represents a set of entity compartments.
  */
 export class Repository<Registry> implements IRepository<Registry> {
   private readonly compartments: Hash<ILookup<string | number, DataCompartment<unknown>>>;
-  constructor(lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> }) {
+  constructor(
+    private readonly lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> },
+  ) {
     this.compartments = {};
-
     const entries = Object.entries(lookups);
     entries.forEach(([key, value]) => {
       this.compartments[key] = value;
@@ -110,6 +115,15 @@ export class Repository<Registry> implements IRepository<Registry> {
   get<Key extends string | number, Response>(key: keyof Registry, id: Key): DataCompartment<Response> {
     const lookup = this.findLookup<Response>(key);
     return lookup.find(id as string | number);
+  }
+  /**
+   * Resets the repository by clearing all caches.
+   */
+  reset(): void {
+    const entries = Object.entries(this.lookups);
+    entries.forEach(([, value]) => {
+      value.clearAll();
+    });
   }
 
   private findLookup<Response>(key: keyof Registry): ILookup<string | number, DataCompartment<Response>> {
