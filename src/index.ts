@@ -1,7 +1,7 @@
 // data-projections
 
 // AppData
-export * from './AppData';
+export * from './ApplicationState';
 
 // AppStorage
 export { AppStorage, IAppStorage } from './AppStorage';

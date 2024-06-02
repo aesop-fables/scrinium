@@ -12,6 +12,7 @@ export interface DataCompartmentState {
   options: DataCompartmentOptions<any>;
   hash: string;
   initialized: boolean;
+  loading: boolean;
   hasError: boolean;
   error?: unknown;
 }
@@ -42,8 +43,10 @@ export class ApplicationState implements ISubject<IApplicationState> {
             let hasError = false;
             let error: unknown | undefined;
             let initialized = false;
+            let loading = false;
 
             try {
+              loading = await firstValueFrom(compartment.loading$);
               initialized = await firstValueFrom(compartment.initialized$());
             } catch (e) {
               hasError = true;
@@ -51,12 +54,13 @@ export class ApplicationState implements ISubject<IApplicationState> {
             }
 
             mappedCompartments.push({
-              key: compartment.key,
+              error,
               hasError,
               hash,
               initialized,
+              key: compartment.key,
+              loading,
               options: compartment.options,
-              error,
             });
           }
         }
