@@ -23,16 +23,18 @@ export async function waitUntil(
   options: WaitOptions = DefaultWaitOptions,
 ): Promise<boolean> {
   const now = new Date().getTime();
-  return until(predicate, now, options);
+  return await until(predicate, now, options);
 }
 
 async function until(predicate: () => Promise<boolean>, time: number, options: WaitOptions): Promise<boolean> {
-  const elapsedMilliseconds = new Date().getTime() - time;
+  let elapsedMilliseconds = new Date().getTime() - time;
   while (elapsedMilliseconds < options.timeoutInMilliseconds) {
     await wait(options.millisecondPolling);
     if (await predicate()) {
       return true;
     }
+
+    elapsedMilliseconds = new Date().getTime() - time;
   }
 
   return false;

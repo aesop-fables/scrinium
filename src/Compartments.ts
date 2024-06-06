@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { Newable } from '@aesop-fables/containr';
 import { EventEmitter } from 'events';
-import { BehaviorSubject, delay, Observable } from 'rxjs';
-// import { Predicate } from './Predicate';
+import { BehaviorSubject, delay, mergeMap, Observable, of } from 'rxjs';
+import { Predicate } from './Predicate';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -12,11 +11,11 @@ export function defaultComparer<T>(a: T, b: T): boolean {
   return a === b;
 }
 
-export declare type LoadingStrategy = 'auto' | 'manual';
+export declare type LoadingStrategy = 'auto' | 'lazy' | 'manual';
 
 export declare type LoadingOptions = {
   strategy: LoadingStrategy;
-  // predicate?: Newable<Predicate>;
+  predicate?: Predicate;
 };
 
 export interface RefreshOptions {
@@ -194,7 +193,27 @@ export class DataCompartment<Model> implements IDataCompartment {
   /**
    * Initializes the compartment.
    */
-  private async initialize(): Promise<void> {
+  private async initialize(force = false): Promise<void> {
+    if (this.options.loadingOptions?.predicate) {
+      const predicate$ = this.options.loadingOptions.predicate;
+      const initializeCompartment = () => {
+        if (!this.initialized.value || force === true) {
+          this.load();
+        }
+      };
+      predicate$.createObservable().subscribe({
+        next(value) {
+          if (value) {
+            initializeCompartment();
+          }
+        },
+      });
+    } else {
+      this.load();
+    }
+  }
+
+  private async load(): Promise<void> {
     try {
       this.loading.next(true);
       const value = await this.options.source.load();
@@ -231,7 +250,16 @@ export class DataCompartment<Model> implements IDataCompartment {
    * This will also emit when the value is modified via mutations, resetting, and reloading the compartment.
    */
   get value$(): Observable<Model> {
-    return this.value.pipe();
+    return this.value.pipe(
+      mergeMap(async (x) => {
+        if (this.options.loadingOptions?.strategy === 'lazy') {
+          await this.initialize();
+          return x;
+        }
+
+        return x;
+      }),
+    );
   }
   /**
    * Attempts to update the cached value (if the comparer detects an update).
@@ -273,7 +301,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Note: This triggers the `reload` event.
    */
   async reload(): Promise<void> {
-    await this.initialize();
+    await this.initialize(true);
 
     this.events.emit(DataCompartmentEvents.Reload);
   }
