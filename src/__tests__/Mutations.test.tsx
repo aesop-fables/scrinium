@@ -148,7 +148,9 @@ describe('Mutations', () => {
   test('Initial rendering of data', async () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [{ id: 101, balance: 10, title: 'Account 1 - Investment 1' }] },
           { id: 2, title: 'Account 2', investments: [] },
@@ -180,7 +182,9 @@ describe('Mutations', () => {
 
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [{ id: 101, balance: 10, title: 'Account 1 - Investment 1' }] },
           { id: 2, title: 'Account 2', investments: [] },
@@ -229,7 +233,9 @@ describe('Mutations', () => {
   test('Invoke the mutation - verify that the account is no longer displayed', async () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [{ id: 101, balance: 10, title: 'Account 1 - Investment 1' }] },
           { id: 2, title: 'Account 2', investments: [] },

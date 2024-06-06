@@ -47,12 +47,16 @@ describe('DataCache', () => {
       const { createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
         a: {
           source: new ConfiguredDataSource(async () => a),
-          autoLoad: true,
+          loadingOptions: {
+            strategy: 'auto',
+          },
           defaultValue: [],
         },
         b: {
           source: new ConfiguredDataSource(async () => b),
-          autoLoad: false,
+          loadingOptions: {
+            strategy: 'manual',
+          },
           defaultValue: [],
         },
       });

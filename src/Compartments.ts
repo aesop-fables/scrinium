@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// import { Newable } from '@aesop-fables/containr';
 import { EventEmitter } from 'events';
 import { BehaviorSubject, delay, Observable } from 'rxjs';
+// import { Predicate } from './Predicate';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -9,6 +11,13 @@ export declare type CompartmentComparer<T> = (a: T, b: T) => boolean;
 export function defaultComparer<T>(a: T, b: T): boolean {
   return a === b;
 }
+
+export declare type LoadingStrategy = 'auto' | 'manual';
+
+export declare type LoadingOptions = {
+  strategy: LoadingStrategy;
+  // predicate?: Newable<Predicate>;
+};
 
 export interface RefreshOptions {
   /**
@@ -55,10 +64,10 @@ export class ConfiguredDataSource<T> implements IDataCompartmentSource<T> {
  */
 export interface DataCompartmentOptions<T> {
   /**
-   * Whether to automatically resolve the source.
-   * @default true
+   * Provides fine-grained control over how/when the compartment loads.
+   * If no options are specified, the compartment will auto load.
    */
-  autoLoad?: boolean;
+  loadingOptions?: LoadingOptions;
   /**
    * The default value to seed the cache.
    */
@@ -167,13 +176,16 @@ export class DataCompartment<Model> implements IDataCompartment {
     this.key = key;
     this.events = new EventEmitter();
     this.options = {
-      autoLoad: true,
       comparer: defaultComparer,
+      loadingOptions: {
+        strategy: 'auto',
+        ...(options.loadingOptions ?? {}),
+      },
       ...options,
     };
 
     this.value = new BehaviorSubject<Model>(options.defaultValue);
-    if (!this.options.autoLoad) {
+    if (this.options.loadingOptions?.strategy !== 'auto') {
       return;
     }
 
