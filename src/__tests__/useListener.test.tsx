@@ -93,14 +93,18 @@ class UserDataFactory {
     return createDataCache<UserCompartments>({
       account: {
         defaultValue: undefined,
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource<AccountRest>(async () => {
           return this.accountApi.load();
         }),
       },
       person: {
         defaultValue: undefined,
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource<PersonRest>(async () => {
           return this.personApi.load();
         }),
@@ -117,7 +121,10 @@ const withUserData = createDataCacheModule((storage, container) => {
 });
 
 class PrincipalUser {
-  constructor(private readonly account: AccountRest, private readonly person: PersonRest) {}
+  constructor(
+    private readonly account: AccountRest,
+    private readonly person: PersonRest,
+  ) {}
 
   get username() {
     return this.account?.username;

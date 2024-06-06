@@ -173,7 +173,9 @@ export function createOperationScenario(): DataCacheScenario<AccountCompartments
     ...createDataCacheScenario<AccountCompartments>({
       plans: {
         source: new ConfiguredDataSource(async () => accounts),
-        autoLoad: true,
+        loadingOptions: {
+          strategy: 'auto',
+        },
         defaultValue: [],
       },
     }),

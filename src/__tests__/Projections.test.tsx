@@ -58,7 +58,9 @@ describe('Sample Component', () => {
   test('Initial rendering of accounts', async () => {
     const [appStorage, dataCache] = createAccountStorage({
       plans: {
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource(async () => [
           { id: 1, title: 'Account 1', investments: [] },
           { id: 2, title: 'Account 2', investments: [{ id: 1, title: 'My First Investment', balance: 150 }] },

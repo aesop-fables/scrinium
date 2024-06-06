@@ -69,7 +69,9 @@ describe('Bootstrapping', () => {
       const withAccountStorage = createDataCacheModule((appStorage) => {
         const dataCache = createDataCache<AccountCompartments>({
           plans: {
-            autoLoad: false,
+            loadingOptions: {
+              strategy: 'manual',
+            },
             source: new ConfiguredDataSource(async () => [
               { id: 1, title: 'Account 1', investments: [] },
               { id: 2, title: 'Account 2', investments: [] },
@@ -98,22 +100,9 @@ describe('Bootstrapping', () => {
       test: DataCompartmentOptions<string>;
     }
 
-    interface IAuthenticationContext {
-      isAuthenticated$: Observable<boolean>;
-    }
-
-    class AuthenticationContext implements IAuthenticationContext {
-      constructor(@inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage) {}
-
-      get isAuthenticated$(): Observable<boolean> {
-        console.log('authContext');
-        return of(true);
-      }
-    }
-
     const sampleDataKey = 'test';
 
-    const withSampleData = createDataCacheModule((appStorage, container) => {
+    const withSampleData = createDataCacheModule((appStorage) => {
       const cache = createDataCache<SampleCompartments>({
         test: {
           defaultValue: '',
@@ -121,7 +110,9 @@ describe('Bootstrapping', () => {
             console.log('Loading sample data');
             return 'Hello, World!';
           }),
-          autoLoad: true,
+          loadingOptions: {
+            strategy: 'auto',
+          },
         },
       });
 

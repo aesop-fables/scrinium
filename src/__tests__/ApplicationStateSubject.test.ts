@@ -23,12 +23,16 @@ describe('ApplicationState', () => {
   test('Reports error state', async () => {
     const { cache } = createDataCacheScenario<TestStoreCompartments>({
       a: {
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource(async () => []),
         defaultValue: [],
       },
       b: {
-        autoLoad: false,
+        loadingOptions: {
+          strategy: 'manual',
+        },
         source: new ConfiguredDataSource(async () => {
           throw new Error('Internal server error');
         }),

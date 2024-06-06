@@ -140,7 +140,9 @@ class PreferencesSubject implements ISubject<Preference[]> {
 const withAccountData = createDataCacheModule((storage) => {
   const cache = createDataCache<AccountCompartments>({
     account: {
-      autoLoad: false,
+      loadingOptions: {
+        strategy: 'manual',
+      },
       defaultValue: undefined,
       source: new ConfiguredDataSource(async () => {
         return {
@@ -158,7 +160,9 @@ const withAccountData = createDataCacheModule((storage) => {
 const withPreferencesData = createDataCacheModule((storage) => {
   const cache = createDataCache<PreferenceCompartments>({
     preferences: {
-      autoLoad: true,
+      loadingOptions: {
+        strategy: 'auto',
+      },
       defaultValue: [],
       source: new ConfiguredDataSource(async () => {
         return [{ key: 'foo', value: 'bar' }];

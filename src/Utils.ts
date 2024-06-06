@@ -58,7 +58,7 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
     const waits = Object.keys(policy).map((key) => {
       return new Promise<void>((resolve) => {
         const compartment = cache.findCompartment(key as keyof Compartments) as DataCompartment<any>;
-        if (compartment.options.autoLoad === false) {
+        if (compartment.options.loadingOptions?.strategy !== 'auto') {
           resolve();
           return;
         }

@@ -171,7 +171,9 @@ export function createRepository<Registry extends Record<string, any>>(registry:
     lookups[key] = new Lookup<string | number, DataCompartment<unknown>>((id) => {
       const entityOptions = value as RepositoryCompartmentOptions<string | number, unknown | undefined>;
       const options: DataCompartmentOptions<unknown | undefined> = {
-        autoLoad: true,
+        loadingOptions: {
+          strategy: 'auto',
+        },
         retention: entityOptions.retention,
         defaultValue: undefined,
         source: new ConfiguredDataSource(async () => entityOptions.resolver.resolve(id)),
