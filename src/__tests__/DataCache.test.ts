@@ -72,7 +72,7 @@ describe('DataCache', () => {
     test('Autoload true happy path', async () => {
       let loadCount = 0;
       // autoload is true by default
-      createDataCacheScenario<TestStoreCompartments>({
+      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
         a: {
           source: new ConfiguredDataSource(async () => {
             ++loadCount;
@@ -88,6 +88,8 @@ describe('DataCache', () => {
           defaultValue: [],
         },
       });
+
+      await waitForAllCompartments();
 
       expect(loadCount).toStrictEqual(2);
     });
@@ -140,6 +142,8 @@ describe('DataCache', () => {
           defaultValue: [],
         },
       });
+
+      await waitForAllCompartments();
 
       let hasError = false;
       let initialized = false;
@@ -235,7 +239,7 @@ describe('DataCache', () => {
         b: 0,
       };
 
-      const { cache } = createDataCacheScenario<TestStoreCompartments>({
+      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
         a: {
           source: new ConfiguredDataSource(async () => {
             loadCounts.a++;
@@ -252,6 +256,7 @@ describe('DataCache', () => {
         },
       });
 
+      await waitForAllCompartments();
       expect(loadCounts.a).toBe(1);
       expect(loadCounts.b).toBe(1);
 
@@ -273,7 +278,7 @@ describe('DataCache', () => {
         b: 0,
       };
 
-      const { cache } = createDataCacheScenario<TestStoreCompartments>({
+      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
         a: {
           source: new ConfiguredDataSource(async () => {
             loadCounts.a++;
@@ -289,6 +294,8 @@ describe('DataCache', () => {
           defaultValue: [],
         },
       });
+
+      await waitForAllCompartments();
 
       expect(loadCounts.a).toBe(1);
       expect(loadCounts.b).toBe(1);

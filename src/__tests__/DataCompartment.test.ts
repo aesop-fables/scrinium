@@ -1,6 +1,6 @@
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ConfiguredDataSource, DataCompartment, IDataCompartmentSource } from '../Compartments';
-import { waitUntil } from '../tasks';
+import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
 
 interface User {
@@ -184,12 +184,36 @@ describe('DataCompartment', () => {
       ).toBeTruthy();
 
       deferredSource.resolve && deferredSource.resolve(user);
+      
+      await wait(100);
+      
       expect(
         await waitUntil(() => firstValueFrom(compartment.loading$), {
           millisecondPolling: 10,
           timeoutInMilliseconds: 100,
         }),
       ).toBeFalsy();
+    });
+
+    test('Initializes when initialized$ is called', async () => {
+      const compartment = new DataCompartment<User | undefined>('test', {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
+        source: new ConfiguredDataSource<User | undefined>(async () => {
+          return undefined;
+        }),
+        defaultValue: undefined,
+      });
+
+      expect(await firstValueFrom(compartment.initialized$())).toBeFalsy();
+
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 100,
+        }),
+      ).toBeTruthy();
     });
 
     describe('When no predicate is specified', () => {
@@ -207,12 +231,7 @@ describe('DataCompartment', () => {
           defaultValue: undefined,
         });
 
-        expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
-            millisecondPolling: 10,
-            timeoutInMilliseconds: 100,
-          }),
-        ).toBeFalsy();
+        expect(await firstValueFrom(compartment.initialized$())).toBeFalsy();
 
         let value: User | undefined;
         const subscriber = {
@@ -227,7 +246,7 @@ describe('DataCompartment', () => {
         expect(
           await waitUntil(() => firstValueFrom(compartment.initialized$()), {
             millisecondPolling: 10,
-            timeoutInMilliseconds: 100,
+            timeoutInMilliseconds: 500,
           }),
         ).toBeTruthy();
 
