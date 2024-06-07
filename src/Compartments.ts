@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
-import { BehaviorSubject, delay, mergeMap, Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, mergeMap, Observable, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
 import { ObservableLatch } from './Utils';
 
@@ -208,7 +208,7 @@ export class DataCompartment<Model> implements IDataCompartment {
           subscription.unsubscribe();
         }
       };
- 
+
       predicate$.createObservable().subscribe({
         next(value) {
           if (value) {

@@ -184,9 +184,9 @@ describe('DataCompartment', () => {
       ).toBeTruthy();
 
       deferredSource.resolve && deferredSource.resolve(user);
-      
+
       await wait(100);
-      
+
       expect(
         await waitUntil(() => firstValueFrom(compartment.loading$), {
           millisecondPolling: 10,
