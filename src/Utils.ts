@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Subscription, filter } from 'rxjs';
+import { BehaviorSubject, Subscription, filter } from 'rxjs';
 import { DataCompartment } from './Compartments';
 import { DataCache, createDataCache } from './DataCache';
 
@@ -97,4 +97,33 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
     createProxy,
     waitForAllCompartments,
   };
+}
+
+export class ObservableLatch {
+  private readonly latched = new BehaviorSubject<boolean>(false);
+
+  get isLatched() {
+    return this.latched.value;
+  }
+
+  get isLatched$() {
+    return this.latched.pipe();
+  }
+
+  async execute(action: () => Promise<void>): Promise<void> {
+    try {
+      this.set();
+      await action();
+    } finally {
+      this.reset();
+    }
+  }
+
+  set() {
+    this.latched.next(true);
+  }
+
+  reset() {
+    this.latched.next(false);
+  }
 }

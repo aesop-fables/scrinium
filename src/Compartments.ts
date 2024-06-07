@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
-import { BehaviorSubject, delay, mergeMap, Observable, of } from 'rxjs';
+import { BehaviorSubject, delay, mergeMap, Observable, of, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
+import { ObservableLatch } from './Utils';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -153,7 +154,7 @@ export enum DataCompartmentEvents {
  */
 export class DataCompartment<Model> implements IDataCompartment {
   private readonly initialized = new BehaviorSubject<boolean>(false);
-  private readonly loading = new BehaviorSubject<boolean>(false);
+  private readonly latch = new ObservableLatch();
   private readonly value: BehaviorSubject<Model>;
   private readonly events: EventEmitter;
   /**
@@ -201,11 +202,22 @@ export class DataCompartment<Model> implements IDataCompartment {
           this.load();
         }
       };
+      let subscription: Subscription | undefined;
+      const unsubscribe = () => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      };
+ 
       predicate$.createObservable().subscribe({
         next(value) {
           if (value) {
             initializeCompartment();
           }
+
+          try {
+            unsubscribe();
+          } catch {}
         },
       });
     } else {
@@ -214,22 +226,25 @@ export class DataCompartment<Model> implements IDataCompartment {
   }
 
   private async load(): Promise<void> {
-    try {
-      this.loading.next(true);
-      const value = await this.options.source.load();
-      this.next(value);
-      this.initialized.next(true);
-    } catch (e) {
-      if (this.options.onError) {
-        this.options.onError(e as Error);
-      } else {
-        console.log(`%c scrinium: Error loading compartment '${this.key}'`, 'background: #250201; color: #E27E7B;');
-        console.error(e);
-      }
-      this.initialized.error(e);
-    } finally {
-      this.loading.next(false);
+    if (this.latch.isLatched) {
+      return;
     }
+
+    await this.latch.execute(async () => {
+      try {
+        const value = await this.options.source.load();
+        this.next(value);
+        this.initialized.next(true);
+      } catch (e) {
+        if (this.options.onError) {
+          this.options.onError(e as Error);
+        } else {
+          console.log(`%c scrinium: Error loading compartment '${this.key}'`, 'background: #250201; color: #E27E7B;');
+          console.error(e);
+        }
+        this.initialized.error(e);
+      }
+    });
   }
   /**
    * Provides an observable that emits true when initialization is complete.
@@ -243,7 +258,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get loading$(): Observable<boolean> {
-    return this.loading.pipe();
+    return this.latch.isLatched$;
   }
   /**
    * Provides an observable that emits the value resolved from the configured source.

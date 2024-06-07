@@ -255,6 +255,7 @@ describe('DataCache', () => {
       expect(loadCounts.a).toBe(1);
       expect(loadCounts.b).toBe(1);
 
+      await wait(100);
       await cache.reloadAll();
 
       expect(loadCounts.a).toBe(2);
@@ -292,6 +293,7 @@ describe('DataCache', () => {
       expect(loadCounts.a).toBe(1);
       expect(loadCounts.b).toBe(1);
 
+      await wait(100);
       await cache.reload('b');
 
       expect(loadCounts.a).toBe(1);
