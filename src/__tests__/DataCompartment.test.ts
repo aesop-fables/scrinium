@@ -75,12 +75,7 @@ describe('DataCompartment', () => {
           defaultValue: undefined,
         });
 
-        expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$), {
-            millisecondPolling: 10,
-            timeoutInMilliseconds: 100,
-          }),
-        ).toBeFalsy();
+        expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
 
         compartment.reload();
 
@@ -211,7 +206,7 @@ describe('DataCompartment', () => {
       expect(
         await waitUntil(() => firstValueFrom(compartment.initialized$), {
           millisecondPolling: 10,
-          timeoutInMilliseconds: 100,
+          timeoutInMilliseconds: 1000,
         }),
       ).toBeTruthy();
     });

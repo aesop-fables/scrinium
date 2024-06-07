@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
-import { BehaviorSubject, mergeMap, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
 import { ObservableLatch } from './Utils';
 
@@ -197,9 +197,9 @@ export class DataCompartment<Model> implements IDataCompartment {
   private async initialize(force = false): Promise<void> {
     if (this.options.loadingOptions?.predicate) {
       const predicate$ = this.options.loadingOptions.predicate;
-      const initializeCompartment = () => {
+      const initializeCompartment = async () => {
         if (!this.initialized.value || force === true) {
-          this.load();
+          await this.load();
         }
       };
       let subscription: Subscription | undefined;
@@ -221,7 +221,7 @@ export class DataCompartment<Model> implements IDataCompartment {
         },
       });
     } else {
-      this.load();
+      await this.load();
     }
   }
 
@@ -251,14 +251,13 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get initialized$(): Observable<boolean> {
-    return this.initialized.pipe(
-      mergeMap(async (x) => {
-        if (this.options.loadingOptions?.strategy === 'lazy') {
+    return combineLatest([this.initialized, this.latch.isLatched$]).pipe(
+      map(([initialized, latched]) => {
+        if (!initialized && !latched && this.options.loadingOptions?.strategy === 'lazy') {
           this.initialize();
-          return x;
         }
 
-        return x;
+        return initialized;
       }),
     );
   }

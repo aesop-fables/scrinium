@@ -112,7 +112,6 @@ export class ObservableLatch {
     try {
       this.set();
       await action();
-      await new Promise((resolve) => setTimeout(resolve, 10));
     } finally {
       this.reset();
     }

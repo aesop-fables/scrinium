@@ -133,7 +133,7 @@ describe('Bootstrapping', () => {
         return new Promise<boolean>((resolve) => {
           sampleCache.initialized$.subscribe({
             next: (value: boolean) => {
-              resolve(value);
+              if (value) resolve(value);
             },
           });
         });

@@ -72,10 +72,10 @@ describe('Sample Component', () => {
 
     const repository = createRepository<VideoRegistry>({
       videos: {
-        resolver: new ConfiguredEntityResolver(async (id) => ({ id: '1', title: 'Hello' })),
+        resolver: new ConfiguredEntityResolver(async (id) => ({ id, title: 'Hello' })),
       },
       metadata: {
-        resolver: new ConfiguredEntityResolver(async (id) => ({ id: '1', duration: 500 })),
+        resolver: new ConfiguredEntityResolver(async (id) => ({ id, duration: 500 })),
       },
     });
 

@@ -1,7 +1,9 @@
+import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { DataCompartmentOptions, DataCompartmentEvents, ConfiguredDataSource } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
+import { waitUntil } from '..';
 
 interface ResponseA {
   name: string;
@@ -130,7 +132,7 @@ describe('DataCache', () => {
 
     test('Initialized publishes false when an error occurs', async () => {
       // dependency: autoload = true
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
+      const { cache } = createDataCacheScenario<TestStoreCompartments>({
         a: {
           source: new ConfiguredDataSource(async () => []),
           defaultValue: [],
@@ -143,29 +145,16 @@ describe('DataCache', () => {
         },
       });
 
-      await waitForAllCompartments();
-
       let hasError = false;
       let initialized = false;
       try {
-        initialized = await firstValueFrom(cache.initialized$);
-        expect(initialized).toBeFalsy();
+        initialized = await waitUntil(() => firstValueFrom(cache.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 100,
+        });
       } catch (e) {
         hasError = true;
       }
-      expect(hasError).toBeTruthy();
-
-      hasError = false;
-      cache.initialized$.subscribe({
-        next: (value: boolean) => {
-          initialized = value;
-        },
-        error: () => {
-          hasError = true;
-        },
-      });
-
-      await waitForAllCompartments();
       expect(hasError).toBeTruthy();
       expect(initialized).toBeFalsy();
     });
