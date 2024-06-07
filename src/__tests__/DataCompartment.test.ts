@@ -1,5 +1,5 @@
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { ConfiguredDataSource, DataCompartment } from '../Compartments';
+import { ConfiguredDataSource, DataCompartment, IDataCompartmentSource } from '../Compartments';
 import { waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
 
@@ -140,7 +140,58 @@ describe('DataCompartment', () => {
     });
   });
 
+  class DeferredDataSource<T> implements IDataCompartmentSource<T> {
+    private readonly promise: Promise<T>;
+    resolve?: (val: T) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    reject?: (err: any) => void;
+
+    constructor() {
+      this.promise = new Promise<T>((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+      });
+    }
+
+    load(): Promise<T> {
+      return this.promise;
+    }
+  }
+
   describe('Lazy Loading', () => {
+    test('triggering the initialization signals loading$', async () => {
+      const user: User = { name: 'Test' };
+      const deferredSource = new DeferredDataSource<User>();
+      const compartment = new DataCompartment<User | undefined>('test', {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
+        source: deferredSource,
+        defaultValue: undefined,
+      });
+
+      const subscriber = {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        next() {},
+      };
+      compartment.value$.subscribe(subscriber);
+
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.loading$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 100,
+        }),
+      ).toBeTruthy();
+
+      deferredSource.resolve && deferredSource.resolve(user);
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.loading$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 100,
+        }),
+      ).toBeFalsy();
+    });
+
     describe('When no predicate is specified', () => {
       test('Initializes when value$ is called', async () => {
         const user: User = { name: 'Test' };
@@ -239,7 +290,3 @@ describe('DataCompartment', () => {
     });
   });
 });
-
-// Missing tests:
-// 1. Subscribe to value multiple times and make sure it only initializes ONCE
-// 2. Test that initialize$() triggers the load as well
