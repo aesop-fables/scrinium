@@ -17,7 +17,7 @@ describe('DataCompartment', () => {
         });
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -45,7 +45,7 @@ describe('DataCompartment', () => {
         });
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -54,7 +54,7 @@ describe('DataCompartment', () => {
         predicateSubject.next(true);
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -76,7 +76,7 @@ describe('DataCompartment', () => {
         });
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -85,7 +85,7 @@ describe('DataCompartment', () => {
         compartment.reload();
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -113,7 +113,7 @@ describe('DataCompartment', () => {
         });
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -122,7 +122,7 @@ describe('DataCompartment', () => {
         compartment.reload();
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -131,7 +131,7 @@ describe('DataCompartment', () => {
         predicateSubject.next(true);
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -206,10 +206,10 @@ describe('DataCompartment', () => {
         defaultValue: undefined,
       });
 
-      expect(await firstValueFrom(compartment.initialized$())).toBeFalsy();
+      expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
 
       expect(
-        await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
           millisecondPolling: 10,
           timeoutInMilliseconds: 100,
         }),
@@ -231,7 +231,7 @@ describe('DataCompartment', () => {
           defaultValue: undefined,
         });
 
-        expect(await firstValueFrom(compartment.initialized$())).toBeFalsy();
+        expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
 
         let value: User | undefined;
         const subscriber = {
@@ -244,7 +244,7 @@ describe('DataCompartment', () => {
         compartment.value$.subscribe(subscriber);
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 500,
           }),
@@ -275,7 +275,7 @@ describe('DataCompartment', () => {
         });
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -289,7 +289,7 @@ describe('DataCompartment', () => {
         });
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),
@@ -298,7 +298,7 @@ describe('DataCompartment', () => {
         predicateSubject.next(true);
 
         expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$()), {
+          await waitUntil(() => firstValueFrom(compartment.initialized$), {
             millisecondPolling: 10,
             timeoutInMilliseconds: 100,
           }),

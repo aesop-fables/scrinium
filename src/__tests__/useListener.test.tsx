@@ -195,7 +195,7 @@ const useUserData = () => {
 
 const useIsAppReady = () => {
   const userData = useUserData();
-  return useObservable(userData.initialized$()) ?? false;
+  return useObservable(userData.initialized$) ?? false;
 };
 
 const HomeScreen: React.FC = () => {

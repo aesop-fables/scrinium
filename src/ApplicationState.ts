@@ -47,7 +47,7 @@ export class ApplicationState implements ISubject<IApplicationState> {
 
             try {
               loading = await firstValueFrom(compartment.loading$);
-              initialized = await firstValueFrom(compartment.initialized$());
+              initialized = await firstValueFrom(compartment.initialized$);
             } catch (e) {
               hasError = true;
               error = e;

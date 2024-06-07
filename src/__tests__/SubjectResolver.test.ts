@@ -122,7 +122,7 @@ class AccountLoadedPredicate implements Predicate {
   constructor(@injectDataCache(accountsKey) private readonly cache: DataCache<AccountCompartments>) {}
 
   createObservable(): Observable<boolean> {
-    return this.cache.initialized$();
+    return this.cache.initialized$;
   }
 }
 

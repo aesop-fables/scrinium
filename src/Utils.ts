@@ -73,19 +73,16 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
 
           initializedSub.unsubscribe();
         }
-        initializedSub = compartment
-          .initialized$()
-          .pipe(filter((x) => x === true))
-          .subscribe({
-            next: () => {
-              clearSub();
-              resolve();
-            },
-            error: () => {
-              clearSub();
-              resolve();
-            },
-          });
+        initializedSub = compartment.initialized$.pipe(filter((x) => x === true)).subscribe({
+          next: () => {
+            clearSub();
+            resolve();
+          },
+          error: () => {
+            clearSub();
+            resolve();
+          },
+        });
       });
     });
 

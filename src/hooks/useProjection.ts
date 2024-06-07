@@ -21,7 +21,7 @@ export class DataCompartmentProjection<Value> {
   constructor(private readonly compartment: DataCompartment<Value>) {}
 
   get loading$(): Observable<boolean> {
-    return this.compartment.initialized$().pipe(map((x) => !x));
+    return this.compartment.initialized$.pipe(map((x) => !x));
   }
 
   get value$(): Observable<Value> {

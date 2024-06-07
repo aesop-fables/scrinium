@@ -32,13 +32,13 @@ describe('Repository', () => {
     const videoCompartment = repository.get<string, Video>('videos', '1');
     const metaCompartment = repository.get<string, VideoMetadata>('metadata', '1');
 
-    expect(await firstValueFrom(videoCompartment.initialized$())).toBeFalsy();
-    expect(await firstValueFrom(metaCompartment.initialized$())).toBeFalsy();
+    expect(await firstValueFrom(videoCompartment.initialized$)).toBeFalsy();
+    expect(await firstValueFrom(metaCompartment.initialized$)).toBeFalsy();
 
     await wait(200);
 
-    expect(await firstValueFrom(videoCompartment.initialized$())).toBeTruthy();
-    expect(await firstValueFrom(metaCompartment.initialized$())).toBeTruthy();
+    expect(await firstValueFrom(videoCompartment.initialized$)).toBeTruthy();
+    expect(await firstValueFrom(metaCompartment.initialized$)).toBeTruthy();
 
     expect(await firstValueFrom(videoCompartment.value$)).toBe(videos[0]);
     expect(await firstValueFrom(metaCompartment.value$)).toBe(metadata[0]);

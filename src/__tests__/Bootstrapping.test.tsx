@@ -131,7 +131,7 @@ describe('Bootstrapping', () => {
 
       const waitForSampleCacheToInitialize = () => {
         return new Promise<boolean>((resolve) => {
-          sampleCache.initialized$().subscribe({
+          sampleCache.initialized$.subscribe({
             next: (value: boolean) => {
               resolve(value);
             },
@@ -140,7 +140,7 @@ describe('Bootstrapping', () => {
       };
 
       await waitForSampleCacheToInitialize();
-      const initialized = await firstValueFrom(sampleCache.initialized$());
+      const initialized = await firstValueFrom(sampleCache.initialized$);
       expect(initialized).toBeTruthy();
 
       const value = await firstValueFrom(sampleCache.observe$<string>('test'));
