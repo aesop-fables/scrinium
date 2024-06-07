@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BehaviorSubject, Subscription, filter } from 'rxjs';
+import { BehaviorSubject, Subscription, delay, filter, firstValueFrom } from 'rxjs';
 import { DataCompartment } from './Compartments';
 import { DataCache, createDataCache } from './DataCache';
 
@@ -111,9 +111,11 @@ export class ObservableLatch {
   }
 
   async execute(action: () => Promise<void>): Promise<void> {
+    if (await firstValueFrom(this.isLatched$)) return;
     try {
       this.set();
       await action();
+      await new Promise((resolve) => setTimeout(resolve, 10));
     } finally {
       this.reset();
     }

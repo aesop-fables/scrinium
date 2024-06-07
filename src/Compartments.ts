@@ -251,7 +251,16 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   initialized$(): Observable<boolean> {
-    return this.initialized.pipe(delay(1));
+    return this.initialized.pipe(
+      mergeMap(async (x) => {
+        if (this.options.loadingOptions?.strategy === 'lazy') {
+          this.initialize();
+          return x;
+        }
+
+        return x;
+      }),
+    );
   }
   /**
    * Provides an observable that emits true when the compartment is loading.
