@@ -144,11 +144,15 @@ describe('DataCompartment', () => {
     describe('When no predicate is specified', () => {
       test('Initializes when value$ is called', async () => {
         const user: User = { name: 'Test' };
+        let count = 0;
         const compartment = new DataCompartment<User | undefined>('test', {
           loadingOptions: {
             strategy: 'lazy',
           },
-          source: new ConfiguredDataSource<User>(async () => user),
+          source: new ConfiguredDataSource<User>(async () => {
+            ++count;
+            return user;
+          }),
           defaultValue: undefined,
         });
 
@@ -160,11 +164,14 @@ describe('DataCompartment', () => {
         ).toBeFalsy();
 
         let value: User | undefined;
-        compartment.value$.subscribe({
-          next(val) {
+        const subscriber = {
+          next(val: User | undefined) {
             value = val;
           },
-        });
+        };
+        compartment.value$.subscribe(subscriber);
+        compartment.value$.subscribe(subscriber);
+        compartment.value$.subscribe(subscriber);
 
         expect(
           await waitUntil(() => firstValueFrom(compartment.initialized$()), {
@@ -174,6 +181,7 @@ describe('DataCompartment', () => {
         ).toBeTruthy();
 
         expect(value).toBe(user);
+        expect(count).toBe(1);
       });
     });
 
@@ -231,3 +239,7 @@ describe('DataCompartment', () => {
     });
   });
 });
+
+// Missing tests:
+// 1. Subscribe to value multiple times and make sure it only initializes ONCE
+// 2. Test that initialize$() triggers the load as well
