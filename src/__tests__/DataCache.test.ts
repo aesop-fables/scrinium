@@ -115,10 +115,10 @@ describe('DataCache', () => {
         },
       });
 
-      let initialized = await firstValueFrom(cache.initialized$());
+      let initialized = await firstValueFrom(cache.initialized$);
       expect(initialized).toBeFalsy();
 
-      cache.initialized$().subscribe({
+      cache.initialized$.subscribe({
         next: (value: boolean) => {
           initialized = value;
         },
@@ -148,7 +148,7 @@ describe('DataCache', () => {
       let hasError = false;
       let initialized = false;
       try {
-        initialized = await firstValueFrom(cache.initialized$());
+        initialized = await firstValueFrom(cache.initialized$);
         expect(initialized).toBeFalsy();
       } catch (e) {
         hasError = true;
@@ -156,7 +156,7 @@ describe('DataCache', () => {
       expect(hasError).toBeTruthy();
 
       hasError = false;
-      cache.initialized$().subscribe({
+      cache.initialized$.subscribe({
         next: (value: boolean) => {
           initialized = value;
         },

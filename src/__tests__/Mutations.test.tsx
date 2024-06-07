@@ -98,7 +98,7 @@ const SampleDashboard: React.FC = () => {
   const { accounts$ } = useProjection(AccountSummariesProjection);
   const { report$ } = useProjection(AccountsSummaryProjection);
   const [accounts, report, initialized] = useObservable(
-    combineLatest([accounts$, report$, accountsCache.initialized$()]),
+    combineLatest([accounts$, report$, accountsCache.initialized$]),
   ) ?? [[], {}, false];
 
   if (!initialized || status === MutationStatus.Executing) {
@@ -195,7 +195,7 @@ describe('Mutations', () => {
     });
 
     const isLoaded = async () => {
-      const initialized = await firstValueFrom(dataCache.initialized$());
+      const initialized = await firstValueFrom(dataCache.initialized$);
       return initialized;
     };
 
@@ -246,7 +246,7 @@ describe('Mutations', () => {
     });
 
     const isLoaded = async () => {
-      const initialized = await firstValueFrom(dataCache.initialized$());
+      const initialized = await firstValueFrom(dataCache.initialized$);
       return initialized;
     };
 

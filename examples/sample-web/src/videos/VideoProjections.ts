@@ -14,7 +14,7 @@ export class VideoLibrary {
   constructor(@fromAppStorage(VideoDataCache) private readonly cache: DataCache<VideoCompartments>) {}
 
   get loading$(): Observable<boolean> {
-    return this.cache.initialized$().pipe(map((x) => !x));
+    return this.cache.initialized$.pipe(map((x) => !x));
   }
 
   get library$(): Observable<VideoListingItem[]> {
@@ -48,7 +48,7 @@ class FindVideoById {
     const videoCompartment = this.repository.get<string, VideoRest>('videos', this.videoId);
     const metadataCompartment = this.repository.get<string, VideoMetadataRest>('metadata', this.videoId);
 
-    return combineLatest([videoCompartment.initialized$(), metadataCompartment.initialized$()]).pipe(
+    return combineLatest([videoCompartment.initialized$, metadataCompartment.initialized$]).pipe(
       map(([x, y]) => !x || !y),
     );
   }

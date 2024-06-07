@@ -25,10 +25,10 @@ export class DataCache<T> implements IDataCache {
     );
   }
 
-  initialized$(): Observable<boolean> {
+  get initialized$(): Observable<boolean> {
     return of(this.compartments).pipe(
       switchMap((compartments) => {
-        return combineLatest(compartments.map((x) => x.initialized$())).pipe(
+        return combineLatest(compartments.map((x) => x.initialized$)).pipe(
           map((values) => values.every((x) => x === true)),
         );
       }),

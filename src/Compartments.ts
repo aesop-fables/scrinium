@@ -102,7 +102,7 @@ export interface IDataCompartment {
    * Provides an observable that emits true when initialization is complete.
    * @returns An observable that emits true when initialization is complete.
    */
-  initialized$: () => Observable<boolean>;
+  initialized$: Observable<boolean>;
   /**
    * Provides an observable that emits true when the compartment is loading.
    * @returns An observable that emits true when initialization is complete.
@@ -250,7 +250,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Provides an observable that emits true when initialization is complete.
    * @returns An observable that emits true when initialization is complete.
    */
-  initialized$(): Observable<boolean> {
+  get initialized$(): Observable<boolean> {
     return this.initialized.pipe(
       mergeMap(async (x) => {
         if (this.options.loadingOptions?.strategy === 'lazy') {
