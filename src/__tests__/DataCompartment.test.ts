@@ -87,52 +87,6 @@ describe('DataCompartment', () => {
         ).toBeTruthy();
       });
     });
-
-    describe('When a predicate is specified', () => {
-      test('Waits for the predicate to publish true', async () => {
-        const user: User = { name: 'Test' };
-        const predicateSubject = new BehaviorSubject<boolean>(false);
-        const predicate: Predicate = {
-          createObservable() {
-            return predicateSubject.pipe();
-          },
-        };
-
-        const compartment = new DataCompartment<User | undefined>('test', {
-          loadingOptions: {
-            strategy: 'manual',
-            predicate,
-          },
-          source: new ConfiguredDataSource<User>(async () => user),
-          defaultValue: undefined,
-        });
-
-        expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$), {
-            millisecondPolling: 10,
-            timeoutInMilliseconds: 100,
-          }),
-        ).toBeFalsy();
-
-        compartment.reload();
-
-        expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$), {
-            millisecondPolling: 10,
-            timeoutInMilliseconds: 100,
-          }),
-        ).toBeFalsy();
-
-        predicateSubject.next(true);
-
-        expect(
-          await waitUntil(() => firstValueFrom(compartment.initialized$), {
-            millisecondPolling: 10,
-            timeoutInMilliseconds: 100,
-          }),
-        ).toBeTruthy();
-      });
-    });
   });
 
   class DeferredDataSource<T> implements IDataCompartmentSource<T> {

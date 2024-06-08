@@ -2,7 +2,7 @@
 import { EventEmitter } from 'events';
 import { BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
-import { ObservableLatch } from './Utils';
+import { Latch } from './Utils';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -154,7 +154,8 @@ export enum DataCompartmentEvents {
  */
 export class DataCompartment<Model> implements IDataCompartment {
   private readonly initialized = new BehaviorSubject<boolean>(false);
-  private readonly latch = new ObservableLatch();
+  private readonly loading = new BehaviorSubject<boolean>(false);
+  private readonly latch = new Latch();
   private readonly value: BehaviorSubject<Model>;
   private readonly events: EventEmitter;
   /**
@@ -194,11 +195,11 @@ export class DataCompartment<Model> implements IDataCompartment {
   /**
    * Initializes the compartment.
    */
-  private async initialize(force = false): Promise<void> {
+  private async initialize(): Promise<void> {
     if (this.options.loadingOptions?.predicate) {
       const predicate$ = this.options.loadingOptions.predicate;
       const initializeCompartment = async () => {
-        if (!this.initialized.value || force === true) {
+        if (!this.initialized.value) {
           await this.load();
         }
       };
@@ -225,12 +226,13 @@ export class DataCompartment<Model> implements IDataCompartment {
     }
   }
 
-  private async load(): Promise<void> {
-    if (this.latch.isLatched) {
-      return;
-    }
-
+  private async load(force = false): Promise<void> {
     await this.latch.execute(async () => {
+      if (this.initialized.value && !force) {
+        return;
+      }
+
+      this.loading.next(true);
       try {
         const value = await this.options.source.load();
         this.next(value);
@@ -243,6 +245,8 @@ export class DataCompartment<Model> implements IDataCompartment {
           console.error(e);
         }
         this.initialized.error(e);
+      } finally {
+        this.loading.next(false);
       }
     });
   }
@@ -251,9 +255,9 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get initialized$(): Observable<boolean> {
-    return combineLatest([this.initialized, this.latch.isLatched$]).pipe(
-      map(([initialized, latched]) => {
-        if (!initialized && !latched && this.options.loadingOptions?.strategy === 'lazy') {
+    return this.initialized.pipe(
+      map((initialized) => {
+        if (!initialized && !this.latch.isLatched && this.options.loadingOptions?.strategy === 'lazy') {
           this.initialize();
         }
 
@@ -266,21 +270,21 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get loading$(): Observable<boolean> {
-    return this.latch.isLatched$;
+    return this.loading.pipe();
   }
   /**
    * Provides an observable that emits the value resolved from the configured source.
    * This will also emit when the value is modified via mutations, resetting, and reloading the compartment.
    */
   get value$(): Observable<Model> {
-    return this.value.pipe(
-      mergeMap(async (x) => {
-        if (this.options.loadingOptions?.strategy === 'lazy') {
+    return combineLatest([this.initialized, this.value]).pipe(
+      mergeMap(async ([initialized, value]) => {
+        if (!initialized && this.options.loadingOptions?.strategy === 'lazy') {
           await this.initialize();
-          return x;
+          return value;
         }
 
-        return x;
+        return value;
       }),
     );
   }
@@ -324,7 +328,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Note: This triggers the `reload` event.
    */
   async reload(): Promise<void> {
-    await this.initialize(true);
+    await this.load(true);
 
     this.events.emit(DataCompartmentEvents.Reload);
   }
