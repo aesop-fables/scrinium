@@ -2,6 +2,7 @@
 import { BehaviorSubject, Subscription, filter, firstValueFrom } from 'rxjs';
 import { DataCompartment } from './Compartments';
 import { DataCache, createDataCache } from './DataCache';
+import { Semaphore } from 'async-mutex';
 
 export interface SubscriptionProxy<Compartments> {
   <T>(name: keyof Compartments): Promise<T>;
@@ -96,32 +97,16 @@ export function createDataCacheScenario<Compartments extends Record<string, any>
   };
 }
 
-export class ObservableLatch {
-  private readonly latched = new BehaviorSubject<boolean>(false);
+export class Latch {
+  private readonly semaphore = new Semaphore(1);
 
   get isLatched() {
-    return this.latched.value;
-  }
-
-  get isLatched$() {
-    return this.latched.pipe();
+    return this.semaphore.isLocked();
   }
 
   async execute(action: () => Promise<void>): Promise<void> {
-    if (await firstValueFrom(this.isLatched$)) return;
-    try {
-      this.set();
+    await this.semaphore.runExclusive(async () => {
       await action();
-    } finally {
-      this.reset();
-    }
-  }
-
-  set() {
-    this.latched.next(true);
-  }
-
-  reset() {
-    this.latched.next(false);
+    });
   }
 }
