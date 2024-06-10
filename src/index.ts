@@ -19,6 +19,8 @@ export * from './Keychain';
 // Stack
 export { Stack } from '@aesop-fables/containr';
 
+export * as Commands from './commands';
+
 export * from './AppStorage';
 export * from './bootstrapping';
 export * from './Compartments';
