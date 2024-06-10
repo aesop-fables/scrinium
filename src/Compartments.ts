@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
-import { BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, mergeMap, Observable, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
 import { Latch } from './Utils';
 
@@ -203,6 +203,7 @@ export class DataCompartment<Model> implements IDataCompartment {
           await this.load();
         }
       };
+      // eslint-disable-next-line prefer-const
       let subscription: Subscription | undefined;
       const unsubscribe = () => {
         if (subscription) {
@@ -210,7 +211,7 @@ export class DataCompartment<Model> implements IDataCompartment {
         }
       };
 
-      predicate$.createObservable().subscribe({
+      subscription = predicate$.createObservable().subscribe({
         next(value) {
           if (value) {
             initializeCompartment();
@@ -227,8 +228,10 @@ export class DataCompartment<Model> implements IDataCompartment {
   }
 
   private async load(force = false): Promise<void> {
+    // simplest possible thing
+    const isInitialized = () => this.initialized.value;
     await this.latch.execute(async () => {
-      if (this.initialized.value && !force) {
+      if (isInitialized() && !force) {
         return;
       }
 
@@ -277,16 +280,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * This will also emit when the value is modified via mutations, resetting, and reloading the compartment.
    */
   get value$(): Observable<Model> {
-    return combineLatest([this.initialized, this.value]).pipe(
-      mergeMap(async ([initialized, value]) => {
-        if (!initialized && this.options.loadingOptions?.strategy === 'lazy') {
-          await this.initialize();
-          return value;
-        }
-
-        return value;
-      }),
-    );
+    return combineLatest([this.initialized$, this.value]).pipe(map(([, value]) => value));
   }
   /**
    * Attempts to update the cached value (if the comparer detects an update).
