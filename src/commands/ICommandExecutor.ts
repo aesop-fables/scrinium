@@ -1,8 +1,8 @@
 import { IServiceContainer, Newable, injectContainer } from '@aesop-fables/containr';
 import { IDataCommand, IRelayCommand } from './Types';
-import { IMutation, Mutation } from '@aesop-fables/scrinium';
 import { MutationCommand } from './MutationCommand';
 import { findNextCommands } from './CommandDecorators';
+import { IMutation, Mutation } from '../hooks/useMutation';
 
 export interface ICommandExecutor {
   execute<Params, Output>(constructor: Newable<IDataCommand<Params, Output>>, params: Params): Promise<Output>;

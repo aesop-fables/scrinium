@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { DataCompartmentOptions, DataCompartmentEvents, ConfiguredDataSource } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
-import { waitUntil } from '..';
+import { waitUntil } from '../tasks';
 
 interface ResponseA {
   name: string;
