@@ -1,5 +1,5 @@
-import { IListener } from '@aesop-fables/scrinium';
 import { Observer, Observable, Subscription } from 'rxjs';
+import { IListener } from './IListener';
 
 /**
  * Provides base functionality for loading data caches (only once) based on an observable boolean value.

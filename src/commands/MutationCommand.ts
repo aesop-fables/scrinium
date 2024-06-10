@@ -1,6 +1,8 @@
 import { IServiceContainer, inject, injectContainer } from '@aesop-fables/containr';
-import { IAppStorage, IMutation, Mutation, ScriniumServices, asMutator } from '@aesop-fables/scrinium';
 import { IDataCommand } from './Types';
+import { IMutation, Mutation, asMutator } from '../hooks/useMutation';
+import { ScriniumServices } from '../ScriniumServices';
+import { IAppStorage } from '../AppStorage';
 
 export declare type MutationCommandParams<Params> = Params & {
   mutation: IMutation<Params> | Mutation<Params>;
