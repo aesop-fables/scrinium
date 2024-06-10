@@ -20,6 +20,7 @@ export * from './Keychain';
 export { Stack } from '@aesop-fables/containr';
 
 export * as Commands from './commands';
+export * as Queries from './queries';
 
 export * from './AppStorage';
 export * from './bootstrapping';
