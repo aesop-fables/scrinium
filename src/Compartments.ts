@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from 'events';
-import { BehaviorSubject, combineLatest, filter, map, mergeMap, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
 import { Latch } from './Utils';
 
