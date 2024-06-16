@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
-import { DataCompartment, DataCompartmentOptions, IDataCompartment, DataCompartmentEvents } from './Compartments';
+import { DataCompartment, DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
 
 export interface IDataCache {
+  compartments: IDataCompartment[];
   observeWith: (observer: IDataCacheObserver) => void;
 }
 
 export class DataCache<T> implements IDataCache {
-  constructor(private readonly compartments: IDataCompartment[]) {}
+  constructor(readonly compartments: IDataCompartment[]) {}
 
   observe$<Output>(key: keyof T): Observable<Output> {
     return of(this.compartments).pipe(
@@ -33,19 +34,6 @@ export class DataCache<T> implements IDataCache {
         );
       }),
     );
-  }
-
-  watch(key: keyof T, event: DataCompartmentEvents, listener: () => void): void {
-    const compartment = this.findCompartment(key) as DataCompartment<any>;
-    if (event === DataCompartmentEvents.Reload) {
-      compartment.onReload(listener);
-      return;
-    }
-
-    if (event === DataCompartmentEvents.Reset) {
-      compartment.onReset(listener);
-      return;
-    }
   }
 
   async reloadAll(): Promise<void> {

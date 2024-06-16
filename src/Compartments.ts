@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEmitter } from 'events';
 import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 import { Predicate } from './Predicate';
 import { Latch } from './Utils';
+import { DataCompartmentState } from './DataCompartmentState';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -73,7 +73,8 @@ export interface DataCompartmentOptions<T> {
    */
   defaultValue: T;
   /**
-   * Optional configuration for controlling how frequently the data is reloaded.
+   * Optional configuration for controlling how the data is retained.
+   * Coming in 1.0.
    */
   retention?: RefreshOptions | TimeoutOptions;
   /**
@@ -109,19 +110,14 @@ export interface IDataCompartment {
    */
   loading$: Observable<boolean>;
   /**
-   * Registers the specified listener for the reload event.
-   * @param listener The listener to be invoked
-   */
-  onReload(listener: EventListener): void;
-  /**
-   * Registers the specified listener for the reset event.
-   * @param listener The listener to be invoked
-   */
-  onReset(listener: EventListener): void;
-  /**
    * The options used to configure the compartment.
    */
   options: DataCompartmentOptions<any>;
+  /**
+   * Gets a snapshot of the current state of the compartment. If the compartment is configured as lazy loading, this will not trigger any loading.
+   * @returns DataCompartmentState
+   */
+  getCompartmentState(): DataCompartmentState;
   /**
    * Reloads the compartment.
    * Note: This triggers the `reload` event.
@@ -133,21 +129,6 @@ export interface IDataCompartment {
    */
   reset: () => Promise<void>;
 }
-
-/**
- * The event types emitted by data compartments
- */
-export enum DataCompartmentEvents {
-  /**
-   * Occurs when a compartment has successfully reloaded.
-   */
-  Reload = 'reload',
-  /**
-   * Occurs when a compartment has been reset.
-   */
-  Reset = 'reset',
-}
-
 /**
  * Represents an individual compartment of data that exposes lifecycle and observable functions to interact
  * with the cached value(s).
@@ -157,7 +138,6 @@ export class DataCompartment<Model> implements IDataCompartment {
   private readonly loading = new BehaviorSubject<boolean>(false);
   private readonly latch = new Latch();
   private readonly value: BehaviorSubject<Model>;
-  private readonly events: EventEmitter;
   /**
    * The options used to configure the compartment.
    */
@@ -175,7 +155,6 @@ export class DataCompartment<Model> implements IDataCompartment {
    */
   constructor(key: string, options: DataCompartmentOptions<Model>) {
     this.key = key;
-    this.events = new EventEmitter();
     this.options = {
       comparer: defaultComparer,
       loadingOptions: {
@@ -228,7 +207,6 @@ export class DataCompartment<Model> implements IDataCompartment {
   }
 
   private async load(force = false): Promise<void> {
-    // simplest possible thing
     const isInitialized = () => this.initialized.value;
     await this.latch.execute(async () => {
       if (isInitialized() && !force) {
@@ -303,19 +281,24 @@ export class DataCompartment<Model> implements IDataCompartment {
   getData(): unknown {
     return this.value.value;
   }
-  /**
-   * Registers the specified listener for the reload event.
-   * @param listener The listener to be invoked
-   */
-  onReload(listener: EventListener): void {
-    this.events.addListener(DataCompartmentEvents.Reload, listener);
-  }
-  /**
-   * Registers the specified listener for the reset event.
-   * @param listener The listener to be invoked
-   */
-  onReset(listener: EventListener): void {
-    this.events.addListener(DataCompartmentEvents.Reset, listener);
+
+  getCompartmentState(): DataCompartmentState {
+    let error: any;
+    let initialized = false;
+    try {
+      initialized = this.initialized.value;
+    } catch (e) {
+      error = e;
+    }
+
+    return {
+      initialized,
+      loading: this.loading.value,
+      error,
+      key: this.key,
+      options: this.options,
+      value: this.value.value,
+    };
   }
   /**
    * Reloads the compartment.
@@ -323,8 +306,6 @@ export class DataCompartment<Model> implements IDataCompartment {
    */
   async reload(): Promise<void> {
     await this.load(true);
-
-    this.events.emit(DataCompartmentEvents.Reload);
   }
   /**
    * Resets the compartment to the default value.
@@ -333,7 +314,5 @@ export class DataCompartment<Model> implements IDataCompartment {
   async reset(): Promise<void> {
     this.initialized.next(false);
     this.value.next(this.options.defaultValue);
-
-    this.events.emit(DataCompartmentEvents.Reset);
   }
 }

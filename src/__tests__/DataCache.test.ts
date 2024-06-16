@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
-import { DataCompartmentOptions, DataCompartmentEvents, ConfiguredDataSource } from '../Compartments';
+import { DataCompartmentOptions, ConfiguredDataSource } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
@@ -354,29 +354,6 @@ describe('DataCache', () => {
 
       expect(loadedA).toStrictEqual(defaultValue);
       expect(loadedB).toStrictEqual([{ email: 'loaded@loaded.com' }]);
-    });
-
-    test('triggers onReset', async () => {
-      let onResetInvoked = false;
-
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => []),
-          defaultValue: [],
-        },
-        b: {
-          source: new ConfiguredDataSource(async () => []),
-          defaultValue: [],
-        },
-      });
-
-      await waitForAllCompartments();
-      cache.watch('a', DataCompartmentEvents.Reset, () => {
-        onResetInvoked = true;
-      });
-      await cache.reset('a');
-
-      expect(onResetInvoked).toBeTruthy();
     });
   });
 });

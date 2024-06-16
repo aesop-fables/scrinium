@@ -3,9 +3,19 @@ import { DataCache, IDataCache } from './DataCache';
 import { IRepository } from './Repository';
 import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
 
+export interface IdentifiedCache {
+  storageKey: string;
+  dataCache: IDataCache;
+}
+
+export interface IdentifiedRepository<T = any> {
+  storageKey: string;
+  repository: IRepository<T>;
+}
+
 export interface IAppStorageState {
-  dataCaches: IDataCache[];
-  repositories: IRepository<any>[];
+  dataCaches: IdentifiedCache[];
+  repositories: IdentifiedRepository<any>[];
 }
 
 export interface IAppStorage {
@@ -65,8 +75,8 @@ export class AppStorage implements IAppStorage {
         return {
           dataCaches: Object.entries(values)
             .filter(([x]) => repositoryKeys.indexOf(x) === -1)
-            .map(([, val]) => val),
-          repositories: Object.values(repositories),
+            .map(([storageKey, dataCache]) => ({ storageKey, dataCache })),
+          repositories: Object.entries(repositories).map(([storageKey, repository]) => ({ storageKey, repository })),
         };
       }),
     );
