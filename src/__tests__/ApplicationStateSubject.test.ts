@@ -4,7 +4,6 @@ import { ApplicationState } from '../ApplicationState';
 import { AppStorage } from '../AppStorage';
 import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
 import { createDataCacheScenario } from '../Utils';
-import { DataCacheHash } from '../DataCacheHash';
 
 interface ResponseA {
   name: string;
@@ -50,15 +49,14 @@ describe('ApplicationState', () => {
     await cache.reloadAll();
 
     const state = await firstValueFrom(state$);
-    const hash = DataCacheHash.from(cache);
-    const a = state.compartments.find((x) => x.hash.toString() === hash && x.key === 'a');
-    const b = state.compartments.find((x) => x.hash.toString() === hash && x.key === 'b');
+    const a = state.compartments.find((x) => x.storageKey === key && x.key === 'a');
+    const b = state.compartments.find((x) => x.storageKey === key && x.key === 'b');
 
     expect(a).toBeDefined();
-    expect(a?.hasError).toBeFalsy();
+    expect(a?.error).toBeUndefined();
 
     expect(b).toBeDefined();
-    expect(b?.hasError).toBeTruthy();
+    expect(b?.error).toBeDefined();
     expect(b?.initialized).toBeFalsy();
   });
 });

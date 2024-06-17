@@ -56,10 +56,12 @@ describe('AppStorage', () => {
     const { state$ } = storage;
     const state = await firstValueFrom(state$);
     expect(state.dataCaches.length).toBe(1);
-    expect(state.dataCaches[0]).toBe(cache);
+    expect(state.dataCaches[0].storageKey).toBe('cache');
+    expect(state.dataCaches[0].dataCache).toBe(cache);
 
     expect(state.repositories.length).toBe(1);
-    expect(state.repositories[0]).toBe(repository);
+    expect(state.repositories[0].repository).toBe(repository);
+    expect(state.repositories[0].storageKey).toBe('repo');
   });
 
   test('clearAll', async () => {

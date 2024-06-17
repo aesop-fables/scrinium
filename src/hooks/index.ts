@@ -6,3 +6,4 @@ export * from './useObservable';
 export * from './useMutation';
 export * from './useSubject';
 export * from './useListener';
+export * from './useApplicationState';
