@@ -17,10 +17,10 @@
   resolved "https://registry.yarnpkg.com/@aesop-fables/containr-react/-/containr-react-0.4.1.tgz#db24f3f4266b97f6442182936e36b5a6a2d8ca88"
   integrity sha512-IvpfAJ2rViYiq4gWc069z/YFaOup2yoiLGMbgVSqcYlhSrxuAQrUat1b7FBbg4em3jlcuJJ9qdVBPCjdsTiXbQ==
 
-"@aesop-fables/containr@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.5.2.tgz#8fbefa94a11de7e79b99278f5782957cf4e7072f"
-  integrity sha512-IGnuHadOnX0S7sQBqiURLRTZw8HTS0hjH4911rX4cMB9veIj2N83775XeK5cWE3IWFDFfcn+vK8ndXMhx6f61g==
+"@aesop-fables/containr@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@aesop-fables/containr/-/containr-0.6.1.tgz#993e0d3217a41ece07025a0a0c54fc67cb0446f8"
+  integrity sha512-u19GRAvvCIk6w21+3LJ+7/SpVg1WNdrtD3p2xJRQdZvru0eot2FBBsRbOXuyzsIWRebMfGLPgex0FayRNrRu3g==
 
 "@ampproject/remapping@^2.2.0":
   version "2.3.0"
