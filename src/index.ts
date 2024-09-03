@@ -31,6 +31,7 @@ export * from './IListener';
 export * from './ISubject';
 export * from './Keychain';
 export * from './Lookup';
+export * from './ObservableCache';
 export * from './ObservableProvider';
 export * from './Predicate';
 export * from './PredicateListener';
