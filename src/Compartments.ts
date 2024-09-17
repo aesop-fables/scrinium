@@ -17,7 +17,7 @@ import {
   CompartmentReset,
   CompartmentSubscriptionDestroyed,
 } from './CompartmentEvents';
-import { ScriniumEventStreams } from './events/ScriniumEventStreams';
+import { ScriniumEventStreamPrefixes } from './events/ScriniumEventStreams';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -191,7 +191,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       ...options,
     };
 
-    this.streamId = `${ScriniumEventStreams.Compartments}${new Date().toISOString()}`;
+    this.streamId = `${ScriniumEventStreamPrefixes.Compartments}${new Date().toISOString()}`;
     if (this.options.events?.enabled) {
       this.streamId = this.options.events.streamId ?? this.streamId;
     }

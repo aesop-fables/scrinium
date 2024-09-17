@@ -66,3 +66,35 @@ export class CompartmentModified {
 
   constructor(public compartmentId: string) {}
 }
+
+export class SubjectResolvedByKey {
+  static readonly Type = 'SubjectResolvedByKey';
+
+  constructor(public key: string) {}
+}
+
+export class SubjectPredicateResolved {
+  static readonly Type = 'SubjectPredicateResolved';
+
+  constructor(
+    public key: string,
+    public predicateKey: string,
+  ) {}
+}
+
+export class QueryDispatched {
+  static readonly Type = 'QueryDispatched';
+
+  constructor(public name: string) {}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function convertClassToString(value: any) {
+  const str = value?.toString();
+  if (!str) {
+    return str;
+  }
+
+  const match = str.match(/class\s*([a-zA-Z_]*)/);
+  return match[1];
+}

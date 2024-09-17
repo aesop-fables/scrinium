@@ -9,6 +9,9 @@ import {
 import { Observable, combineLatest, filter, map } from 'rxjs';
 import { ScriniumServices } from './ScriniumServices';
 import { getPredicateMetadata } from './Predicate';
+import { EventPublisher } from './events';
+import { ScriniumEventStreamPrefixes } from './events/ScriniumEventStreams';
+import { SubjectPredicateResolved, SubjectResolvedByKey } from './CompartmentEvents';
 
 /**
  * Subjects are essentially factories for observables.
@@ -62,11 +65,22 @@ export class SubjectResolver implements ISubjectResolver {
     }
 
     if (typeof predicate$ !== 'undefined') {
+      EventPublisher.instance.publish(
+        `${ScriniumEventStreamPrefixes.Subjects}${key}`,
+        SubjectPredicateResolved.Type,
+        new SubjectPredicateResolved(key, predicateCtor as string),
+      );
       return combineLatest([predicate$, target$]).pipe(
         filter(([predicate]) => predicate),
         map(([, target]) => target),
       );
     }
+
+    EventPublisher.instance.publish(
+      `${ScriniumEventStreamPrefixes.Subjects}${key}`,
+      SubjectResolvedByKey.Type,
+      new SubjectResolvedByKey(key),
+    );
 
     return target$;
   }
