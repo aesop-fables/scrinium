@@ -1,5 +1,5 @@
 import { EventEnvelope } from './EventEnvelope';
-import { EventStore } from './EventStore';
+import { EventStore } from './EventPublisher';
 import { IEventEnvelopeDestination } from './IEventEnvelopeDestination';
 
 export class EventStoreEnvelopeDestination implements IEventEnvelopeDestination {

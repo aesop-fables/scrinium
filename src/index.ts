@@ -44,3 +44,5 @@ export * from './Transactions';
 export * from './useAppStorage';
 export * from './Utils';
 export * from './Wizards';
+
+export * as Events from './events';
