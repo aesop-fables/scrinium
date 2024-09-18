@@ -65,22 +65,20 @@ export class SubjectResolver implements ISubjectResolver {
     }
 
     if (typeof predicate$ !== 'undefined') {
-      EventPublisher.instance.publish(
-        `${ScriniumEventStreamPrefixes.Subjects}${key}`,
-        SubjectPredicateResolved.Type,
-        new SubjectPredicateResolved(key, predicateCtor as string),
-      );
       return combineLatest([predicate$, target$]).pipe(
         filter(([predicate]) => predicate),
-        map(([, target]) => target),
+        map(([, target]) => {
+          EventPublisher.instance.publish(
+            key,
+            SubjectPredicateResolved.Type,
+            new SubjectPredicateResolved(key, predicateCtor as string),
+          );
+          return target;
+        }),
       );
     }
 
-    EventPublisher.instance.publish(
-      `${ScriniumEventStreamPrefixes.Subjects}${key}`,
-      SubjectResolvedByKey.Type,
-      new SubjectResolvedByKey(key),
-    );
+    EventPublisher.instance.publish(key, SubjectResolvedByKey.Type, new SubjectResolvedByKey(key));
 
     return target$;
   }

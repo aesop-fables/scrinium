@@ -9,6 +9,7 @@ export type EventOptions = {
   storageLimit: number;
 };
 
+let _instance: EventPublisher | undefined;
 export class EventConfiguration {
   private static _options: EventOptions = {
     storageLimit: 1000,
@@ -17,6 +18,7 @@ export class EventConfiguration {
 
   static configure(options: EventOptions) {
     this._options = options;
+    _instance = EventConfiguration.createEventPublisher();
   }
 
   static createEventStore(): EventStore {
@@ -71,13 +73,11 @@ export class EventPublisher {
     await Promise.all(this.destinations.map((x) => x.append(envelope)));
   }
 
-  static _instance?: EventPublisher;
-
   static get instance(): EventPublisher {
-    if (!EventPublisher._instance) {
-      EventPublisher._instance = EventConfiguration.createEventPublisher();
+    if (!_instance) {
+      _instance = EventConfiguration.createEventPublisher();
     }
 
-    return EventPublisher._instance;
+    return _instance;
   }
 }

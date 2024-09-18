@@ -163,7 +163,6 @@ export class DataCompartment<Model> implements IDataCompartment {
   private readonly loading = new BehaviorSubject<boolean>(false);
   private readonly latch = new Latch();
   private readonly value: BehaviorSubject<Model>;
-  private readonly eventPublisher: EventPublisher;
   private readonly streamId: string;
   /**
    * The options used to configure the compartment.
@@ -196,8 +195,6 @@ export class DataCompartment<Model> implements IDataCompartment {
       this.streamId = this.options.events.streamId ?? this.streamId;
     }
 
-    this.eventPublisher = EventPublisher.instance;
-
     this.value = new BehaviorSubject<Model>(options.defaultValue);
     if (this.options.loadingOptions?.strategy !== 'auto') {
       return;
@@ -209,14 +206,13 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Initializes the compartment.
    */
   private async initialize(): Promise<void> {
-    const eventPublisher = this.eventPublisher;
     const compartmentId = this.key;
     const streamId = this.streamId;
     if (this.options.loadingOptions?.predicate) {
       const predicate$ = this.options.loadingOptions.predicate;
       const initializeCompartment = async () => {
         if (!this.initialized.value) {
-          eventPublisher.publish(
+          EventPublisher.instance.publish(
             streamId,
             CompartmentInitializationRequested.Type,
             new CompartmentInitializationRequested(compartmentId),
@@ -228,7 +224,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       let subscription: Subscription | undefined;
       const unsubscribe = () => {
         if (subscription) {
-          this.eventPublisher.publish(
+          EventPublisher.instance.publish(
             streamId,
             CompartmentSubscriptionDestroyed.Type,
             new CompartmentSubscriptionDestroyed(this.key),
@@ -240,7 +236,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       subscription = predicate$.createObservable().subscribe({
         next(value) {
           if (value) {
-            eventPublisher.publish(
+            EventPublisher.instance.publish(
               streamId,
               CompartmentPredicateResolved.Type,
               new CompartmentPredicateResolved(compartmentId),
@@ -262,7 +258,7 @@ export class DataCompartment<Model> implements IDataCompartment {
     const isInitialized = () => this.initialized.value;
     await this.latch.execute(async () => {
       if (isInitialized() && !force) {
-        this.eventPublisher.publish(
+        EventPublisher.instance.publish(
           this.streamId,
           CompartmentLoadIgnored.Type,
           new CompartmentLoadIgnored(this.key, force),
@@ -272,7 +268,7 @@ export class DataCompartment<Model> implements IDataCompartment {
 
       this.loading.next(true);
       try {
-        this.eventPublisher.publish(
+        EventPublisher.instance.publish(
           this.streamId,
           CompartmentDataSourceLoadRequested.Type,
           new CompartmentDataSourceLoadRequested(this.key),
@@ -280,7 +276,11 @@ export class DataCompartment<Model> implements IDataCompartment {
         const value = await this.options.source.load();
         this.next(value);
         this.initialized.next(true);
-        this.eventPublisher.publish(this.streamId, CompartmentInitialized.Type, new CompartmentInitialized(this.key));
+        EventPublisher.instance.publish(
+          this.streamId,
+          CompartmentInitialized.Type,
+          new CompartmentInitialized(this.key),
+        );
       } catch (e) {
         if (this.options.onError) {
           this.options.onError(e as Error);
@@ -290,7 +290,7 @@ export class DataCompartment<Model> implements IDataCompartment {
         }
         this.initialized.error(e);
 
-        this.eventPublisher.publish(
+        EventPublisher.instance.publish(
           this.streamId,
           CompartmentDataSourceLoadFailed.Type,
           new CompartmentDataSourceLoadFailed(this.key),
@@ -308,7 +308,7 @@ export class DataCompartment<Model> implements IDataCompartment {
     return this.initialized.pipe(
       map((initialized) => {
         if (!initialized && !this.latch.isLatched && this.options.loadingOptions?.strategy === 'lazy') {
-          this.eventPublisher.publish(
+          EventPublisher.instance.publish(
             this.streamId,
             CompartmentLazyLoadTriggered.Type,
             new CompartmentLazyLoadTriggered(this.key),
@@ -346,7 +346,7 @@ export class DataCompartment<Model> implements IDataCompartment {
 
     if (shouldPublish) {
       this.value.next(value);
-      this.eventPublisher.publish(this.streamId, CompartmentModified.Type, new CompartmentModified(this.key));
+      EventPublisher.instance.publish(this.streamId, CompartmentModified.Type, new CompartmentModified(this.key));
     }
   }
   setData(value: never): void {
@@ -380,7 +380,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * Note: This triggers the `reload` event.
    */
   async reload(): Promise<void> {
-    this.eventPublisher.publish(
+    EventPublisher.instance.publish(
       this.streamId,
       CompartmentReloadRequested.Type,
       new CompartmentReloadRequested(this.key),
@@ -394,6 +394,6 @@ export class DataCompartment<Model> implements IDataCompartment {
   async reset(): Promise<void> {
     this.initialized.next(false);
     this.value.next(this.options.defaultValue);
-    this.eventPublisher.publish(this.streamId, CompartmentReset.Type, new CompartmentReset(this.key));
+    EventPublisher.instance.publish(this.streamId, CompartmentReset.Type, new CompartmentReset(this.key));
   }
 }
