@@ -22,53 +22,41 @@ export interface ISubjectResolver {
   resolveSubjectByKey<T>(key: string): Observable<T>;
 }
 
+function resolveSubject<T>(
+  subject: ISubject<T>,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  predicateKey: string | undefined,
+  resolver: ISubjectResolver,
+): Observable<T> {
+  const target$ = subject.createObservable();
+  let predicate$: Observable<boolean> | undefined = undefined;
+  if (typeof predicateKey === 'string') {
+    predicate$ = resolver.resolveSubjectByKey<boolean>(predicateKey as string);
+  }
+
+  if (typeof predicate$ !== 'undefined') {
+    return combineLatest([predicate$, target$]).pipe(
+      filter(([predicate]) => predicate),
+      map(([, target]) => target),
+    );
+  }
+
+  return target$;
+}
+
 export class SubjectResolver implements ISubjectResolver {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly cache: any = {};
   constructor(@injectContainer() private readonly container: IServiceContainer) {}
 
   resolveSubject<T>(clazz: Newable<ISubject<T>>): Observable<T> {
-    const key = clazz as unknown as string;
-    let subject = this.cache[key] as ISubject<T>;
-    if (typeof subject === 'undefined') {
-      subject = this.container.resolve<ISubject<T>>(clazz);
-      this.cache[key] = subject;
-    }
-
-    const target$ = subject.createObservable();
-    const predicateCtor = getPredicateMetadata(clazz);
-    let predicate$: Observable<boolean> | undefined = undefined;
-    if (typeof predicateCtor === 'string') {
-      predicate$ = this.resolveSubjectByKey<boolean>(predicateCtor as string);
-    }
-
-    if (typeof predicate$ !== 'undefined') {
-      return combineLatest([predicate$, target$]).pipe(
-        filter(([predicate]) => predicate),
-        map(([, target]) => target),
-      );
-    }
-
-    return target$;
+    const subject = this.container.resolve<ISubject<T>>(clazz);
+    const predicateKey = getPredicateMetadata(clazz);
+    return resolveSubject(subject, predicateKey, this);
   }
 
   resolveSubjectByKey<T>(key: string): Observable<T> {
     const subject = this.container.get<ISubject<T>>(key);
-    const target$ = subject.createObservable();
-    const predicateCtor = getPredicateMetadata(subject.constructor);
-    let predicate$: Observable<boolean> | undefined = undefined;
-    if (typeof predicateCtor === 'string') {
-      predicate$ = this.resolveSubjectByKey<boolean>(predicateCtor as string);
-    }
-
-    if (typeof predicate$ !== 'undefined') {
-      return combineLatest([predicate$, target$]).pipe(
-        filter(([predicate]) => predicate),
-        map(([, target]) => target),
-      );
-    }
-
-    return target$;
+    const predicateKey = getPredicateMetadata(subject.constructor);
+    return resolveSubject(subject, predicateKey, this);
   }
 }
 
