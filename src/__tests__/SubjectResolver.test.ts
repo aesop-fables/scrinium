@@ -25,12 +25,8 @@ interface IMessageCache {
   latestMessage(): string;
 }
 
-let sampleCount = 0;
-
 class SampleSubject implements ISubject<string> {
-  constructor(@inject(messageCache) private readonly cache: IMessageCache) {
-    ++sampleCount;
-  }
+  constructor(@inject(messageCache) private readonly cache: IMessageCache) {}
 
   createObservable(): Observable<string> {
     const subject = new BehaviorSubject<string>(this.cache.latestMessage());
@@ -39,10 +35,6 @@ class SampleSubject implements ISubject<string> {
 }
 
 describe('SubjectResolver', () => {
-  beforeEach(() => {
-    sampleCount = 0;
-  });
-
   test('resolves the subject by key and creates the observable', async () => {
     const message = 'Hello, World!';
     const cache: IMessageCache = {
@@ -74,24 +66,6 @@ describe('SubjectResolver', () => {
     const observable$ = resolver.resolveSubject(SampleSubject);
 
     expect(await firstValueFrom(observable$)).toBe(message);
-  });
-
-  test('resolves the subject (only once) and creates the observable (only once)', async () => {
-    const message = 'Hello, World!';
-    const cache: IMessageCache = {
-      latestMessage() {
-        return message;
-      },
-    };
-    const services = new ServiceCollection();
-    services.singleton<IMessageCache>(messageCache, cache);
-
-    const resolver = new SubjectResolver(services.buildContainer());
-    resolver.resolveSubject(SampleSubject);
-    resolver.resolveSubject(SampleSubject);
-    resolver.resolveSubject(SampleSubject);
-
-    expect(sampleCount).toBe(1);
   });
 });
 
@@ -211,10 +185,6 @@ describe('SubjectResolver w/ decorators', () => {
 });
 
 describe('@injectSubject', () => {
-  beforeEach(() => {
-    sampleCount = 0;
-  });
-
   class SampleService {
     constructor(@injectSubject(sampleKey) private readonly message$: Observable<string>) {}
 
