@@ -194,11 +194,10 @@ export class DataCompartment<Model> implements IDataCompartment {
         next(value) {
           if (value) {
             initializeCompartment();
+            try {
+              unsubscribe();
+            } catch {}
           }
-
-          try {
-            unsubscribe();
-          } catch {}
         },
       });
     } else {
