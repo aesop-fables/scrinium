@@ -3,6 +3,7 @@ import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { DataCompartment, DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
+import { ScriniumDiagnostics } from './Diagnostics';
 
 export interface IDataCache {
   compartments: IDataCompartment[];
@@ -13,6 +14,10 @@ export class DataCache<T> implements IDataCache {
   constructor(readonly compartments: IDataCompartment[]) {}
 
   observe$<Output>(key: keyof T): Observable<Output> {
+    if (ScriniumDiagnostics.shouldObserve(String(key))) {
+      ScriniumDiagnostics.captureObserve(String(key));
+    }
+
     return of(this.compartments).pipe(
       switchMap((compartments) => {
         const compartment = compartments.find((x) => x.key === String(key));
@@ -27,6 +32,10 @@ export class DataCache<T> implements IDataCache {
   }
 
   get initialized$(): Observable<boolean> {
+    if (ScriniumDiagnostics.options.watchCacheInitialization) {
+      ScriniumDiagnostics.captureCacheInitialized();
+    }
+
     return of(this.compartments).pipe(
       switchMap((compartments) => {
         return combineLatest(compartments.map((x) => x.initialized$)).pipe(
