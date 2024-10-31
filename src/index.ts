@@ -25,6 +25,7 @@ export * from './queries';
 export * from './AppStorage';
 export * from './bootstrapping';
 export * from './Compartments';
+export * from './Diagnostics';
 export * from './Decorators';
 export * from './hooks';
 export * from './IListener';

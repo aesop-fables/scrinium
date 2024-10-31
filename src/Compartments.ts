@@ -3,6 +3,7 @@ import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'r
 import { Predicate } from './Predicate';
 import { Latch } from './Utils';
 import { DataCompartmentState } from './DataCompartmentState';
+import { ScriniumDiagnostics } from './Diagnostics';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -236,6 +237,9 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get initialized$(): Observable<boolean> {
+    if (ScriniumDiagnostics.shouldObserve(this.key)) {
+      ScriniumDiagnostics.captureCompartmentInitialized(this.key);
+    }
     return this.initialized.pipe(
       map((initialized) => {
         if (!initialized && !this.latch.isLatched && this.options.loadingOptions?.strategy === 'lazy') {
