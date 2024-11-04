@@ -16,7 +16,6 @@ export function useObservableQuery<Response, Params>(
   const [state, setState] = useState<Response>();
   const [err, setErr] = useState<unknown>();
   const executor = useService<IObservableQueryDispatcher>(ScriniumServices.QueryDispatcher);
-  const observable$ = useMemo(() => executor.dispatch(constructor, params), [params]);
 
   const ambientOptions = useObservableOptions();
   const resolvedOptions = useMemo(
@@ -28,7 +27,7 @@ export function useObservableQuery<Response, Params>(
   );
 
   const target$ = useMemo(() => {
-    let target = observable$;
+    let target = executor.dispatch(constructor, params);
     if (resolvedOptions?.timeout) {
       target = target.pipe(timeout({ each: resolvedOptions.timeout }));
     }
@@ -43,7 +42,7 @@ export function useObservableQuery<Response, Params>(
     }
 
     return target;
-  }, [resolvedOptions]);
+  }, [resolvedOptions, params]);
 
   useEffect(() => {
     const sub = target$.subscribe({ next: setState, error: (e) => setErr(e) });
