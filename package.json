@@ -29,7 +29,7 @@
     "@aesop-fables/containr": "^0.6.1",
     "@aesop-fables/containr-react": "^0.4.1",
     "@testing-library/jest-dom": "^6.1.4",
-    "@testing-library/react": "^14.1.0",
+    "@testing-library/react": "^15.0.7",
     "@types/events": "^3.0.0",
     "@types/jest": "^29.4.0",
     "@types/node": "^20.8.10",
