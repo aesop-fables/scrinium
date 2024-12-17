@@ -25,13 +25,14 @@ export interface ISubjectResolver {
 function resolveSubject<T>(
   subject: ISubject<T>,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  predicateKey: string | undefined,
+  predicateKeys: string[] | undefined,
   resolver: ISubjectResolver,
 ): Observable<T> {
   const target$ = subject.createObservable();
   let predicate$: Observable<boolean> | undefined = undefined;
-  if (typeof predicateKey === 'string') {
-    predicate$ = resolver.resolveSubjectByKey<boolean>(predicateKey as string);
+  if (typeof predicateKeys !== 'undefined' && predicateKeys.length > 0) {
+    const predicates = predicateKeys.map((key) => resolver.resolveSubjectByKey<boolean>(key));
+    predicate$ = combineLatest(predicates).pipe(map((x) => x.every((predicate) => predicate)));
   }
 
   if (typeof predicate$ !== 'undefined') {
@@ -49,14 +50,14 @@ export class SubjectResolver implements ISubjectResolver {
 
   resolveSubject<T>(clazz: Newable<ISubject<T>>): Observable<T> {
     const subject = this.container.resolve<ISubject<T>>(clazz);
-    const predicateKey = getPredicateMetadata(clazz);
-    return resolveSubject(subject, predicateKey, this);
+    const predicateKeys = getPredicateMetadata(clazz);
+    return resolveSubject(subject, predicateKeys, this);
   }
 
   resolveSubjectByKey<T>(key: string): Observable<T> {
     const subject = this.container.get<ISubject<T>>(key);
-    const predicateKey = getPredicateMetadata(subject.constructor);
-    return resolveSubject(subject, predicateKey, this);
+    const predicateKeys = getPredicateMetadata(subject.constructor);
+    return resolveSubject(subject, predicateKeys, this);
   }
 }
 

@@ -1,6 +1,12 @@
 import 'reflect-metadata';
 import { Scopes, ServiceCollection, createContainer, createServiceModule, inject } from '@aesop-fables/containr';
-import { BehaviorSubject, Observable, firstValueFrom, timeout } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  firstValueFrom,
+  // of,
+  timeout,
+} from 'rxjs';
 import {
   ConfiguredDataSource,
   createDataCache,
@@ -75,6 +81,10 @@ interface AccountDto {
   lastName: string;
 }
 
+interface UserDto {
+  userId: number;
+}
+
 interface Preference {
   key: string;
   value?: string;
@@ -84,6 +94,12 @@ const accountsKey = 'accounts';
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
+}
+
+const userKey = 'users';
+
+interface UserCompartments {
+  user: DataCompartmentOptions<UserDto | undefined>;
 }
 
 const preferencesKey = 'preferences';
@@ -102,8 +118,28 @@ class AccountLoadedPredicate implements Predicate {
 
 const predicateKey = 'predicateSubject';
 
+class UserLoadedPredicate implements Predicate {
+  constructor(@injectDataCache(userKey) private readonly cache: DataCache<UserCompartments>) {}
+
+  createObservable(): Observable<boolean> {
+    return this.cache.initialized$;
+  }
+}
+
+const userPredicateKey = 'userPredicateSubject';
+
 @predicate(predicateKey)
 class PreferencesSubject implements ISubject<Preference[]> {
+  constructor(@injectDataCache(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
+
+  createObservable() {
+    return this.cache.observe$<Preference[]>('preferences');
+  }
+}
+
+@predicate(predicateKey)
+@predicate(userPredicateKey)
+class UserPreferencesSubject implements ISubject<Preference[]> {
   constructor(@injectDataCache(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
@@ -129,6 +165,24 @@ const withAccountData = createDataCacheModule((storage) => {
   });
 
   storage.store(accountsKey, cache);
+});
+
+const withUserData = createDataCacheModule((storage) => {
+  const cache = createDataCache<UserCompartments>({
+    user: {
+      loadingOptions: {
+        strategy: 'manual',
+      },
+      defaultValue: undefined,
+      source: new ConfiguredDataSource(async () => {
+        return {
+          userId: 0,
+        };
+      }),
+    },
+  });
+
+  storage.store(userKey, cache);
 });
 
 const withPreferencesData = createDataCacheModule((storage) => {
@@ -177,6 +231,70 @@ describe('SubjectResolver w/ decorators', () => {
 
     await accountCache.reloadAll();
 
+    const preferences = await firstValueFrom(preferenceCache.observe$<Preference>('preferences'));
+    const resolvedPreferences = await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
+
+    expect(preferences).toEqual(resolvedPreferences);
+  });
+
+  test('invokes the predicate decorator by class with multiple predicates', async () => {
+    const predicateServices = createServiceModule('test', (services) => {
+      services.autoResolve(predicateKey, AccountLoadedPredicate, Scopes.Singleton);
+      services.autoResolve(userPredicateKey, UserLoadedPredicate, Scopes.Singleton);
+    });
+    const container = createContainer([
+      useScrinium({
+        modules: [withAccountData, withUserData, withPreferencesData],
+      }),
+      predicateServices,
+    ]);
+
+    const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
+    const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
+    const accountCache = storage.retrieve<AccountCompartments>(accountsKey);
+    const userCache = storage.retrieve<UserCompartments>(userKey);
+    const preferenceCache = storage.retrieve<PreferenceCompartments>(preferencesKey);
+
+    const subject$ = resolver.resolveSubject(UserPreferencesSubject);
+    let hasError = false;
+
+    // fails when neither cache is initialized
+    try {
+      await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
+    } catch {
+      hasError = true;
+    }
+
+    expect(hasError).toBeTruthy();
+
+    await accountCache.reloadAll();
+
+    // fails when userCache is not initialized
+    try {
+      hasError = false;
+      await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
+    } catch {
+      hasError = true;
+    }
+
+    expect(hasError).toBeTruthy();
+
+    await userCache.reloadAll();
+
+    // fails when accountCache is not initialized
+    try {
+      accountCache.resetAll();
+      hasError = false;
+      await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
+    } catch {
+      hasError = true;
+    }
+
+    expect(hasError).toBeTruthy();
+
+    await accountCache.reloadAll();
+
+    // resolves once both caches are initialized
     const preferences = await firstValueFrom(preferenceCache.observe$<Preference>('preferences'));
     const resolvedPreferences = await firstValueFrom(subject$.pipe(timeout({ each: 500 })));
 
