@@ -9,14 +9,14 @@ declare type PredicateIdentifier = string;
 
 const metadataKey = Symbol('@aesop-fables/scrinium/predicates/metadata');
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export const getPredicateMetadata = (constructor: Constructor) => {
-  const metadata = Reflect.getMetadata(metadataKey, constructor);
-  return metadata as PredicateIdentifier | undefined;
+  const metadata = Reflect.getMetadata(metadataKey, constructor) ?? [];
+  return metadata as PredicateIdentifier[];
 };
 
 export function predicate(lookup: PredicateIdentifier) {
   return function (target: Constructor) {
-    Reflect.defineMetadata(metadataKey, lookup, target);
+    const metadata = getPredicateMetadata(target);
+    Reflect.defineMetadata(metadataKey, [...metadata, lookup], target);
   };
 }
