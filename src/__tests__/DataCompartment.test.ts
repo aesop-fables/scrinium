@@ -1,13 +1,72 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { ConfiguredDataSource, DataCompartment, IDataCompartmentSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
+import { IDataCompartmentSource } from '../IDataCompartmentSource';
 import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
+import { ISystemClock } from '../System';
+import { DataCompartment } from '../DataCompartment';
+import { cacheForSeconds } from '../Compartments';
 
 interface User {
   name: string;
 }
 describe('DataCompartment', () => {
+  const now = Date.now();
+  let snapshot: ISystemClock;
+  beforeEach(() => {
+    snapshot = {
+      now: () => now,
+    };
+  });
+
+  describe('isExpired', () => {
+    test('returns false when the compartment has not expired', async () => {
+      const timestamp = Date.now();
+      const compartment = new DataCompartment<User | undefined>('test', {
+        source: new ConfiguredDataSource<User>(async () => ({
+          name: 'Test',
+        })),
+        defaultValue: undefined,
+        retention: { policies: [cacheForSeconds(1)] },
+        system: {
+          clock: {
+            now() {
+              return timestamp;
+            },
+          },
+        },
+      });
+
+      await compartment.reload();
+
+      expect(compartment.isExpired).toBeFalsy();
+    });
+
+    test('returns true when the compartment has expired', async () => {
+      let timestamp = Date.now();
+      const compartment = new DataCompartment<User | undefined>('test', {
+        source: new ConfiguredDataSource<User>(async () => ({
+          name: 'Test',
+        })),
+        defaultValue: undefined,
+        retention: { policies: [cacheForSeconds(1)] },
+        system: {
+          clock: {
+            now() {
+              return timestamp;
+            },
+          },
+        },
+      });
+
+      await compartment.reload();
+
+      timestamp += 3000;
+      expect(compartment.isExpired).toBeTruthy();
+    });
+  });
+
   describe('Auto Loading', () => {
     describe('When no predicate is specified', () => {
       test('Initializes', async () => {
@@ -15,6 +74,7 @@ describe('DataCompartment', () => {
         const compartment = new DataCompartment<User | undefined>('test', {
           source: new ConfiguredDataSource<User>(async () => user),
           defaultValue: undefined,
+          system: { clock: snapshot },
         });
 
         expect(
@@ -23,6 +83,8 @@ describe('DataCompartment', () => {
             timeoutInMilliseconds: 100,
           }),
         ).toBeTruthy();
+
+        expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
       });
     });
 
@@ -74,6 +136,7 @@ describe('DataCompartment', () => {
           },
           source: new ConfiguredDataSource<User>(async () => user),
           defaultValue: undefined,
+          system: { clock: snapshot },
         });
 
         expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
@@ -86,6 +149,8 @@ describe('DataCompartment', () => {
             timeoutInMilliseconds: 100,
           }),
         ).toBeTruthy();
+
+        expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
       });
     });
   });
@@ -154,6 +219,7 @@ describe('DataCompartment', () => {
           return undefined;
         }),
         defaultValue: undefined,
+        system: { clock: snapshot },
       });
 
       expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
@@ -164,6 +230,52 @@ describe('DataCompartment', () => {
           timeoutInMilliseconds: 1000,
         }),
       ).toBeTruthy();
+
+      expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
+    });
+
+    test('Reloads the data when the compartment cache token has expired', async () => {
+      let currentTimestamp = Date.now();
+      const clock: ISystemClock = {
+        now() {
+          return currentTimestamp;
+        },
+      };
+
+      let nrLoads = 0;
+      const compartment = new DataCompartment<User | undefined>('test', {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
+        source: new ConfiguredDataSource<User | undefined>(async () => {
+          ++nrLoads;
+          return undefined;
+        }),
+        defaultValue: undefined,
+        system: { clock },
+        retention: { policies: [cacheForSeconds(30)] },
+      });
+
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 1000,
+        }),
+      ).toBeTruthy();
+
+      expect(await firstValueFrom(compartment.lastLoaded$)).toBe(currentTimestamp);
+      expect(nrLoads).toBe(1);
+
+      currentTimestamp += 30000 * 2;
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 1000,
+        }),
+      ).toBeTruthy();
+
+      expect(await firstValueFrom(compartment.lastLoaded$)).toBe(currentTimestamp);
+      expect(nrLoads).toBe(2);
     });
 
     describe('When no predicate is specified', () => {
@@ -386,6 +498,24 @@ describe('DataCompartment', () => {
       await compartment.reload();
       const state = compartment.getCompartmentState();
       expect(state.value).toBe(value);
+    });
+
+    test('lastLoaded is resolved', async () => {
+      const value = { id: 'test' };
+      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+        loadingOptions: { strategy: 'manual' },
+        defaultValue: undefined,
+        source: {
+          async load() {
+            return value;
+          },
+        },
+        system: { clock: snapshot },
+      });
+
+      await compartment.reload();
+      const state = compartment.getCompartmentState();
+      expect(state.lastLoaded).toBe(now);
     });
   });
 });

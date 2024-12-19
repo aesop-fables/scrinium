@@ -5,9 +5,9 @@ import { useAppStorage } from '../useAppStorage';
 import { Newable } from '@aesop-fables/containr';
 import { useServiceContainer } from '@aesop-fables/containr-react';
 import useConstant from './useConstant';
-import { DataCompartment } from '../Compartments';
 import { map, Observable } from 'rxjs';
 import { IProjectionFactory, ProjectionConstructor, ProjectionContext, createProjection } from '../Projections';
+import { DataCompartment } from '../DataCompartment';
 
 export function useProjection<Projection>(
   constructor: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,

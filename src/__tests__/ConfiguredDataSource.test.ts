@@ -1,4 +1,4 @@
-import { ConfiguredDataSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 
 describe('ConfiguredDataSource', () => {
   test('constructs data source without invoking provider', async () => {

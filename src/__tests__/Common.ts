@@ -15,7 +15,7 @@ import {
   fromProjection,
   injectProjectionContext,
 } from '..';
-import { ConfiguredDataSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 
 export function createAccountDataCache(): DataCache<AccountCompartments> {
   return createDataCache<AccountCompartments>({

@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { AppStorage } from '../AppStorage';
-import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
+import { DataCompartmentOptions } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { ConfiguredEntityResolver, createRepository } from '../Repository';
 import { createDataCacheScenario } from '../Utils';
 import { Video, VideoMetadata, VideoRegistry } from './Common';

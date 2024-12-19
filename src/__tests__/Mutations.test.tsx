@@ -18,7 +18,7 @@ import { InteractionContext } from './InteractionContext';
 import { combineLatest, firstValueFrom, map, Observable } from 'rxjs';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
-import { ConfiguredDataSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 
 interface AccountSummaryDto {
   id: number;

@@ -19,7 +19,7 @@ import {
 } from './Common';
 import { InteractionContext } from './InteractionContext';
 import { combineLatest } from 'rxjs';
-import { ConfiguredDataSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 
 function useVideoRepositoryProjection(id: string) {
   return useRepositoryProjection<VideoRegistry, Video>('videos', 'videos', id);

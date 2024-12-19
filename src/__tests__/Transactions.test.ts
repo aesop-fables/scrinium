@@ -2,7 +2,7 @@ import { MockProxy, mock } from 'jest-mock-extended';
 import { ITransactionOperation, executeTransaction, operationOn } from '../Transactions';
 import { AccountCompartments, AccountInfoRest } from './Common';
 import { DataCacheScenario, createDataCacheScenario } from '../Utils';
-import { ConfiguredDataSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 
 describe('runInTransaction', () => {
   describe('when all operations succeed', () => {

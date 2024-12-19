@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
-import { DataCompartment, DataCompartmentOptions, IDataCompartment } from './Compartments';
+import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
 import { ScriniumDiagnostics } from './Diagnostics';
+import { DataCompartment } from './DataCompartment';
 
 export interface IDataCache {
   compartments: IDataCompartment[];

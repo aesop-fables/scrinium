@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
-import { DataCompartmentOptions, ConfiguredDataSource } from '../Compartments';
+import { DataCompartmentOptions } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
