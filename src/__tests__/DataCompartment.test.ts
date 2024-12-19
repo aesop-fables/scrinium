@@ -3,11 +3,20 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ConfiguredDataSource, DataCompartment, IDataCompartmentSource } from '../Compartments';
 import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
+import { ISystemClock } from '../System';
 
 interface User {
   name: string;
 }
 describe('DataCompartment', () => {
+  const now = Date.now();
+  let snapshot: ISystemClock;
+  beforeEach(() => {
+    snapshot = {
+      now: () => now,
+    };
+  });
+
   describe('Auto Loading', () => {
     describe('When no predicate is specified', () => {
       test('Initializes', async () => {
@@ -15,6 +24,7 @@ describe('DataCompartment', () => {
         const compartment = new DataCompartment<User | undefined>('test', {
           source: new ConfiguredDataSource<User>(async () => user),
           defaultValue: undefined,
+          system: { clock: snapshot },
         });
 
         expect(
@@ -23,6 +33,8 @@ describe('DataCompartment', () => {
             timeoutInMilliseconds: 100,
           }),
         ).toBeTruthy();
+
+        expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
       });
     });
 
@@ -74,6 +86,7 @@ describe('DataCompartment', () => {
           },
           source: new ConfiguredDataSource<User>(async () => user),
           defaultValue: undefined,
+          system: { clock: snapshot },
         });
 
         expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
@@ -86,6 +99,8 @@ describe('DataCompartment', () => {
             timeoutInMilliseconds: 100,
           }),
         ).toBeTruthy();
+
+        expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
       });
     });
   });
@@ -154,6 +169,7 @@ describe('DataCompartment', () => {
           return undefined;
         }),
         defaultValue: undefined,
+        system: { clock: snapshot },
       });
 
       expect(await firstValueFrom(compartment.initialized$)).toBeFalsy();
@@ -164,6 +180,8 @@ describe('DataCompartment', () => {
           timeoutInMilliseconds: 1000,
         }),
       ).toBeTruthy();
+
+      expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
     });
 
     describe('When no predicate is specified', () => {
