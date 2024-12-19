@@ -405,5 +405,23 @@ describe('DataCompartment', () => {
       const state = compartment.getCompartmentState();
       expect(state.value).toBe(value);
     });
+
+    test('lastLoaded is resolved', async () => {
+      const value = { id: 'test' };
+      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+        loadingOptions: { strategy: 'manual' },
+        defaultValue: undefined,
+        source: {
+          async load() {
+            return value;
+          },
+        },
+        system: { clock: snapshot },
+      });
+
+      await compartment.reload();
+      const state = compartment.getCompartmentState();
+      expect(state.lastLoaded).toBe(now);
+    });
   });
 });

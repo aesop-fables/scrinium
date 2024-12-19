@@ -312,6 +312,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       initialized,
       loading: this.loading.value,
       error,
+      lastLoaded: this.lastLoaded.value,
       key: this.key,
       options: this.options,
       value: this.value.value,
