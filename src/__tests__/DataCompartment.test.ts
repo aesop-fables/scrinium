@@ -226,7 +226,7 @@ describe('DataCompartment', () => {
 
       expect(await firstValueFrom(compartment.lastLoaded$)).toBe(currentTimestamp);
       expect(nrLoads).toBe(2);
-    }, 60000);
+    });
 
     describe('When no predicate is specified', () => {
       test('Initializes when value$ is called', async () => {

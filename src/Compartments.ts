@@ -306,12 +306,6 @@ export class DataCompartment<Model> implements IDataCompartment {
     return elapsed >= retention.timeout;
   }
 
-  invalidateIfExpired(): void {
-    if (this.isExpired) {
-      this.reset();
-    }
-  }
-
   setData(value: never): void {
     this.next(value as Model);
   }
