@@ -20,13 +20,6 @@ export declare type LoadingOptions = {
   predicate?: Predicate;
 };
 
-export interface RefreshOptions {
-  /**
-   * Delay in milliseconds between each reload of the data source.
-   */
-  reloadInterval: number;
-}
-
 export interface TimeoutOptions {
   /**
    * Period in milliseconds until the data is considered stale and must be reloaded.
@@ -75,9 +68,8 @@ export interface DataCompartmentOptions<T> {
   defaultValue: T;
   /**
    * Optional configuration for controlling how the data is retained.
-   * Coming in 1.0.
    */
-  retention?: RefreshOptions | TimeoutOptions;
+  retention?: TimeoutOptions;
   /**
    * The data source used to fill a compartment.
    */
@@ -259,7 +251,7 @@ export class DataCompartment<Model> implements IDataCompartment {
   }
   /**
    * Provides an observable that emits the value resolved from the configured source.
-   * This will also emit when the value is modified via mutations, resetting, and reloading the compartment.
+   * This will also emit when the value is modified via mutations, resetting the compartment, and reloading the compartment.
    */
   get value$(): Observable<Model> {
     return combineLatest([this.initialized$, this.value]).pipe(map(([, value]) => value));
