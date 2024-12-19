@@ -11,10 +11,7 @@ import {
   injectContainer,
 } from '@aesop-fables/containr';
 import { ScriniumServices } from '../ScriniumServices';
-
-export interface IAppStorageModule {
-  configureAppStorage(appStorage: IAppStorage, container: IServiceContainer): void;
-}
+import { IAppStorageModule } from './IAppStorageModule';
 
 export function createDataCacheModule(
   middleware: (appStorage: IAppStorage, container: IServiceContainer) => void,
