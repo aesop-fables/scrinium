@@ -185,8 +185,8 @@ export class DataCompartment<Model> implements IDataCompartment {
     if (this.options.loadingOptions?.predicate) {
       const predicate$ = this.options.loadingOptions.predicate;
       const initializeCompartment = async () => {
-        if (!this.initialized.value) {
-          await this.load();
+        if (!this.initialized.value || this.isExpired) {
+          await this.load(this.isExpired);
         }
       };
       // eslint-disable-next-line prefer-const
@@ -209,7 +209,7 @@ export class DataCompartment<Model> implements IDataCompartment {
         },
       });
     } else {
-      await this.load();
+      await this.load(this.isExpired);
     }
   }
 
@@ -247,9 +247,11 @@ export class DataCompartment<Model> implements IDataCompartment {
     if (ScriniumDiagnostics.shouldObserve(this.key)) {
       ScriniumDiagnostics.captureCompartmentInitialized(this.key);
     }
-    return this.initialized.pipe(
-      map((initialized) => {
-        if (!initialized && !this.latch.isLatched && this.options.loadingOptions?.strategy === 'lazy') {
+
+    return combineLatest([this.initialized, this.lastLoaded]).pipe(
+      map(([initialized]) => {
+        const shouldInitialize = !initialized || this.isExpired;
+        if (shouldInitialize && !this.latch.isLatched && this.options.loadingOptions?.strategy === 'lazy') {
           this.initialize();
         }
 
@@ -291,6 +293,25 @@ export class DataCompartment<Model> implements IDataCompartment {
       this.value.next(value);
     }
   }
+
+  get isExpired(): boolean {
+    const retention = this.options.retention;
+    if (!retention) {
+      return false;
+    }
+
+    const now = this.systemClock.now();
+    const lastLoaded = this.lastLoaded.value;
+    const elapsed = now - lastLoaded;
+    return elapsed >= retention.timeout;
+  }
+
+  invalidateIfExpired(): void {
+    if (this.isExpired) {
+      this.reset();
+    }
+  }
+
   setData(value: never): void {
     this.next(value as Model);
   }
@@ -332,5 +353,6 @@ export class DataCompartment<Model> implements IDataCompartment {
   async reset(): Promise<void> {
     this.initialized.next(false);
     this.value.next(this.options.defaultValue);
+    this.lastLoaded.next(0);
   }
 }

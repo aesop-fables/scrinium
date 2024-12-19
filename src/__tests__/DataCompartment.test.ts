@@ -184,6 +184,50 @@ describe('DataCompartment', () => {
       expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
     });
 
+    test('Reloads the data when the compartment cache token has expired', async () => {
+      let currentTimestamp = Date.now();
+      const clock: ISystemClock = {
+        now() {
+          return currentTimestamp;
+        },
+      };
+
+      let nrLoads = 0;
+      const compartment = new DataCompartment<User | undefined>('test', {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
+        source: new ConfiguredDataSource<User | undefined>(async () => {
+          ++nrLoads;
+          return undefined;
+        }),
+        defaultValue: undefined,
+        system: { clock },
+        retention: { timeout: 30000 },
+      });
+
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 1000,
+        }),
+      ).toBeTruthy();
+
+      expect(await firstValueFrom(compartment.lastLoaded$)).toBe(currentTimestamp);
+      expect(nrLoads).toBe(1);
+
+      currentTimestamp += 30000 * 2;
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 1000,
+        }),
+      ).toBeTruthy();
+
+      expect(await firstValueFrom(compartment.lastLoaded$)).toBe(currentTimestamp);
+      expect(nrLoads).toBe(2);
+    }, 60000);
+
     describe('When no predicate is specified', () => {
       test('Initializes when value$ is called', async () => {
         const user: User = { name: 'Test' };
