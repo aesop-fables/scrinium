@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Observable, firstValueFrom, of } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { IAppStorage } from '../AppStorage';
 import { createDataCacheModule, useDataCache } from '../bootstrapping/useDataCache';
 import { createDataCache } from '../DataCache';
@@ -8,7 +8,6 @@ import {
   createContainer,
   createServiceModule,
   IActivator,
-  inject,
   IServiceModule,
   ServiceCollection,
 } from '@aesop-fables/containr';
