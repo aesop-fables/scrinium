@@ -17,6 +17,53 @@ describe('DataCompartment', () => {
     };
   });
 
+  describe('isExpired', () => {
+    test('returns false when the compartment has not expired', async () => {
+      const timestamp = Date.now();
+      const compartment = new DataCompartment<User | undefined>('test', {
+        source: new ConfiguredDataSource<User>(async () => ({
+          name: 'Test',
+        })),
+        defaultValue: undefined,
+        retention: { timeout: 1000 },
+        system: {
+          clock: {
+            now() {
+              return timestamp;
+            },
+          },
+        },
+      });
+
+      await compartment.reload();
+
+      expect(compartment.isExpired).toBeFalsy();
+    });
+
+    test('returns true when the compartment has expired', async () => {
+      let timestamp = Date.now();
+      const compartment = new DataCompartment<User | undefined>('test', {
+        source: new ConfiguredDataSource<User>(async () => ({
+          name: 'Test',
+        })),
+        defaultValue: undefined,
+        retention: { timeout: 1000 },
+        system: {
+          clock: {
+            now() {
+              return timestamp;
+            },
+          },
+        },
+      });
+
+      await compartment.reload();
+
+      timestamp += 3000;
+      expect(compartment.isExpired).toBeTruthy();
+    });
+  });
+
   describe('Auto Loading', () => {
     describe('When no predicate is specified', () => {
       test('Initializes', async () => {
