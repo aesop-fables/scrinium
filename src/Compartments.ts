@@ -4,6 +4,7 @@ import { Predicate } from './Predicate';
 import { Latch } from './Utils';
 import { DataCompartmentState } from './DataCompartmentState';
 import { ScriniumDiagnostics } from './Diagnostics';
+import { ISystemClock, systemClock, SystemOverrides } from './System';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -19,13 +20,6 @@ export declare type LoadingOptions = {
   strategy: LoadingStrategy;
   predicate?: Predicate;
 };
-
-export interface RefreshOptions {
-  /**
-   * Delay in milliseconds between each reload of the data source.
-   */
-  reloadInterval: number;
-}
 
 export interface TimeoutOptions {
   /**
@@ -75,9 +69,8 @@ export interface DataCompartmentOptions<T> {
   defaultValue: T;
   /**
    * Optional configuration for controlling how the data is retained.
-   * Coming in 1.0.
    */
-  retention?: RefreshOptions | TimeoutOptions;
+  retention?: TimeoutOptions;
   /**
    * The data source used to fill a compartment.
    */
@@ -93,6 +86,11 @@ export interface DataCompartmentOptions<T> {
    * @param error The error thrown by the source.
    */
   onError?: (error: Error) => void;
+
+  /**
+   * Optional system overrides (mostly used for testing but could prove useful otherwise)
+   */
+  system?: SystemOverrides;
 }
 
 export interface IDataCompartment {
@@ -120,6 +118,10 @@ export interface IDataCompartment {
    */
   getCompartmentState(): DataCompartmentState;
   /**
+   * Provides an observable that emits a timestamp when the compartment was last loaded.
+   */
+  lastLoaded$: Observable<number>;
+  /**
    * Reloads the compartment.
    * Note: This triggers the `reload` event.
    */
@@ -137,8 +139,10 @@ export interface IDataCompartment {
 export class DataCompartment<Model> implements IDataCompartment {
   private readonly initialized = new BehaviorSubject<boolean>(false);
   private readonly loading = new BehaviorSubject<boolean>(false);
+  private readonly lastLoaded = new BehaviorSubject<number>(0);
   private readonly latch = new Latch();
   private readonly value: BehaviorSubject<Model>;
+  private readonly systemClock: ISystemClock;
   /**
    * The options used to configure the compartment.
    */
@@ -164,6 +168,8 @@ export class DataCompartment<Model> implements IDataCompartment {
       },
       ...options,
     };
+
+    this.systemClock = this.options.system?.clock ?? systemClock;
 
     this.value = new BehaviorSubject<Model>(options.defaultValue);
     if (this.options.loadingOptions?.strategy !== 'auto') {
@@ -219,6 +225,7 @@ export class DataCompartment<Model> implements IDataCompartment {
         const value = await this.options.source.load();
         this.next(value);
         this.initialized.next(true);
+        this.lastLoaded.next(this.systemClock.now());
       } catch (e) {
         if (this.options.onError) {
           this.options.onError(e as Error);
@@ -258,8 +265,14 @@ export class DataCompartment<Model> implements IDataCompartment {
     return this.loading.pipe();
   }
   /**
+   * Provides an observable that emits a timestamp when the compartment was last loaded.
+   */
+  get lastLoaded$(): Observable<number> {
+    return this.lastLoaded.pipe();
+  }
+  /**
    * Provides an observable that emits the value resolved from the configured source.
-   * This will also emit when the value is modified via mutations, resetting, and reloading the compartment.
+   * This will also emit when the value is modified via mutations, resetting the compartment, and reloading the compartment.
    */
   get value$(): Observable<Model> {
     return combineLatest([this.initialized$, this.value]).pipe(map(([, value]) => value));
@@ -299,6 +312,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       initialized,
       loading: this.loading.value,
       error,
+      lastLoaded: this.lastLoaded.value,
       key: this.key,
       options: this.options,
       value: this.value.value,
