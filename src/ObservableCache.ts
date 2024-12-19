@@ -1,4 +1,6 @@
-import { CompartmentComparer, ConfiguredDataSource, DataCompartment } from './Compartments';
+import { CompartmentComparer } from './Compartments';
+import { ConfiguredDataSource } from './ConfiguredDataSource';
+import { DataCompartment } from './DataCompartment';
 import { Predicate } from './Predicate';
 
 export type ObservableCacheOptions<Key, Value> = {

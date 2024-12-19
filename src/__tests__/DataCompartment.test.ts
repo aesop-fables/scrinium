@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { ConfiguredDataSource, DataCompartment, IDataCompartmentSource } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
+import { IDataCompartmentSource } from '../IDataCompartmentSource';
 import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
 import { ISystemClock } from '../System';
+import { DataCompartment } from '../DataCompartment';
+import { cacheForSeconds } from '../Compartments';
 
 interface User {
   name: string;
@@ -25,7 +28,7 @@ describe('DataCompartment', () => {
           name: 'Test',
         })),
         defaultValue: undefined,
-        retention: { timeout: 1000 },
+        retention: { policies: [cacheForSeconds(1)] },
         system: {
           clock: {
             now() {
@@ -47,7 +50,7 @@ describe('DataCompartment', () => {
           name: 'Test',
         })),
         defaultValue: undefined,
-        retention: { timeout: 1000 },
+        retention: { policies: [cacheForSeconds(1)] },
         system: {
           clock: {
             now() {
@@ -250,7 +253,7 @@ describe('DataCompartment', () => {
         }),
         defaultValue: undefined,
         system: { clock },
-        retention: { timeout: 30000 },
+        retention: { policies: [cacheForSeconds(30)] },
       });
 
       expect(

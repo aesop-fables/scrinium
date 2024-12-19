@@ -2,7 +2,8 @@ import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from '../ApplicationState';
 import { AppStorage } from '../AppStorage';
-import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
+import { DataCompartmentOptions } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCacheScenario } from '../Utils';
 
 interface ResponseA {

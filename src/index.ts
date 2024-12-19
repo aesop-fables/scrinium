@@ -10,6 +10,9 @@ export { AppStorage, IAppStorage } from './AppStorage';
 export * from './DataCache';
 export * from './DataCompartmentState';
 export * from './IDataCacheObserver';
+export * from './DataCompartment';
+export * from './IDataCompartmentSource';
+export * from './ConfiguredDataSource';
 export * from './Compartments';
 
 // LazyCache

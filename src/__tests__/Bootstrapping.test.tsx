@@ -12,7 +12,8 @@ import {
   ServiceCollection,
 } from '@aesop-fables/containr';
 import { AccountCompartments } from './Common';
-import { ConfiguredDataSource, DataCompartmentOptions } from '../Compartments';
+import { DataCompartmentOptions } from '../Compartments';
+import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { ScriniumServices } from '../ScriniumServices';
 import { useScrinium } from '../bootstrapping';
 

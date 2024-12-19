@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Subscription, filter } from 'rxjs';
-import { DataCompartment } from './Compartments';
 import { DataCache, createDataCache } from './DataCache';
 import { Semaphore } from 'async-mutex';
+import { DataCompartment } from './DataCompartment';
 
 export interface SubscriptionProxy<Compartments> {
   <T>(name: keyof Compartments): Promise<T>;

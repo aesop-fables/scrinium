@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfiguredDataSource, DataCompartment, DataCompartmentOptions, TimeoutOptions } from './Compartments';
+import { DataCompartmentOptions, RetentionOptions } from './Compartments';
+import { ConfiguredDataSource } from './ConfiguredDataSource';
+import { DataCompartment } from './DataCompartment';
 import { Hash, ILookup, Lookup } from './Lookup';
 /**
  * Represents a data source used to resolve an entity by key.
@@ -32,7 +34,7 @@ interface IRepositoryCompartmentOptions {
    * Optional configuration for controlling how frequently the entity is reloaded.
    * If no configuration is provided, the entity will be retained in-memory until it is manually updated.
    */
-  retention?: TimeoutOptions;
+  retention?: RetentionOptions;
 }
 
 /**
