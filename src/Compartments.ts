@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Observable } from 'rxjs';
 import { Predicate } from './Predicate';
-import { DataCompartmentState } from './DataCompartmentState';
 import { ISystemClock, SystemOverrides } from './System';
 import { IDataCompartmentSource } from './IDataCompartmentSource';
+import { IApplicationCacheManager } from './Caching';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -24,19 +24,59 @@ export interface RetentionOptions {
   policies: IRetentionPolicy[];
 }
 
+export class RetentionContext {
+  constructor(
+    readonly appCache: IApplicationCacheManager,
+    readonly clock: ISystemClock,
+  ) {}
+
+  isExpired(compartment: IDataCompartment) {
+    const token = this.appCache.find(compartment.key);
+    if (!token || !token.expirationTimestamp) {
+      return true;
+    }
+
+    return token.isExpired(this.clock);
+  }
+}
+
 export interface IRetentionPolicy {
-  isExpired(clock: ISystemClock, compartment: IDataCompartment): boolean;
+  isExpired(compartment: IDataCompartment, context: RetentionContext): boolean;
+  markForExpiration(compartment: IDataCompartment, context: RetentionContext): void;
+}
+
+export class ApplicationCacheManagerRetentionPolicy implements IRetentionPolicy {
+  isExpired(compartment: IDataCompartment, context: RetentionContext): boolean {
+    return context.isExpired(compartment);
+  }
+  markForExpiration(): void {
+    //no-op
+  }
 }
 
 export function cacheForSeconds(seconds: number): IRetentionPolicy {
   return {
-    isExpired: (clock: ISystemClock, compartment: IDataCompartment) => {
-      return clock.now() - compartment.getCompartmentState().lastLoaded > seconds * 1000;
+    isExpired: (compartment: IDataCompartment, context: RetentionContext) => {
+      return context.isExpired(compartment);
+    },
+    markForExpiration: (compartment: IDataCompartment, context: RetentionContext) => {
+      const { appCache, clock } = context;
+      appCache.register(compartment.key, clock.now() + seconds * 1000);
     },
   };
 }
 
 type ActionWithArgs<T> = (value: T) => void;
+
+export interface DataCompartmentState {
+  key: string;
+  options: DataCompartmentOptions<any>;
+  lastLoaded: number;
+  value?: any;
+  initialized: boolean;
+  loading: boolean;
+  error?: unknown;
+}
 
 /**
  * Provides strongly-typed configuration options for an individual data compartment.

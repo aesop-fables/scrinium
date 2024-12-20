@@ -1,6 +1,8 @@
+import { Observable } from 'rxjs';
 import { ISubject } from './ISubject';
 
 export declare type Predicate = ISubject<boolean>;
+export declare type ObservedPredicate = Observable<boolean>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 declare type Constructor = Function;

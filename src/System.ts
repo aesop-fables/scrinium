@@ -1,3 +1,5 @@
+import { IApplicationCacheManager } from './Caching';
+
 export type ISystemClock = {
   now(): number;
 };
@@ -9,5 +11,6 @@ export const systemClock: ISystemClock = {
 };
 
 export type SystemOverrides = {
+  cache?: IApplicationCacheManager;
   clock?: ISystemClock;
 };

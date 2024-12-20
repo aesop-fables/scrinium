@@ -4,7 +4,7 @@ import { ISubject } from './ISubject';
 import { IAppStorage } from './AppStorage';
 import { ScriniumServices } from './ScriniumServices';
 import { inject } from '@aesop-fables/containr';
-import { DataCompartmentState } from './DataCompartmentState';
+import { DataCompartmentState } from './Compartments';
 
 export interface ApplicationCompartmentState extends DataCompartmentState {
   storageKey: string;
