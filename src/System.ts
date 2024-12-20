@@ -4,7 +4,7 @@ export type ISystemClock = {
 
 export const systemClock: ISystemClock = {
   now() {
-    return Date.now();
+    return new Date().getTime();
   },
 };
 
