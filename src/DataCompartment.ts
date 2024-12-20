@@ -99,6 +99,10 @@ export class DataCompartment<Model> implements IDataCompartment {
         this.next(value);
         this.initialized.next(true);
         this.lastLoaded.next(this.systemClock.now());
+
+        if (this.options.onLoad) {
+          this.options.onLoad(value);
+        }
       } catch (e) {
         if (this.options.onError) {
           this.options.onError(e as Error);

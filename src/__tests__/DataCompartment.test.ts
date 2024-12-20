@@ -234,6 +234,60 @@ describe('DataCompartment', () => {
       expect(await firstValueFrom(compartment.lastLoaded$)).toBe(now);
     });
 
+    test('Invokes the onLoad callback', async () => {
+      let invoked = false;
+      const compartment = new DataCompartment<User | undefined>('test', {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
+        source: new ConfiguredDataSource<User | undefined>(async () => {
+          return undefined;
+        }),
+        defaultValue: undefined,
+        system: { clock: snapshot },
+        onLoad() {
+          invoked = true;
+        },
+      });
+
+      expect(
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 1000,
+        }),
+      ).toBeTruthy();
+
+      expect(invoked).toBeTruthy();
+    });
+
+    test('Does not invoke the onLoad callback when an error occurs', async () => {
+      let invoked = false;
+      const compartment = new DataCompartment<User | undefined>('test', {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
+        source: new ConfiguredDataSource<User | undefined>(async () => {
+          throw new Error('intentional');
+        }),
+        defaultValue: undefined,
+        system: { clock: snapshot },
+        onLoad() {
+          invoked = true;
+        },
+      });
+
+      try {
+        await waitUntil(() => firstValueFrom(compartment.initialized$), {
+          millisecondPolling: 10,
+          timeoutInMilliseconds: 200,
+        });
+      } catch {
+        // Just swallow it
+      } finally {
+        expect(invoked).toBeFalsy();
+      }
+    });
+
     test('Reloads the data when the compartment cache token has expired', async () => {
       let currentTimestamp = Date.now();
       const clock: ISystemClock = {

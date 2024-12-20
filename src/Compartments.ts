@@ -36,6 +36,8 @@ export function cacheForSeconds(seconds: number): IRetentionPolicy {
   };
 }
 
+type ActionWithArgs<T> = (value: T) => void;
+
 /**
  * Provides strongly-typed configuration options for an individual data compartment.
  */
@@ -64,10 +66,15 @@ export interface DataCompartmentOptions<T> {
    */
   comparer?: CompartmentComparer<T>;
   /**
+   * Optional callback when a compartment has finished loading.
+   * @param value The data loaded from the source.
+   */
+  onLoad?: ActionWithArgs<T>;
+  /**
    * Optional callback when an error occurs while loading the compartment.
    * @param error The error thrown by the source.
    */
-  onError?: (error: Error) => void;
+  onError?: ActionWithArgs<Error>;
 
   /**
    * Optional system overrides (mostly used for testing but could prove useful otherwise)
