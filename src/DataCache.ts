@@ -5,14 +5,19 @@ import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
 import { ScriniumDiagnostics } from './Diagnostics';
 import { DataCompartment } from './DataCompartment';
+import { AppStorageToken } from './AppStorageToken';
 
 export interface IDataCache {
   compartments: IDataCompartment[];
   observeWith: (observer: IDataCacheObserver) => void;
+  token: AppStorageToken;
 }
 
 export class DataCache<T> implements IDataCache {
-  constructor(readonly compartments: IDataCompartment[]) {}
+  constructor(
+    readonly token: AppStorageToken,
+    readonly compartments: IDataCompartment[],
+  ) {}
 
   observe$<Output>(key: keyof T): Observable<Output> {
     if (ScriniumDiagnostics.shouldObserve(String(key))) {
@@ -98,6 +103,7 @@ export class DataCache<T> implements IDataCache {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDataCache<Compartments extends Record<string, any>>(
+  token: AppStorageToken,
   policy: Compartments,
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
@@ -105,5 +111,5 @@ export function createDataCache<Compartments extends Record<string, any>>(
     return new DataCompartment<unknown>(key, value as DataCompartmentOptions<unknown>);
   });
 
-  return new DataCache<Compartments>(compartments);
+  return new DataCache<Compartments>(token, compartments);
 }

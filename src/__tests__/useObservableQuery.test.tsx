@@ -14,6 +14,7 @@ import { Predicate, predicate } from '../Predicate';
 import { injectDataCache } from '../Decorators';
 import { ISubject, injectSubject } from '../ISubject';
 import { wait } from './utils';
+import { AppStorageToken } from '../AppStorageToken';
 
 const predicateKey = 'predicateSubject';
 const subjectKey = 'subjectKey';
@@ -85,20 +86,20 @@ interface Preference {
   value?: string;
 }
 
-const accountsKey = 'accounts';
+const accountsKey = new AppStorageToken('accounts');
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
 }
 
-const preferencesKey = 'preferences';
+const preferencesKey = new AppStorageToken('preferences');
 
 interface PreferenceCompartments {
   preferences: DataCompartmentOptions<Preference[]>;
 }
 
 class AccountLoadedPredicate implements Predicate {
-  constructor(@injectDataCache(accountsKey) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@injectDataCache(accountsKey.key) private readonly cache: DataCache<AccountCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$;
@@ -107,7 +108,7 @@ class AccountLoadedPredicate implements Predicate {
 
 @predicate(predicateKey)
 class PreferencesSubject implements ISubject<Preference[]> {
-  constructor(@injectDataCache(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesKey.key) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');
@@ -115,7 +116,7 @@ class PreferencesSubject implements ISubject<Preference[]> {
 }
 
 const withAccountData = createDataCacheModule((storage) => {
-  const cache = createDataCache<AccountCompartments>({
+  const cache = createDataCache<AccountCompartments>(accountsKey, {
     account: {
       loadingOptions: {
         strategy: 'lazy',
@@ -131,11 +132,11 @@ const withAccountData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(accountsKey, cache);
+  storage.store(cache);
 });
 
 const withPreferencesData = createDataCacheModule((storage) => {
-  const cache = createDataCache<PreferenceCompartments>({
+  const cache = createDataCache<PreferenceCompartments>(preferencesKey, {
     preferences: {
       loadingOptions: {
         strategy: 'auto',
@@ -147,5 +148,5 @@ const withPreferencesData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(preferencesKey, cache);
+  storage.store(cache);
 });

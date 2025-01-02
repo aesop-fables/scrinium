@@ -1,6 +1,7 @@
+import 'reflect-metadata';
 import { MockProxy, mock } from 'jest-mock-extended';
 import { ITransactionOperation, executeTransaction, operationOn } from '../Transactions';
-import { AccountCompartments, AccountInfoRest } from './Common';
+import { AccountCompartments, AccountInfoRest, TestTokens } from './Common';
 import { DataCacheScenario, createDataCacheScenario } from '../Utils';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 
@@ -144,7 +145,7 @@ describe('operationOn', () => {
 export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
   const accounts: AccountInfoRest[] = [{ id: 1, title: 'Title', investments: [] }];
   return {
-    ...createDataCacheScenario<AccountCompartments>({
+    ...createDataCacheScenario<AccountCompartments>(TestTokens.account, {
       plans: {
         source: new ConfiguredDataSource(async () => accounts),
         loadingOptions: {

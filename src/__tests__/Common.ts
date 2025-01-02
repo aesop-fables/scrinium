@@ -16,9 +16,15 @@ import {
   injectProjectionContext,
 } from '..';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
+import { AppStorageToken } from '../AppStorageToken';
+
+export const TestTokens = {
+  account: new AppStorageToken('accounts'),
+  cache: new AppStorageToken('cache1'),
+};
 
 export function createAccountDataCache(): DataCache<AccountCompartments> {
-  return createDataCache<AccountCompartments>({
+  return createDataCache<AccountCompartments>(TestTokens.account, {
     plans: {
       source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
@@ -79,9 +85,9 @@ export const AccountCompartmentKey = 'test-accounts';
 export class AccountProjections {
   readonly cache: DataCache<AccountCompartments>;
 
-  constructor(@injectProjectionContext() private readonly context: ProjectionContext) {
+  constructor(@injectProjectionContext() context: ProjectionContext) {
     const { storage } = context;
-    this.cache = storage.retrieve<AccountCompartments>(AccountCompartmentKey);
+    this.cache = storage.retrieve<AccountCompartments>(TestTokens.account);
   }
 
   get accounts$(): Observable<AccountInfo[]> {
@@ -133,21 +139,21 @@ export class CurrentUser {
 
 export function createAccountStorage(policy: AccountCompartments): [IAppStorage, DataCache<AccountCompartments>] {
   const appStorage = new AppStorage();
-  const dataCache = createDataCache<AccountCompartments>(policy);
-  appStorage.store(AccountCompartmentKey, dataCache);
+  const dataCache = createDataCache<AccountCompartments>(TestTokens.account, policy);
+  appStorage.store(dataCache);
 
   return [appStorage, dataCache];
 }
 
 export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
-  const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>({
+  const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>(TestTokens.account, {
     plans: {
       source: new ConfiguredDataSource(async () => []),
       defaultValue: [],
     },
   });
 
-  appStorage.store<AccountCompartments>(CompartmentKeys.plans, dataCache);
+  appStorage.store<AccountCompartments>(dataCache);
 });
 
 export interface Video {
@@ -170,7 +176,7 @@ export interface VideoRegistry {
 export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
   const accounts: AccountInfoRest[] = [{ id: 1, title: 'Title', investments: [] }];
   return {
-    ...createDataCacheScenario<AccountCompartments>({
+    ...createDataCacheScenario<AccountCompartments>(TestTokens.account, {
       plans: {
         source: new ConfiguredDataSource(async () => accounts),
         loadingOptions: {

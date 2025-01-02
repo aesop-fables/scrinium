@@ -20,6 +20,9 @@ import {
 import { InteractionContext } from './InteractionContext';
 import { combineLatest } from 'rxjs';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
+import { AppStorageToken } from '../AppStorageToken';
+
+const repoToken = new AppStorageToken('videos');
 
 function useVideoRepositoryProjection(id: string) {
   return useRepositoryProjection<VideoRegistry, Video>('videos', 'videos', id);
@@ -70,7 +73,7 @@ describe('Sample Component', () => {
       },
     });
 
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       videos: {
         resolver: new ConfiguredEntityResolver(async (id) => ({ id, title: 'Hello' })),
       },
@@ -79,7 +82,7 @@ describe('Sample Component', () => {
       },
     });
 
-    appStorage.store('videos', repository);
+    appStorage.storeRepository(repository);
 
     render(
       <InteractionContext appStorage={appStorage}>

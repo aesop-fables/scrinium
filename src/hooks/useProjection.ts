@@ -8,6 +8,7 @@ import useConstant from './useConstant';
 import { map, Observable } from 'rxjs';
 import { IProjectionFactory, ProjectionConstructor, ProjectionContext, createProjection } from '../Projections';
 import { DataCompartment } from '../DataCompartment';
+import { AppStorageToken } from '../AppStorageToken';
 
 export function useProjection<Projection>(
   constructor: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,
@@ -38,7 +39,7 @@ export class DataCompartmentProjectionFactory<Value> implements IProjectionFacto
 
   create(context: ProjectionContext): DataCompartmentProjection<Value> {
     const { storage } = context;
-    const repository = storage.repository<any>(this.storageKey);
+    const repository = storage.repository<any>(new AppStorageToken(this.storageKey));
     const compartment = repository.get<string | number, Value>(this.key, this.id);
     return new DataCompartmentProjection<Value>(compartment);
   }

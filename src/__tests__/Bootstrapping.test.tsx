@@ -11,11 +11,12 @@ import {
   IServiceModule,
   ServiceCollection,
 } from '@aesop-fables/containr';
-import { AccountCompartments } from './Common';
+import { AccountCompartments, TestTokens } from './Common';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { ScriniumServices } from '../ScriniumServices';
 import { useScrinium } from '../bootstrapping';
+import { AppStorageToken } from '../AppStorageToken';
 
 class TestActivator implements IActivator {
   isActivated = false;
@@ -67,7 +68,7 @@ describe('Bootstrapping', () => {
     test('Configures the IAppStorage with the specified data caches', async () => {
       const accountsKey = 'accounts';
       const withAccountStorage = createDataCacheModule((appStorage) => {
-        const dataCache = createDataCache<AccountCompartments>({
+        const dataCache = createDataCache<AccountCompartments>(TestTokens.account, {
           plans: {
             loadingOptions: {
               strategy: 'manual',
@@ -81,14 +82,14 @@ describe('Bootstrapping', () => {
           },
         });
 
-        appStorage.store<AccountCompartments>(accountsKey, dataCache);
+        appStorage.store<AccountCompartments>(dataCache);
       });
 
       const configureAppStorage = useDataCache([withAccountStorage]);
       const container = createContainer([configureAppStorage]);
 
       const appStorage = container.get<IAppStorage>(ScriniumServices.AppStorage);
-      const cache = appStorage.retrieve<AccountCompartments>(accountsKey);
+      const cache = appStorage.retrieve<AccountCompartments>(TestTokens.account);
       await cache.reload('plans');
 
       expect(await firstValueFrom(cache.observe$('plans'))).toHaveLength(3);
@@ -100,10 +101,10 @@ describe('Bootstrapping', () => {
       test: DataCompartmentOptions<string>;
     }
 
-    const sampleDataKey = 'test';
+    const sampleDataKey = new AppStorageToken('test');
 
     const withSampleData = createDataCacheModule((appStorage) => {
-      const cache = createDataCache<SampleCompartments>({
+      const cache = createDataCache<SampleCompartments>(sampleDataKey, {
         test: {
           defaultValue: '',
           source: new ConfiguredDataSource(async () => {
@@ -116,7 +117,7 @@ describe('Bootstrapping', () => {
         },
       });
 
-      appStorage.store(sampleDataKey, cache);
+      appStorage.store(cache);
     });
 
     test('Allow app storage modules to inject IAppStorage', async () => {

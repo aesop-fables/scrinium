@@ -8,13 +8,16 @@ import { createContainer } from '@aesop-fables/containr';
 import { useScrinium } from '../bootstrapping';
 import { IAppStorage } from '../AppStorage';
 import { ScriniumServices } from '../ScriniumServices';
+import { AppStorageToken } from '../AppStorageToken';
+
+const repoToken = new AppStorageToken('videos');
 
 describe('Repository', () => {
   test('resolves the value the first time', async () => {
     const videos: Video[] = [{ id: '1', title: 'Video 1' }];
     const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
 
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       metadata: {
         resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
           await wait(150);
@@ -48,7 +51,7 @@ describe('Repository', () => {
     const videos: Video[] = [{ id: '1', title: 'Video 1' }];
     const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
     let nrInvocations = 0;
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       metadata: {
         resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
           return metadata.find((x) => x.id === key) as VideoMetadata;
@@ -75,7 +78,7 @@ describe('Repository', () => {
     const videos: Video[] = [{ id: '1', title: 'Video 1' }];
     const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
     let nrInvocations = 0;
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       metadata: {
         resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
           return metadata.find((x) => x.id === key) as VideoMetadata;
@@ -105,7 +108,7 @@ describe('Repository', () => {
     ];
     const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
     let nrInvocations = 0;
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       metadata: {
         resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
           return metadata.find((x) => x.id === key) as VideoMetadata;
@@ -137,7 +140,7 @@ describe('Repository', () => {
     ];
     const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
     let nrInvocations = 0;
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       metadata: {
         resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
           return metadata.find((x) => x.id === key) as VideoMetadata;
@@ -167,7 +170,7 @@ describe('Repository', () => {
   test('stores and resolves the repository', async () => {
     const videos: Video[] = [];
     const metadata: VideoMetadata[] = [];
-    const repository = createRepository<VideoRegistry>({
+    const repository = createRepository<VideoRegistry>(repoToken, {
       metadata: {
         resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
           return metadata.find((x) => x.id === key) as VideoMetadata;
@@ -182,16 +185,15 @@ describe('Repository', () => {
 
     const container = createContainer([useScrinium({ modules: [] })]);
     const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
-    storage.storeRepository(repositoryKey, repository);
+    storage.storeRepository(repository);
 
     const sample = container.resolve(SampleService);
     sample.execute();
   });
 });
 
-const repositoryKey = 'videoRepository';
 class SampleService {
-  constructor(@injectRepository(repositoryKey) private readonly repository: IRepository<VideoRegistry>) {}
+  constructor(@injectRepository(repoToken.key) private readonly repository: IRepository<VideoRegistry>) {}
 
   execute() {
     this.repository.reset();

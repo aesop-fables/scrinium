@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { AppStorageToken } from './AppStorageToken';
 import { DataCache, IDataCache } from './DataCache';
 import { IRepository } from './Repository';
 import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
@@ -23,11 +24,11 @@ export interface IAppStorage {
   clearDataCaches(): void;
   clearRepositories(): void;
 
-  repository<Policy>(key: string): IRepository<Policy>;
-  retrieve<Policy>(key: string): DataCache<Policy>;
+  repository<Policy>(token: AppStorageToken): IRepository<Policy>;
+  retrieve<Policy>(token: AppStorageToken): DataCache<Policy>;
   state$: Observable<IAppStorageState>;
-  store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void;
-  storeRepository<Registry>(key: string, value: IRepository<Registry>): void;
+  store<Policy>(value: DataCache<Policy>): void;
+  storeRepository<Registry>(value: IRepository<Registry>): void;
 }
 
 export class AppStorage implements IAppStorage {
@@ -35,36 +36,25 @@ export class AppStorage implements IAppStorage {
   private readonly values = new BehaviorSubject<Record<string, any>>({});
   private readonly repositories = new BehaviorSubject<Record<string, IRepository<any>>>({});
 
-  repository<Policy>(key: string): IRepository<Policy> {
-    return this.repositories.value[key] as IRepository<Policy>;
+  repository<Policy>(token: AppStorageToken): IRepository<Policy> {
+    return this.repositories.value[token.key] as IRepository<Policy>;
   }
 
-  retrieve<Policy>(key: string): DataCache<Policy> {
-    return this.values.value[key] as DataCache<Policy>;
+  retrieve<Policy>(token: AppStorageToken): DataCache<Policy> {
+    return this.values.value[token.key] as DataCache<Policy>;
   }
 
-  store<Policy>(key: string, value: DataCache<Policy> | IRepository<Policy>): void {
-    if (typeof (value as IRepository<Policy>).get === 'function') {
-      console.warn(
-        `Warning: registering a repository through the store() function is deprecated and will be removed soon. Please use storeRepository instead.`,
-      );
-
-      this.repositories.next({
-        ...this.repositories.value,
-        [key]: value as IRepository<Policy>,
-      });
-    }
-
+  store<Policy>(value: DataCache<Policy>): void {
     this.values.next({
       ...this.values.value,
-      [key]: value,
+      [value.token.key]: value,
     });
   }
 
-  storeRepository<Registry>(key: string, value: IRepository<Registry>): void {
+  storeRepository<Registry>(value: IRepository<Registry>): void {
     this.repositories.next({
       ...this.repositories.value,
-      [key]: value,
+      [value.token.key]: value,
     });
   }
 

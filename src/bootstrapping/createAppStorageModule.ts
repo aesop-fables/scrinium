@@ -20,10 +20,10 @@ export function createAppStorageModule(builder: AppStorageModuleBuilder): IAppSt
     configureAppStorage: (storage, container) => {
       const { caches = {}, repositories = {} } = builder(container);
       Object.keys(caches).forEach((key) => {
-        storage.store(key, caches[key]);
+        storage.store(caches[key]);
       });
       Object.keys(repositories).forEach((key) => {
-        storage.storeRepository(key, repositories[key]);
+        storage.storeRepository(repositories[key]);
       });
     },
   };

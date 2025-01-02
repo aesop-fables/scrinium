@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { AppStorageToken } from './AppStorageToken';
 import { DataCompartmentOptions, RetentionOptions } from './Compartments';
 import { ConfiguredDataSource } from './ConfiguredDataSource';
 import { DataCompartment } from './DataCompartment';
@@ -71,6 +72,10 @@ export interface IRepository<Registry> {
    * Resets the repository by clearing all caches.
    */
   reset(): void;
+  /**
+   * The token used to identify the repository.
+   */
+  token: AppStorageToken;
 }
 /**
  * Represents a set of entity compartments.
@@ -78,6 +83,7 @@ export interface IRepository<Registry> {
 export class Repository<Registry> implements IRepository<Registry> {
   private readonly compartments: Hash<ILookup<string | number, DataCompartment<unknown>>>;
   constructor(
+    readonly token: AppStorageToken,
     private readonly lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> },
   ) {
     this.compartments = {};
@@ -160,7 +166,10 @@ export class Repository<Registry> implements IRepository<Registry> {
  * const videoCompartment = repository.get<string, Video>('videos', '1');
  * ```
  */
-export function createRepository<Registry extends Record<string, any>>(registry: Registry): IRepository<Registry> {
+export function createRepository<Registry extends Record<string, any>>(
+  token: AppStorageToken,
+  registry: Registry,
+): IRepository<Registry> {
   const entries = Object.entries(registry);
   const lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> } = {};
   entries.forEach(([key, value]) => {
@@ -179,5 +188,5 @@ export function createRepository<Registry extends Record<string, any>>(registry:
     });
   });
 
-  return new Repository(lookups);
+  return new Repository(token, lookups);
 }

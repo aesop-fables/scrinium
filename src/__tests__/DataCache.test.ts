@@ -5,6 +5,7 @@ import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
+import { AppStorageToken } from '../AppStorageToken';
 
 interface ResponseA {
   name: string;
@@ -25,7 +26,7 @@ describe('DataCache', () => {
       const a: ResponseA[] = [];
       const b: ResponseB[] = [];
 
-      const { createProxy } = createDataCacheScenario<TestStoreCompartments>({
+      const { createProxy } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => a),
           defaultValue: [],
@@ -47,22 +48,25 @@ describe('DataCache', () => {
       const a: ResponseA[] = [{ name: 'test' }];
       const b: ResponseB[] = [{ email: 'test@test.com' }];
 
-      const { createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => a),
-          loadingOptions: {
-            strategy: 'auto',
+      const { createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => a),
+            loadingOptions: {
+              strategy: 'auto',
+            },
+            defaultValue: [],
           },
-          defaultValue: [],
-        },
-        b: {
-          source: new ConfiguredDataSource(async () => b),
-          loadingOptions: {
-            strategy: 'manual',
+          b: {
+            source: new ConfiguredDataSource(async () => b),
+            loadingOptions: {
+              strategy: 'manual',
+            },
+            defaultValue: [],
           },
-          defaultValue: [],
         },
-      });
+      );
 
       await waitForAllCompartments();
       const observedA = await createProxy<ResponseA>('a');
@@ -75,7 +79,7 @@ describe('DataCache', () => {
     test('Autoload true happy path', async () => {
       let loadCount = 0;
       // autoload is true by default
-      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
+      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => {
             ++loadCount;
@@ -101,22 +105,25 @@ describe('DataCache', () => {
   describe('initialize$()', () => {
     test('Waits for all compartments', async () => {
       // autoload = true
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => {
-            await wait(300);
-            return [];
-          }),
-          defaultValue: [],
+      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => {
+              await wait(300);
+              return [];
+            }),
+            defaultValue: [],
+          },
+          b: {
+            source: new ConfiguredDataSource(async () => {
+              await wait(550);
+              return [];
+            }),
+            defaultValue: [],
+          },
         },
-        b: {
-          source: new ConfiguredDataSource(async () => {
-            await wait(550);
-            return [];
-          }),
-          defaultValue: [],
-        },
-      });
+      );
 
       let initialized = await firstValueFrom(cache.initialized$);
       expect(initialized).toBeFalsy();
@@ -133,7 +140,7 @@ describe('DataCache', () => {
 
     test('Initialized publishes false when an error occurs', async () => {
       // dependency: autoload = true
-      const { cache } = createDataCacheScenario<TestStoreCompartments>({
+      const { cache } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => []),
           defaultValue: [],
@@ -163,7 +170,7 @@ describe('DataCache', () => {
     test('Failure should invoke onError callback', async () => {
       // dependency: autoload = true
       let theError: Error | undefined;
-      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
+      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => []),
           defaultValue: [],
@@ -190,16 +197,19 @@ describe('DataCache', () => {
       // dependency: autoload = true
       const defaultValue: ResponseA[] = [{ name: 'default' }];
       const loadedValue: ResponseA[] = [{ name: 'loaded' }];
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => loadedValue),
-          defaultValue,
+      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => loadedValue),
+            defaultValue,
+          },
+          b: {
+            source: new ConfiguredDataSource(async () => [{ email: 'loaded@loaded.com' }]),
+            defaultValue: [],
+          },
         },
-        b: {
-          source: new ConfiguredDataSource(async () => [{ email: 'loaded@loaded.com' }]),
-          defaultValue: [],
-        },
-      });
+      );
 
       let hasError = false;
       const values: ResponseA[][] = [];
@@ -229,22 +239,25 @@ describe('DataCache', () => {
         b: 0,
       };
 
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => {
-            loadCounts.a++;
-            return loadedValue;
-          }),
-          defaultValue,
+      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => {
+              loadCounts.a++;
+              return loadedValue;
+            }),
+            defaultValue,
+          },
+          b: {
+            source: new ConfiguredDataSource(async () => {
+              loadCounts.b++;
+              return [{ email: 'loaded@loaded.com' }];
+            }),
+            defaultValue: [],
+          },
         },
-        b: {
-          source: new ConfiguredDataSource(async () => {
-            loadCounts.b++;
-            return [{ email: 'loaded@loaded.com' }];
-          }),
-          defaultValue: [],
-        },
-      });
+      );
 
       await waitForAllCompartments();
       expect(loadCounts.a).toBe(1);
@@ -268,22 +281,25 @@ describe('DataCache', () => {
         b: 0,
       };
 
-      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => {
-            loadCounts.a++;
-            return loadedValue;
-          }),
-          defaultValue,
+      const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => {
+              loadCounts.a++;
+              return loadedValue;
+            }),
+            defaultValue,
+          },
+          b: {
+            source: new ConfiguredDataSource(async () => {
+              loadCounts.b++;
+              return [{ email: 'loaded@loaded.com' }];
+            }),
+            defaultValue: [],
+          },
         },
-        b: {
-          source: new ConfiguredDataSource(async () => {
-            loadCounts.b++;
-            return [{ email: 'loaded@loaded.com' }];
-          }),
-          defaultValue: [],
-        },
-      });
+      );
 
       await waitForAllCompartments();
 
@@ -304,18 +320,21 @@ describe('DataCache', () => {
       const defaultValue: ResponseA[] = [{ name: 'default' }];
       const loadedValue: ResponseA[] = [{ name: 'loaded' }];
 
-      const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => loadedValue),
-          defaultValue,
+      const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => loadedValue),
+            defaultValue,
+          },
+          b: {
+            source: new ConfiguredDataSource(async () => {
+              return [{ email: 'loaded@loaded.com' }];
+            }),
+            defaultValue: [],
+          },
         },
-        b: {
-          source: new ConfiguredDataSource(async () => {
-            return [{ email: 'loaded@loaded.com' }];
-          }),
-          defaultValue: [],
-        },
-      });
+      );
 
       await waitForAllCompartments();
       await cache.resetAll();
@@ -334,18 +353,21 @@ describe('DataCache', () => {
       const defaultValue: ResponseA[] = [{ name: 'default' }];
       const loadedValue: ResponseA[] = [{ name: 'loaded' }];
 
-      const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>({
-        a: {
-          source: new ConfiguredDataSource(async () => loadedValue),
-          defaultValue,
+      const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
+        new AppStorageToken('temp'),
+        {
+          a: {
+            source: new ConfiguredDataSource(async () => loadedValue),
+            defaultValue,
+          },
+          b: {
+            source: new ConfiguredDataSource(async () => {
+              return [{ email: 'loaded@loaded.com' }];
+            }),
+            defaultValue: [],
+          },
         },
-        b: {
-          source: new ConfiguredDataSource(async () => {
-            return [{ email: 'loaded@loaded.com' }];
-          }),
-          defaultValue: [],
-        },
-      });
+      );
 
       await waitForAllCompartments();
       await cache.reset('a');
