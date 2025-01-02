@@ -17,7 +17,7 @@ export interface IAppStorage {
   repository<Policy>(token: AppStorageToken): IRepository<Policy>;
   retrieve<Policy>(token: AppStorageToken): DataCache<Policy>;
   state$: Observable<IAppStorageState>;
-  store<Policy>(value: DataCache<Policy>): void;
+  store(value: IDataCache): void;
   storeRepository<Registry>(value: IRepository<Registry>): void;
 }
 
@@ -34,7 +34,7 @@ export class AppStorage implements IAppStorage {
     return this.values.value[token.key] as DataCache<Policy>;
   }
 
-  store<Policy>(value: DataCache<Policy>): void {
+  store(value: IDataCache): void {
     this.values.next({
       ...this.values.value,
       [value.token.key]: value,

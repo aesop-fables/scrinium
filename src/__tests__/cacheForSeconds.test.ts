@@ -1,3 +1,4 @@
+import { AppStorageToken } from '../AppStorageToken';
 import { ApplicationCacheManager } from '../Caching';
 import { cacheForSeconds, RetentionContext } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
@@ -7,7 +8,8 @@ import { ISystemClock } from '../System';
 describe('cacheForSeconds', () => {
   test('Registers the token', () => {
     const policy = cacheForSeconds(3);
-    const compartment = new DataCompartment<string | undefined>('key', {
+    const storageToken = new AppStorageToken('test');
+    const compartment = new DataCompartment<string | undefined>(storageToken.append('key'), {
       source: new ConfiguredDataSource(async () => 'value'),
       defaultValue: undefined,
     });

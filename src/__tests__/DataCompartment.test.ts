@@ -7,10 +7,14 @@ import { Predicate } from '../Predicate';
 import { ISystemClock } from '../System';
 import { DataCompartment } from '../DataCompartment';
 import { cacheForSeconds } from '../Compartments';
+import { AppStorageToken } from '../AppStorageToken';
 
 interface User {
   name: string;
 }
+
+const storageToken = new AppStorageToken('cacheStorage');
+
 describe('DataCompartment', () => {
   const now = Date.now();
   let snapshot: ISystemClock;
@@ -23,7 +27,7 @@ describe('DataCompartment', () => {
   describe('isExpired', () => {
     test('returns false when the compartment has not expired', async () => {
       const timestamp = Date.now();
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         source: new ConfiguredDataSource<User>(async () => ({
           name: 'Test',
         })),
@@ -45,7 +49,7 @@ describe('DataCompartment', () => {
 
     test('returns true when the compartment has expired', async () => {
       let timestamp = Date.now();
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         source: new ConfiguredDataSource<User>(async () => ({
           name: 'Test',
         })),
@@ -71,7 +75,7 @@ describe('DataCompartment', () => {
     describe('When no predicate is specified', () => {
       test('Initializes', async () => {
         const user: User = { name: 'Test' };
-        const compartment = new DataCompartment<User | undefined>('test', {
+        const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
           source: new ConfiguredDataSource<User>(async () => user),
           defaultValue: undefined,
           system: { clock: snapshot },
@@ -98,7 +102,7 @@ describe('DataCompartment', () => {
           },
         };
 
-        const compartment = new DataCompartment<User | undefined>('test', {
+        const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
           loadingOptions: {
             strategy: 'auto',
             predicate,
@@ -130,7 +134,7 @@ describe('DataCompartment', () => {
     describe('When no predicate is specified', () => {
       test('Initializes', async () => {
         const user: User = { name: 'Test' };
-        const compartment = new DataCompartment<User | undefined>('test', {
+        const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
           loadingOptions: {
             strategy: 'manual',
           },
@@ -177,7 +181,7 @@ describe('DataCompartment', () => {
     test('triggering the initialization signals loading$', async () => {
       const user: User = { name: 'Test' };
       const deferredSource = new DeferredDataSource<User>();
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         loadingOptions: {
           strategy: 'lazy',
         },
@@ -211,7 +215,7 @@ describe('DataCompartment', () => {
     });
 
     test('Initializes when initialized$ is called', async () => {
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         loadingOptions: {
           strategy: 'lazy',
         },
@@ -236,7 +240,7 @@ describe('DataCompartment', () => {
 
     test('Invokes the onLoad callback', async () => {
       let invoked = false;
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         loadingOptions: {
           strategy: 'lazy',
         },
@@ -262,7 +266,7 @@ describe('DataCompartment', () => {
 
     test('Does not invoke the onLoad callback when an error occurs', async () => {
       let invoked = false;
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         loadingOptions: {
           strategy: 'lazy',
         },
@@ -297,7 +301,7 @@ describe('DataCompartment', () => {
       };
 
       let nrLoads = 0;
-      const compartment = new DataCompartment<User | undefined>('test', {
+      const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
         loadingOptions: {
           strategy: 'lazy',
         },
@@ -336,7 +340,7 @@ describe('DataCompartment', () => {
       test('Initializes when value$ is called', async () => {
         const user: User = { name: 'Test' };
         let count = 0;
-        const compartment = new DataCompartment<User | undefined>('test', {
+        const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
           loadingOptions: {
             strategy: 'lazy',
           },
@@ -381,7 +385,7 @@ describe('DataCompartment', () => {
           },
         };
 
-        const compartment = new DataCompartment<User | undefined>('test', {
+        const compartment = new DataCompartment<User | undefined>(storageToken.append('test'), {
           loadingOptions: {
             strategy: 'lazy',
             predicate,
@@ -429,7 +433,7 @@ describe('DataCompartment', () => {
 
   describe('getCompartmentState', () => {
     test('initialized is true', async () => {
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -445,7 +449,7 @@ describe('DataCompartment', () => {
     });
 
     test('initialized is false', async () => {
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -461,7 +465,7 @@ describe('DataCompartment', () => {
 
     test('loading is true', async () => {
       const source = new DeferredDataSource<CompartmentModel>();
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source,
@@ -475,7 +479,7 @@ describe('DataCompartment', () => {
     });
 
     test('loading is false', async () => {
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -491,7 +495,7 @@ describe('DataCompartment', () => {
     });
 
     test('error exists', async () => {
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -507,7 +511,7 @@ describe('DataCompartment', () => {
     });
 
     test('error does not exist', async () => {
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -523,7 +527,7 @@ describe('DataCompartment', () => {
     });
 
     test('value is default value', async () => {
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -539,7 +543,7 @@ describe('DataCompartment', () => {
 
     test('value is resolved', async () => {
       const value = { id: 'test' };
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {
@@ -556,7 +560,7 @@ describe('DataCompartment', () => {
 
     test('lastLoaded is resolved', async () => {
       const value = { id: 'test' };
-      const compartment = new DataCompartment<CompartmentModel | undefined>('test', {
+      const compartment = new DataCompartment<CompartmentModel | undefined>(storageToken.append('test'), {
         loadingOptions: { strategy: 'manual' },
         defaultValue: undefined,
         source: {

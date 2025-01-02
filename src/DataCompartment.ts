@@ -12,6 +12,7 @@ import {
   RetentionContext,
 } from './Compartments';
 import { ApplicationCacheManager, IApplicationCacheManager } from './Caching';
+import { DataCompartmentToken } from './AppStorageToken';
 /**
  * Represents an individual compartment of data that exposes lifecycle and observable functions to interact
  * with the cached value(s).
@@ -32,7 +33,7 @@ export class DataCompartment<Model> implements IDataCompartment {
   /**
    * The unique identifier of the compartment.
    */
-  readonly key: string;
+  readonly token: DataCompartmentToken;
 
   /**
    * Constructs a new instance of DataCompartment.
@@ -40,8 +41,8 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @param options The options used to configured the behavior of the compartment.
    * @returns A new instance of DataCompartment.
    */
-  constructor(key: string, options: DataCompartmentOptions<Model>) {
-    this.key = key;
+  constructor(token: DataCompartmentToken, options: DataCompartmentOptions<Model>) {
+    this.token = token;
     this.options = {
       comparer: defaultComparer,
       loadingOptions: {
@@ -187,6 +188,12 @@ export class DataCompartment<Model> implements IDataCompartment {
       this.value.next(value);
     }
   }
+  /**
+   * The unique identifier of the compartment.
+   */
+  get key(): string {
+    return this.token.value;
+  }
 
   get isExpired(): boolean {
     const retention = this.options.retention;
@@ -221,6 +228,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       error,
       lastLoaded: this.lastLoaded.value,
       key: this.key,
+      token: this.token,
       options: this.options,
       value: this.value.value,
     };

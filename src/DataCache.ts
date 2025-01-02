@@ -20,13 +20,10 @@ export class DataCache<T> implements IDataCache {
   ) {}
 
   observe$<Output>(key: keyof T): Observable<Output> {
-    if (ScriniumDiagnostics.shouldObserve(String(key))) {
-      ScriniumDiagnostics.captureObserve(String(key));
-    }
-
     return of(this.compartments).pipe(
       switchMap((compartments) => {
-        const compartment = compartments.find((x) => x.key === String(key));
+        const compartmentToken = this.token.append(String(key));
+        const compartment = compartments.find((x) => x.token.equals(compartmentToken));
         if (!compartment) {
           throw new Error(`Could not find compartment: ${String(key)}`);
         }
@@ -73,7 +70,8 @@ export class DataCache<T> implements IDataCache {
   }
 
   findCompartment(key: keyof T): IDataCompartment {
-    const compartment = this.compartments.find((x) => x.key === String(key));
+    const targetToken = this.token.append(String(key));
+    const compartment = this.compartments.find((x) => x.token.equals(targetToken));
     if (!compartment) {
       throw new Error(`Could not find compartment: ${String(key)}`);
     }
@@ -108,7 +106,8 @@ export function createDataCache<Compartments extends Record<string, any>>(
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
-    return new DataCompartment<unknown>(key, value as DataCompartmentOptions<unknown>);
+    const compartmentToken = token.append(key);
+    return new DataCompartment<unknown>(compartmentToken, value as DataCompartmentOptions<unknown>);
   });
 
   return new DataCache<Compartments>(token, compartments);

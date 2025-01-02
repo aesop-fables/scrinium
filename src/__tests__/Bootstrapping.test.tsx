@@ -66,7 +66,6 @@ describe('Bootstrapping', () => {
 
   describe('useDataCache', () => {
     test('Configures the IAppStorage with the specified data caches', async () => {
-      const accountsKey = 'accounts';
       const withAccountStorage = createDataCacheModule((appStorage) => {
         const dataCache = createDataCache<AccountCompartments>(TestTokens.account, {
           plans: {
@@ -82,7 +81,7 @@ describe('Bootstrapping', () => {
           },
         });
 
-        appStorage.store<AccountCompartments>(dataCache);
+        appStorage.store(dataCache);
       });
 
       const configureAppStorage = useDataCache([withAccountStorage]);

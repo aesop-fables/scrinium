@@ -153,7 +153,7 @@ export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
     },
   });
 
-  appStorage.store<AccountCompartments>(dataCache);
+  appStorage.store(dataCache);
 });
 
 export interface Video {

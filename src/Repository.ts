@@ -184,7 +184,7 @@ export function createRepository<Registry extends Record<string, any>>(
         source: new ConfiguredDataSource(async () => entityOptions.resolver.resolve(id)),
       };
 
-      return new DataCompartment<unknown>(key, options);
+      return new DataCompartment<unknown>(token.append(key), options);
     });
   });
 
