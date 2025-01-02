@@ -6,7 +6,13 @@ import { ServiceProvider } from '@aesop-fables/containr-react';
 import { Scopes, createContainer, createServiceModule } from '@aesop-fables/containr';
 import { useObservableQuery } from '../hooks/useObservableQuery';
 import { IObservableQuery } from '../queries/Types';
-import { AppStorageRegistrations, createAppStorageRegistrations, createDataCacheModule, IAppStorageRegistration, useScrinium } from '../bootstrapping';
+import {
+  AppStorageRegistrations,
+  createAppStorageRegistrations,
+  createDataCacheModule,
+  IAppStorageRegistration,
+  useScrinium,
+} from '../bootstrapping';
 import { DataCache, createDataCache } from '../DataCache';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
