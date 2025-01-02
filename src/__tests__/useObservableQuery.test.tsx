@@ -40,7 +40,7 @@ describe('useObservableQuery', () => {
 
     const { getByTestId } = render(
       <ServiceProvider rootContainer={container}>
-        <Controller preferenceKey="foo" />
+        <SampleContainer preferenceKey="foo" />
       </ServiceProvider>,
     );
 
@@ -52,14 +52,39 @@ describe('useObservableQuery', () => {
   });
 });
 
-const Controller: React.FC<{ preferenceKey: string }> = ({ preferenceKey }) => {
-  const preference = useObservableQuery(FindPreferenceByKey, { key: preferenceKey });
+function usePreference(key: string) {
+  const preference = useObservableQuery(FindPreferenceByKey, { key });
   const loading = useMemo(() => typeof preference === 'undefined', [preference]);
+
+  return {
+    loading,
+    key: preference?.key,
+    value: preference?.value,
+  };
+}
+
+type SampleContainerProps = {
+  preferenceKey: string;
+};
+
+const SampleContainer: React.FC<SampleContainerProps> = ({ preferenceKey }) => {
+  const { loading, key, value } = usePreference(preferenceKey);
+
+  return <SampleComponent loading={loading} preferenceKey={key} preferenceValue={value} />;
+};
+
+type PreferenceViewerProps = {
+  loading: boolean;
+  preferenceKey?: string;
+  preferenceValue?: string;
+};
+
+const SampleComponent: React.FC<PreferenceViewerProps> = ({ loading, preferenceKey, preferenceValue }) => {
   return (
     <>
       {loading && <p data-testid="loading">Loading</p>}
       <div data-testid="controller">
-        {preference?.key} = {preference?.value}
+        {preferenceKey} = {preferenceValue}
       </div>
     </>
   );
