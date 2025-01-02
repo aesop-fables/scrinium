@@ -6,7 +6,7 @@ import { ServiceProvider } from '@aesop-fables/containr-react';
 import { Scopes, createContainer, createServiceModule } from '@aesop-fables/containr';
 import { useObservableQuery } from '../hooks/useObservableQuery';
 import { IObservableQuery } from '../queries/Types';
-import { createDataCacheModule, useScrinium } from '../bootstrapping';
+import { AppStorageRegistrations, createAppStorageRegistrations, createDataCacheModule, IAppStorageRegistration, useScrinium } from '../bootstrapping';
 import { DataCache, createDataCache } from '../DataCache';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
@@ -115,25 +115,29 @@ class PreferencesSubject implements ISubject<Preference[]> {
   }
 }
 
-const withAccountData = createDataCacheModule((storage) => {
-  const cache = createDataCache<AccountCompartments>(accountsKey, {
-    account: {
-      loadingOptions: {
-        strategy: 'lazy',
+class AccountRegistration implements IAppStorageRegistration {
+  defineData(): AppStorageRegistrations {
+    const cache = createDataCache<AccountCompartments>(accountsKey, {
+      account: {
+        loadingOptions: { strategy: 'lazy' },
+        defaultValue: undefined,
+        source: new ConfiguredDataSource(async () => {
+          return {
+            username: 'tuser',
+            firstName: 'Test',
+            lastName: 'User',
+          };
+        }),
       },
-      defaultValue: undefined,
-      source: new ConfiguredDataSource(async () => {
-        return {
-          username: 'tuser',
-          firstName: 'Test',
-          lastName: 'User',
-        };
-      }),
-    },
-  });
+    });
 
-  storage.store(cache);
-});
+    return {
+      caches: [cache],
+    };
+  }
+}
+
+const withAccountData = createAppStorageRegistrations(AccountRegistration);
 
 const withPreferencesData = createDataCacheModule((storage) => {
   const cache = createDataCache<PreferenceCompartments>(preferencesKey, {
