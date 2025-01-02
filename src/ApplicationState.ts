@@ -22,11 +22,11 @@ export class ApplicationState implements ISubject<IApplicationState> {
       map((state) => {
         const compartments: ApplicationCompartmentState[] = [];
         for (let i = 0; i < state.dataCaches.length; i++) {
-          const { storageKey, dataCache } = state.dataCaches[i];
+          const dataCache = state.dataCaches[i];
           compartments.push(
             ...dataCache.compartments.map((compartment) => ({
               ...compartment.getCompartmentState(),
-              storageKey,
+              storageKey: dataCache.token.key,
             })),
           );
         }
