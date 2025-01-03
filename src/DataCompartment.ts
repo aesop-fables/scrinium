@@ -2,7 +2,6 @@
 import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 import { Latch } from './Utils';
 import { DataCompartmentState, IRetentionPolicy } from './Compartments';
-import { ScriniumDiagnostics } from './Diagnostics';
 import { ISystemClock, systemClock } from './System';
 import {
   ApplicationCacheManagerRetentionPolicy,
@@ -139,10 +138,6 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get initialized$(): Observable<boolean> {
-    if (ScriniumDiagnostics.shouldObserve(this.key)) {
-      ScriniumDiagnostics.captureCompartmentInitialized(this.key);
-    }
-
     return combineLatest([this.initialized, this.lastLoaded]).pipe(
       map(([initialized]) => {
         const shouldInitialize = !initialized || this.isExpired;

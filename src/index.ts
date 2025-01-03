@@ -28,7 +28,6 @@ export * from './AppStorage';
 export * from './bootstrapping';
 export * from './Caching';
 export * from './Compartments';
-export * from './Diagnostics';
 export * from './Decorators';
 export * from './hooks';
 export * from './IListener';
