@@ -8,6 +8,7 @@ import { DataCompartmentOptions } from '../Compartments';
 import { createContainer, createServiceModule, Scopes } from '@aesop-fables/containr';
 import { predicate, Predicate } from '../Predicate';
 import { wait } from '../tasks';
+import { AppStorageToken } from '../AppStorageToken';
 
 const TestServices = {
   Cache: 'test-cache',
@@ -45,11 +46,13 @@ class CountService {
   }
 }
 
+const testCacheToken = new AppStorageToken(TestServices.Cache);
+
 describe('Subject Resolution w/ lazy loading', () => {
   test('Injecting a data cache subject does not trigger the compartment', async () => {
     let resolved = false;
     const withTestData = createDataCacheModule((appStorage) => {
-      const cache = createDataCache<TestCompartments>({
+      const cache = createDataCache<TestCompartments>(testCacheToken, {
         count: {
           defaultValue: 0,
           loadingOptions: { strategy: 'lazy' },
@@ -62,7 +65,7 @@ describe('Subject Resolution w/ lazy loading', () => {
         },
       });
 
-      appStorage.store(TestServices.Cache, cache);
+      appStorage.store(cache);
     });
 
     const useTestServices = createServiceModule('test-services', (services) => {

@@ -4,5 +4,4 @@ export const ScriniumServices = {
   CommandExecutor: '@aesop-fables/scrinium/commandExecutor',
   QueryDispatcher: '@aesop-fables/scrinium/queryDispatcher',
   SubjectResolver: '@aesop-fables/scrinium/subjectResolver',
-  // ProjectionContext: '@aesop-fables/scrinium/projections',
 };

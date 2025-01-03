@@ -24,6 +24,7 @@ import { InteractionContext } from './InteractionContext';
 import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, map } from 'rxjs';
 import { Scopes, ServiceCollection, inject } from '@aesop-fables/containr';
 import { useService } from '@aesop-fables/containr-react';
+import { AppStorageToken } from '../AppStorageToken';
 
 const TestServices = {
   authContext: 'authContext',
@@ -66,7 +67,7 @@ interface PersonRest {
   lastName: string;
 }
 
-const userCompartmentKey = 'users';
+const userToken = new AppStorageToken('users');
 
 interface UserCompartments {
   account: DataCompartmentOptions<AccountRest | undefined>;
@@ -90,7 +91,7 @@ class UserDataFactory {
   ) {}
 
   create() {
-    return createDataCache<UserCompartments>({
+    return createDataCache<UserCompartments>(userToken, {
       account: {
         defaultValue: undefined,
         loadingOptions: {
@@ -117,7 +118,7 @@ const withUserData = createDataCacheModule((storage, container) => {
   const factory = container.resolve(UserDataFactory);
   const cache = factory.create();
 
-  storage.store(userCompartmentKey, cache);
+  storage.store(cache);
 });
 
 class PrincipalUser {
@@ -140,7 +141,7 @@ class PrincipalUser {
 }
 
 class PrincipalUserSubject implements ISubject<PrincipalUser> {
-  constructor(@injectDataCache(userCompartmentKey) private readonly userData: UserData) {}
+  constructor(@injectDataCache(userToken.key) private readonly userData: UserData) {}
 
   createObservable(): Observable<PrincipalUser> {
     return combineLatest([
@@ -155,7 +156,7 @@ class TestAppListener implements IListener, Partial<Observer<boolean>> {
 
   constructor(
     @injectSubject(TestServices.authSubject) private readonly isAuthenticated$: Observable<boolean>,
-    @injectDataCache(userCompartmentKey) private readonly userData: UserData,
+    @injectDataCache(userToken.key) private readonly userData: UserData,
   ) {}
 
   start(): Subscription {
@@ -190,7 +191,7 @@ const useAuthenticationContext = () => {
 
 const useUserData = () => {
   const storage = useAppStorage();
-  return storage.retrieve<UserCompartments>(userCompartmentKey);
+  return storage.retrieve<UserCompartments>(userToken);
 };
 
 const useIsAppReady = () => {

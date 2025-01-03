@@ -13,12 +13,12 @@ import {
   IMutation,
   injectProjectionContext,
 } from '../index';
-import { AccountCompartmentKey, AccountCompartments, AccountInfoRest, createAccountStorage } from './Common';
 import { InteractionContext } from './InteractionContext';
 import { combineLatest, firstValueFrom, map, Observable } from 'rxjs';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
+import { AccountCompartments, AccountInfoRest, createAccountStorage, TestTokens } from './Common';
 
 interface AccountSummaryDto {
   id: number;
@@ -32,7 +32,7 @@ class AccountSummariesProjection {
 
   constructor(@injectProjectionContext() private readonly context: ProjectionContext) {
     const { storage } = this.context;
-    this.cache = storage.retrieve<AccountCompartments>(AccountCompartmentKey);
+    this.cache = storage.retrieve<AccountCompartments>(TestTokens.account);
   }
 
   get accounts$(): Observable<AccountSummaryDto[]> {
@@ -84,7 +84,7 @@ export class RemoveAccount implements IMutation<AccountSummaryDto> {
     }
 
     const { data, storage } = context;
-    const cache = storage.retrieve<AccountCompartments>(AccountCompartmentKey);
+    const cache = storage.retrieve<AccountCompartments>(TestTokens.account);
     await cache.modify<AccountInfoRest[]>('plans', async (accounts: AccountInfoRest[]) => {
       return accounts.filter((x) => x.id !== data.id);
     });
@@ -93,7 +93,7 @@ export class RemoveAccount implements IMutation<AccountSummaryDto> {
 
 const SampleDashboard: React.FC = () => {
   const appStorage = useAppStorage();
-  const accountsCache = appStorage.retrieve<AccountCompartments>(AccountCompartmentKey);
+  const accountsCache = appStorage.retrieve<AccountCompartments>(TestTokens.account);
   const { action: remove, status } = useMutation<AccountSummaryDto>(new RemoveAccount());
   const { accounts$ } = useProjection(AccountSummariesProjection);
   const { report$ } = useProjection(AccountsSummaryProjection);

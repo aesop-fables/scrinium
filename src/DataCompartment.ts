@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 import { Latch } from './Utils';
-import { DataCompartmentState } from './DataCompartmentState';
-import { ScriniumDiagnostics } from './Diagnostics';
+import { DataCompartmentState, IRetentionPolicy } from './Compartments';
 import { ISystemClock, systemClock } from './System';
-import { DataCompartmentOptions, defaultComparer, IDataCompartment } from './Compartments';
+import {
+  ApplicationCacheManagerRetentionPolicy,
+  DataCompartmentOptions,
+  defaultComparer,
+  IDataCompartment,
+  RetentionContext,
+} from './Compartments';
+import { ApplicationCacheManager, IApplicationCacheManager } from './Caching';
+import { DataCompartmentToken } from './AppStorageToken';
 /**
  * Represents an individual compartment of data that exposes lifecycle and observable functions to interact
  * with the cached value(s).
@@ -16,6 +23,8 @@ export class DataCompartment<Model> implements IDataCompartment {
   private readonly latch = new Latch();
   private readonly value: BehaviorSubject<Model>;
   private readonly systemClock: ISystemClock;
+  private readonly appCache: IApplicationCacheManager;
+  private readonly policies: IRetentionPolicy[];
   /**
    * The options used to configure the compartment.
    */
@@ -23,7 +32,7 @@ export class DataCompartment<Model> implements IDataCompartment {
   /**
    * The unique identifier of the compartment.
    */
-  readonly key: string;
+  readonly token: DataCompartmentToken;
 
   /**
    * Constructs a new instance of DataCompartment.
@@ -31,8 +40,8 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @param options The options used to configured the behavior of the compartment.
    * @returns A new instance of DataCompartment.
    */
-  constructor(key: string, options: DataCompartmentOptions<Model>) {
-    this.key = key;
+  constructor(token: DataCompartmentToken, options: DataCompartmentOptions<Model>) {
+    this.token = token;
     this.options = {
       comparer: defaultComparer,
       loadingOptions: {
@@ -43,6 +52,8 @@ export class DataCompartment<Model> implements IDataCompartment {
     };
 
     this.systemClock = this.options.system?.clock ?? systemClock;
+    this.appCache = this.options.system?.cache ?? ApplicationCacheManager.instance;
+    this.policies = this.options.retention?.policies ?? [new ApplicationCacheManagerRetentionPolicy()];
 
     this.value = new BehaviorSubject<Model>(options.defaultValue);
     if (this.options.loadingOptions?.strategy !== 'auto') {
@@ -99,6 +110,16 @@ export class DataCompartment<Model> implements IDataCompartment {
         this.next(value);
         this.initialized.next(true);
         this.lastLoaded.next(this.systemClock.now());
+
+        const policies = this.policies;
+        for (let i = 0; i < policies.length; i++) {
+          const policy = policies[i];
+          policy.markForExpiration(this, new RetentionContext(this.appCache, this.systemClock));
+        }
+
+        if (this.options.onLoad) {
+          this.options.onLoad(value);
+        }
       } catch (e) {
         if (this.options.onError) {
           this.options.onError(e as Error);
@@ -117,10 +138,6 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @returns An observable that emits true when initialization is complete.
    */
   get initialized$(): Observable<boolean> {
-    if (ScriniumDiagnostics.shouldObserve(this.key)) {
-      ScriniumDiagnostics.captureCompartmentInitialized(this.key);
-    }
-
     return combineLatest([this.initialized, this.lastLoaded]).pipe(
       map(([initialized]) => {
         const shouldInitialize = !initialized || this.isExpired;
@@ -166,6 +183,12 @@ export class DataCompartment<Model> implements IDataCompartment {
       this.value.next(value);
     }
   }
+  /**
+   * The unique identifier of the compartment.
+   */
+  get key(): string {
+    return this.token.value;
+  }
 
   get isExpired(): boolean {
     const retention = this.options.retention;
@@ -173,8 +196,8 @@ export class DataCompartment<Model> implements IDataCompartment {
       return false;
     }
 
-    const policies = retention.policies ?? [];
-    return policies.some((policy) => policy.isExpired(this.systemClock, this));
+    const policies = this.policies;
+    return policies.some((policy) => policy.isExpired(this, new RetentionContext(this.appCache, this.systemClock)));
   }
 
   setData(value: never): void {
@@ -200,6 +223,7 @@ export class DataCompartment<Model> implements IDataCompartment {
       error,
       lastLoaded: this.lastLoaded.value,
       key: this.key,
+      token: this.token,
       options: this.options,
       value: this.value.value,
     };

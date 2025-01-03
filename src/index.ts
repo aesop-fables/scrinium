@@ -8,7 +8,6 @@ export { AppStorage, IAppStorage } from './AppStorage';
 
 // DataCache
 export * from './DataCache';
-export * from './DataCompartmentState';
 export * from './IDataCacheObserver';
 export * from './DataCompartment';
 export * from './IDataCompartmentSource';
@@ -27,15 +26,14 @@ export * from './queries';
 
 export * from './AppStorage';
 export * from './bootstrapping';
+export * from './Caching';
 export * from './Compartments';
-export * from './Diagnostics';
 export * from './Decorators';
 export * from './hooks';
 export * from './IListener';
 export * from './ISubject';
 export * from './Keychain';
 export * from './Lookup';
-export * from './ObservableCache';
 export * from './ObservableProvider';
 export * from './Predicate';
 export * from './PredicateListener';

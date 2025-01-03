@@ -3,25 +3,26 @@ import { combineLatest, firstValueFrom, Observable, of } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
-import { ScriniumDiagnostics } from './Diagnostics';
 import { DataCompartment } from './DataCompartment';
+import { AppStorageToken } from './AppStorageToken';
 
 export interface IDataCache {
   compartments: IDataCompartment[];
   observeWith: (observer: IDataCacheObserver) => void;
+  token: AppStorageToken;
 }
 
 export class DataCache<T> implements IDataCache {
-  constructor(readonly compartments: IDataCompartment[]) {}
+  constructor(
+    readonly token: AppStorageToken,
+    readonly compartments: IDataCompartment[],
+  ) {}
 
   observe$<Output>(key: keyof T): Observable<Output> {
-    if (ScriniumDiagnostics.shouldObserve(String(key))) {
-      ScriniumDiagnostics.captureObserve(String(key));
-    }
-
     return of(this.compartments).pipe(
       switchMap((compartments) => {
-        const compartment = compartments.find((x) => x.key === String(key));
+        const compartmentToken = this.token.append(String(key));
+        const compartment = compartments.find((x) => x.token.equals(compartmentToken));
         if (!compartment) {
           throw new Error(`Could not find compartment: ${String(key)}`);
         }
@@ -33,10 +34,6 @@ export class DataCache<T> implements IDataCache {
   }
 
   get initialized$(): Observable<boolean> {
-    if (ScriniumDiagnostics.options.watchCacheInitialization) {
-      ScriniumDiagnostics.captureCacheInitialized();
-    }
-
     return of(this.compartments).pipe(
       switchMap((compartments) => {
         return combineLatest(compartments.map((x) => x.initialized$)).pipe(
@@ -68,7 +65,8 @@ export class DataCache<T> implements IDataCache {
   }
 
   findCompartment(key: keyof T): IDataCompartment {
-    const compartment = this.compartments.find((x) => x.key === String(key));
+    const targetToken = this.token.append(String(key));
+    const compartment = this.compartments.find((x) => x.token.equals(targetToken));
     if (!compartment) {
       throw new Error(`Could not find compartment: ${String(key)}`);
     }
@@ -98,12 +96,14 @@ export class DataCache<T> implements IDataCache {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDataCache<Compartments extends Record<string, any>>(
+  token: AppStorageToken,
   policy: Compartments,
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
-    return new DataCompartment<unknown>(key, value as DataCompartmentOptions<unknown>);
+    const compartmentToken = token.append(key);
+    return new DataCompartment<unknown>(compartmentToken, value as DataCompartmentOptions<unknown>);
   });
 
-  return new DataCache<Compartments>(compartments);
+  return new DataCache<Compartments>(token, compartments);
 }

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Observable } from 'rxjs';
 import { Predicate } from './Predicate';
-import { DataCompartmentState } from './DataCompartmentState';
 import { ISystemClock, SystemOverrides } from './System';
 import { IDataCompartmentSource } from './IDataCompartmentSource';
+import { IApplicationCacheManager } from './Caching';
+import { DataCompartmentToken } from './AppStorageToken';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -24,16 +25,59 @@ export interface RetentionOptions {
   policies: IRetentionPolicy[];
 }
 
+export class RetentionContext {
+  constructor(
+    readonly appCache: IApplicationCacheManager,
+    readonly clock: ISystemClock,
+  ) {}
+
+  isExpired(compartment: IDataCompartment) {
+    const token = this.appCache.find(compartment.key);
+    if (!token || !token.expirationTimestamp) {
+      return true;
+    }
+
+    return token.isExpired(this.clock);
+  }
+}
+
 export interface IRetentionPolicy {
-  isExpired(clock: ISystemClock, compartment: IDataCompartment): boolean;
+  isExpired(compartment: IDataCompartment, context: RetentionContext): boolean;
+  markForExpiration(compartment: IDataCompartment, context: RetentionContext): void;
+}
+
+export class ApplicationCacheManagerRetentionPolicy implements IRetentionPolicy {
+  isExpired(compartment: IDataCompartment, context: RetentionContext): boolean {
+    return context.isExpired(compartment);
+  }
+  markForExpiration(): void {
+    //no-op
+  }
 }
 
 export function cacheForSeconds(seconds: number): IRetentionPolicy {
   return {
-    isExpired: (clock: ISystemClock, compartment: IDataCompartment) => {
-      return clock.now() - compartment.getCompartmentState().lastLoaded > seconds * 1000;
+    isExpired: (compartment: IDataCompartment, context: RetentionContext) => {
+      return context.isExpired(compartment);
+    },
+    markForExpiration: (compartment: IDataCompartment, context: RetentionContext) => {
+      const { appCache, clock } = context;
+      appCache.register(compartment.key, clock.now() + seconds * 1000);
     },
   };
+}
+
+type ActionWithArgs<T> = (value: T) => void;
+
+export interface DataCompartmentState {
+  key: string;
+  token: DataCompartmentToken;
+  options: DataCompartmentOptions<any>;
+  lastLoaded: number;
+  value?: any;
+  initialized: boolean;
+  loading: boolean;
+  error?: unknown;
 }
 
 /**
@@ -64,10 +108,15 @@ export interface DataCompartmentOptions<T> {
    */
   comparer?: CompartmentComparer<T>;
   /**
+   * Optional callback when a compartment has finished loading.
+   * @param value The data loaded from the source.
+   */
+  onLoad?: ActionWithArgs<T>;
+  /**
    * Optional callback when an error occurs while loading the compartment.
    * @param error The error thrown by the source.
    */
-  onError?: (error: Error) => void;
+  onError?: ActionWithArgs<Error>;
 
   /**
    * Optional system overrides (mostly used for testing but could prove useful otherwise)
@@ -80,6 +129,10 @@ export interface IDataCompartment {
    * The unique identifier of the compartment.
    */
   key: string;
+  /**
+   * The unique identifier of the compartment.
+   */
+  token: DataCompartmentToken;
   /**
    * Provides an observable that emits true when initialization is complete.
    * @returns An observable that emits true when initialization is complete.

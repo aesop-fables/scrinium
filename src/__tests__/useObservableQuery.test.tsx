@@ -6,7 +6,13 @@ import { ServiceProvider } from '@aesop-fables/containr-react';
 import { Scopes, createContainer, createServiceModule } from '@aesop-fables/containr';
 import { useObservableQuery } from '../hooks/useObservableQuery';
 import { IObservableQuery } from '../queries/Types';
-import { createDataCacheModule, useScrinium } from '../bootstrapping';
+import {
+  AppStorageRegistrations,
+  createAppStorageRegistrations,
+  createDataCacheModule,
+  IAppStorageRegistration,
+  useScrinium,
+} from '../bootstrapping';
 import { DataCache, createDataCache } from '../DataCache';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
@@ -14,6 +20,7 @@ import { Predicate, predicate } from '../Predicate';
 import { injectDataCache } from '../Decorators';
 import { ISubject, injectSubject } from '../ISubject';
 import { wait } from './utils';
+import { AppStorageToken } from '../AppStorageToken';
 
 const predicateKey = 'predicateSubject';
 const subjectKey = 'subjectKey';
@@ -33,7 +40,7 @@ describe('useObservableQuery', () => {
 
     const { getByTestId } = render(
       <ServiceProvider rootContainer={container}>
-        <Controller preferenceKey="foo" />
+        <SampleContainer preferenceKey="foo" />
       </ServiceProvider>,
     );
 
@@ -45,14 +52,39 @@ describe('useObservableQuery', () => {
   });
 });
 
-const Controller: React.FC<{ preferenceKey: string }> = ({ preferenceKey }) => {
-  const preference = useObservableQuery(FindPreferenceByKey, { key: preferenceKey });
+function usePreference(key: string) {
+  const preference = useObservableQuery(FindPreferenceByKey, { key });
   const loading = useMemo(() => typeof preference === 'undefined', [preference]);
+
+  return {
+    loading,
+    key: preference?.key,
+    value: preference?.value,
+  };
+}
+
+type SampleContainerProps = {
+  preferenceKey: string;
+};
+
+const SampleContainer: React.FC<SampleContainerProps> = ({ preferenceKey }) => {
+  const { loading, key, value } = usePreference(preferenceKey);
+
+  return <SampleComponent loading={loading} preferenceKey={key} preferenceValue={value} />;
+};
+
+type PreferenceViewerProps = {
+  loading: boolean;
+  preferenceKey?: string;
+  preferenceValue?: string;
+};
+
+const SampleComponent: React.FC<PreferenceViewerProps> = ({ loading, preferenceKey, preferenceValue }) => {
   return (
     <>
       {loading && <p data-testid="loading">Loading</p>}
       <div data-testid="controller">
-        {preference?.key} = {preference?.value}
+        {preferenceKey} = {preferenceValue}
       </div>
     </>
   );
@@ -85,20 +117,20 @@ interface Preference {
   value?: string;
 }
 
-const accountsKey = 'accounts';
+const accountsKey = new AppStorageToken('accounts');
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
 }
 
-const preferencesKey = 'preferences';
+const preferencesKey = new AppStorageToken('preferences');
 
 interface PreferenceCompartments {
   preferences: DataCompartmentOptions<Preference[]>;
 }
 
 class AccountLoadedPredicate implements Predicate {
-  constructor(@injectDataCache(accountsKey) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@injectDataCache(accountsKey.key) private readonly cache: DataCache<AccountCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$;
@@ -107,35 +139,39 @@ class AccountLoadedPredicate implements Predicate {
 
 @predicate(predicateKey)
 class PreferencesSubject implements ISubject<Preference[]> {
-  constructor(@injectDataCache(preferencesKey) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesKey.key) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');
   }
 }
 
-const withAccountData = createDataCacheModule((storage) => {
-  const cache = createDataCache<AccountCompartments>({
-    account: {
-      loadingOptions: {
-        strategy: 'lazy',
+class AccountRegistration implements IAppStorageRegistration {
+  defineData(): AppStorageRegistrations {
+    const cache = createDataCache<AccountCompartments>(accountsKey, {
+      account: {
+        loadingOptions: { strategy: 'lazy' },
+        defaultValue: undefined,
+        source: new ConfiguredDataSource(async () => {
+          return {
+            username: 'tuser',
+            firstName: 'Test',
+            lastName: 'User',
+          };
+        }),
       },
-      defaultValue: undefined,
-      source: new ConfiguredDataSource(async () => {
-        return {
-          username: 'tuser',
-          firstName: 'Test',
-          lastName: 'User',
-        };
-      }),
-    },
-  });
+    });
 
-  storage.store(accountsKey, cache);
-});
+    return {
+      caches: [cache],
+    };
+  }
+}
+
+const withAccountData = createAppStorageRegistrations(AccountRegistration);
 
 const withPreferencesData = createDataCacheModule((storage) => {
-  const cache = createDataCache<PreferenceCompartments>({
+  const cache = createDataCache<PreferenceCompartments>(preferencesKey, {
     preferences: {
       loadingOptions: {
         strategy: 'auto',
@@ -147,5 +183,5 @@ const withPreferencesData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(preferencesKey, cache);
+  storage.store(cache);
 });
