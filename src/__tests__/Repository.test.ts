@@ -190,6 +190,31 @@ describe('Repository', () => {
     const sample = container.resolve(SampleService);
     sample.execute();
   });
+
+  test('modifies the value', async () => {
+    const videos: Video[] = [{ id: '1', title: 'Video 1' }];
+    const metadata: VideoMetadata[] = [{ id: '1', duration: 1000 }];
+    const repository = createRepository<VideoRegistry>(repoToken, {
+      metadata: {
+        resolver: new ConfiguredEntityResolver<string, VideoMetadata>(async (key) => {
+          return metadata.find((x) => x.id === key) as VideoMetadata;
+        }),
+      },
+      videos: {
+        resolver: new ConfiguredEntityResolver<string, Video>(async (key) => {
+          return videos.find((x) => x.id === key) as Video;
+        }),
+      },
+    });
+
+    const videoCompartment = repository.get<string, Video>('videos', '1');
+
+    await repository.modify<string, Video>('videos', '1', async (currentValue) => {
+      return { ...currentValue, title: 'Async Updated Video 1' };
+    });
+
+    expect((await firstValueFrom(videoCompartment.value$)).title).toBe('Async Updated Video 1');
+  });
 });
 
 class SampleService {

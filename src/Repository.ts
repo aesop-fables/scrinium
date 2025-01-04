@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { firstValueFrom } from 'rxjs';
 import { AppStorageToken } from './AppStorageToken';
 import { DataCompartmentOptions, RetentionOptions } from './Compartments';
 import { ConfiguredDataSource } from './ConfiguredDataSource';
@@ -69,6 +70,17 @@ export interface IRepository<Registry> {
    */
   get<Key extends string | number, Response>(key: keyof Registry, id: Key): DataCompartment<Response>;
   /**
+   * Modifies the underlying value of the specified key/id.
+   * @param key The key of the compartment
+   * @param id The id of the entity
+   * @param modifier The function used to modify the current value.
+   */
+  modify<Key extends string | number, Model>(
+    key: keyof Registry,
+    id: Key,
+    modifier: (currentValue: Model) => Promise<Model>,
+  ): Promise<void>;
+  /**
    * Resets the repository by clearing all caches.
    */
   reset(): void;
@@ -117,6 +129,23 @@ export class Repository<Registry> implements IRepository<Registry> {
   get<Key extends string | number, Response>(key: keyof Registry, id: Key): DataCompartment<Response> {
     const lookup = this.findLookup<Response>(key);
     return lookup.find(id as string | number);
+  }
+  /**
+   * Modifies the underlying value of the specified key/id.
+   * @param key The key of the compartment
+   * @param id The id of the entity
+   * @param modifier The function used to modify the current value.
+   */
+  async modify<Key extends string | number, Model>(
+    key: keyof Registry,
+    id: Key,
+    modifier: (currentValue: Model) => Promise<Model>,
+  ): Promise<void> {
+    const stronglyTypedCompartment = this.get<Key, Model>(key, id);
+    const currentValue = await firstValueFrom(stronglyTypedCompartment.value$);
+    const newValue = await modifier(currentValue);
+
+    stronglyTypedCompartment.next(newValue);
   }
   /**
    * Resets the repository by clearing all caches.
