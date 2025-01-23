@@ -6,7 +6,7 @@ import { wait } from './utils';
 import { injectRepository } from '../Decorators';
 import { createContainer } from '@aesop-fables/containr';
 import { useScrinium } from '../bootstrapping';
-import { IAppStorage } from '../AppStorage';
+import { DataCatalog, DataStore } from '../DataStore';
 import { ScriniumServices } from '../ScriniumServices';
 import { DataStoreToken } from '../DataStoreToken';
 
@@ -184,8 +184,8 @@ describe('Repository', () => {
     });
 
     const container = createContainer([useScrinium({ modules: [] })]);
-    const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
-    storage.storeRepository(repository);
+    const storage = container.get<DataCatalog>(ScriniumServices.DataStore);
+    storage.registerRepository(repository);
 
     const sample = container.resolve(SampleService);
     sample.execute();

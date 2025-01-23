@@ -6,8 +6,8 @@ import { ApplicationState } from '../ApplicationState';
 import { CommandExecutor, ICommandExecutor } from '../commands';
 import { IObservableQueryDispatcher, ObservableQueryDispatcher } from '../queries/IObservableQueryDispatcher';
 
-export * from './createAppStorageModule';
-export * from './IAppStorageModule';
+export * from './createDataCatalogModule';
+export * from './DataCatalogModule';
 export * from './useDataCache';
 
 export const useScrinium = createServiceModuleWithOptions<ScriniumBootstrappingOptions>(

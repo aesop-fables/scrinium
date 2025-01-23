@@ -8,7 +8,7 @@ import {
   interceptorChainFor,
   registerDependency,
 } from '@aesop-fables/containr';
-import { IAppStorage } from './AppStorage';
+import { DataStore } from './DataStore';
 import { ScriniumServices } from './ScriniumServices';
 
 export type ProjectionConstructor<T> = new (context: ProjectionContext, ...args: any[]) => T;
@@ -19,7 +19,7 @@ export declare type Projectable<Projection> =
   | Newable<Projection>;
 
 export interface ProjectionContext {
-  storage: IAppStorage;
+  storage: DataStore;
   container: IServiceContainer;
 }
 
@@ -29,7 +29,7 @@ export interface IProjectionFactory<T> {
 
 export class InjectProjectionContextInterceptor implements IInterceptor<ProjectionContext> {
   resolve(currentValue: any | undefined, container: IServiceContainer): any {
-    const storage = currentValue as IAppStorage;
+    const storage = currentValue as DataStore;
     return {
       container,
       storage,
@@ -39,14 +39,14 @@ export class InjectProjectionContextInterceptor implements IInterceptor<Projecti
 
 export function injectProjectionContext() {
   return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.AppStorage, parameterIndex, true);
+    registerDependency(constructor, ScriniumServices.DataStore, parameterIndex, true);
     const chain = interceptorChainFor(constructor, parameterIndex);
     chain.add(new InjectProjectionContextInterceptor());
   };
 }
 
 export function createProjection<Projection>(
-  storage: IAppStorage,
+  storage: DataStore,
   container: IServiceContainer,
   constructor: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,
   ...args: any[]
@@ -70,8 +70,8 @@ export class FromProjectionInterceptor<Projection> implements IInterceptor<Proje
   ) {}
 
   resolve(currentValue: Projection | undefined, container: IServiceContainer): Projection {
-    const appStorage = currentValue as IAppStorage;
-    return createProjection(appStorage, container, this.projection);
+    const dataStore = currentValue as DataStore;
+    return createProjection(dataStore, container, this.projection);
   }
 }
 
@@ -79,7 +79,7 @@ export function fromProjection<Projection>(
   projection: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,
 ) {
   return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.AppStorage, parameterIndex, true);
+    registerDependency(constructor, ScriniumServices.DataStore, parameterIndex, true);
     const chain = interceptorChainFor(constructor, parameterIndex);
     chain.add(new FromProjectionInterceptor(projection));
   };

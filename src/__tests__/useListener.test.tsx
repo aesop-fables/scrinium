@@ -12,10 +12,10 @@ import {
   ScriniumServices,
   SubjectResolver,
   createDataCache,
-  createDataCacheModule,
+  createDataCatalogModule,
   injectDataCache,
   injectSubject,
-  useAppStorage,
+  useDataStore,
   useListener,
   useObservable,
   useSubject,
@@ -114,11 +114,11 @@ class UserDataFactory {
   }
 }
 
-const withUserData = createDataCacheModule((storage, container) => {
+const withUserData = createDataCatalogModule((storage, container) => {
   const factory = container.resolve(UserDataFactory);
   const cache = factory.create();
 
-  storage.store(cache);
+  storage.registerCache(cache);
 });
 
 class PrincipalUser {
@@ -190,8 +190,8 @@ const useAuthenticationContext = () => {
 };
 
 const useUserData = () => {
-  const storage = useAppStorage();
-  return storage.retrieve<UserCompartments>(userToken);
+  const storage = useDataStore();
+  return storage.cache<UserCompartments>(userToken);
 };
 
 const useIsAppReady = () => {

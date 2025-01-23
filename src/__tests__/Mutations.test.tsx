@@ -6,12 +6,13 @@ import {
   useObservable,
   useMutation,
   DataCache,
-  useAppStorage,
+  useDataStore,
   MutationStatus,
   ProjectionContext,
   MutationContext,
   IMutation,
   injectProjectionContext,
+  DataStore,
 } from '../index';
 import { InteractionContext } from './InteractionContext';
 import { combineLatest, firstValueFrom, map, Observable } from 'rxjs';
@@ -32,7 +33,7 @@ class AccountSummariesProjection {
 
   constructor(@injectProjectionContext() private readonly context: ProjectionContext) {
     const { storage } = this.context;
-    this.cache = storage.retrieve<AccountCompartments>(TestTokens.account);
+    this.cache = storage.cache<AccountCompartments>(TestTokens.account);
   }
 
   get accounts$(): Observable<AccountSummaryDto[]> {
@@ -84,7 +85,7 @@ export class RemoveAccount implements IMutation<AccountSummaryDto> {
     }
 
     const { data, storage } = context;
-    const cache = storage.retrieve<AccountCompartments>(TestTokens.account);
+    const cache = storage.cache<AccountCompartments>(TestTokens.account);
     await cache.modify<AccountInfoRest[]>('plans', async (accounts: AccountInfoRest[]) => {
       return accounts.filter((x) => x.id !== data.id);
     });
@@ -92,8 +93,8 @@ export class RemoveAccount implements IMutation<AccountSummaryDto> {
 }
 
 const SampleDashboard: React.FC = () => {
-  const appStorage = useAppStorage();
-  const accountsCache = appStorage.retrieve<AccountCompartments>(TestTokens.account);
+  const dataStore = useDataStore();
+  const accountsCache = dataStore.cache<AccountCompartments>(TestTokens.account);
   const { action: remove, status } = useMutation<AccountSummaryDto>(new RemoveAccount());
   const { accounts$ } = useProjection(AccountSummariesProjection);
   const { report$ } = useProjection(AccountsSummaryProjection);
@@ -146,7 +147,7 @@ describe('Mutations', () => {
   });
 
   test('Initial rendering of data', async () => {
-    const [appStorage, dataCache] = createAccountStorage({
+    const [dataCatalog, dataCache] = createAccountStorage({
       plans: {
         loadingOptions: {
           strategy: 'manual',
@@ -161,7 +162,7 @@ describe('Mutations', () => {
     });
 
     render(
-      <InteractionContext appStorage={appStorage}>
+      <InteractionContext dataStore={new DataStore(dataCatalog)}>
         <SampleDashboard />
       </InteractionContext>,
     );
@@ -180,7 +181,7 @@ describe('Mutations', () => {
       await wait(5000); // cranking it up to avoid race conditions
     };
 
-    const [appStorage, dataCache] = createAccountStorage({
+    const [dataCatalog, dataCache] = createAccountStorage({
       plans: {
         loadingOptions: {
           strategy: 'manual',
@@ -200,7 +201,7 @@ describe('Mutations', () => {
     };
 
     render(
-      <InteractionContext appStorage={appStorage}>
+      <InteractionContext dataStore={new DataStore(dataCatalog)}>
         <SampleDashboard />
       </InteractionContext>,
     );
@@ -231,7 +232,7 @@ describe('Mutations', () => {
   });
 
   test('Invoke the mutation - verify that the account is no longer displayed', async () => {
-    const [appStorage, dataCache] = createAccountStorage({
+    const [dataCatalog, dataCache] = createAccountStorage({
       plans: {
         loadingOptions: {
           strategy: 'manual',
@@ -251,7 +252,7 @@ describe('Mutations', () => {
     };
 
     render(
-      <InteractionContext appStorage={appStorage}>
+      <InteractionContext dataStore={new DataStore(dataCatalog)}>
         <SampleDashboard />
       </InteractionContext>,
     );

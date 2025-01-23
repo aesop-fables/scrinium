@@ -7,6 +7,7 @@ import {
   useRepositoryProjection,
   createRepository,
   ConfiguredEntityResolver,
+  DataStore,
 } from '../index';
 import {
   AccountProjections,
@@ -59,7 +60,7 @@ const SampleComponent: React.FC = () => {
 
 describe('Sample Component', () => {
   test('Initial rendering of accounts', async () => {
-    const [appStorage, dataCache] = createAccountStorage({
+    const [dataCatalog, dataCache] = createAccountStorage({
       plans: {
         loadingOptions: {
           strategy: 'manual',
@@ -82,10 +83,10 @@ describe('Sample Component', () => {
       },
     });
 
-    appStorage.storeRepository(repository);
+    dataCatalog.registerRepository(repository);
 
     render(
-      <InteractionContext appStorage={appStorage}>
+      <InteractionContext dataStore={new DataStore(dataCatalog)}>
         <SampleComponent />
       </InteractionContext>,
     );

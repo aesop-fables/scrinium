@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { mock } from 'jest-mock-extended';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCache, DataCache } from '../DataCache';
@@ -20,7 +19,7 @@ describe('DataStore', () => {
       },
     });
 
-    values.registerCache(testToken, cache);
+    values.registerCache(cache);
     const store = new DataStore(values);
     expect(store.cache(testToken)).toBe(cache);
   });
@@ -34,7 +33,7 @@ describe('DataStore', () => {
       },
     });
 
-    values.registerRepository(testToken, repository);
+    values.registerRepository(repository);
     const store = new DataStore(values);
     expect(store.repository(testToken)).toBe(repository);
   });
@@ -57,16 +56,16 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = mock<DataCache<TestCompartments>>();
-    const cache2 = mock<DataCache<TestCompartments>>();
-    const repo1 = mock<Repository<TestCompartments>>();
-    const repo2 = mock<Repository<TestCompartments>>();
+    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
 
     const values = new DataCatalog();
-    values.registerCache(cacheToken1, cache1);
-    values.registerCache(cacheToken2, cache2);
-    values.registerRepository(repoToken1, repo1);
-    values.registerRepository(repoToken2, repo2);
+    values.registerCache(cache1);
+    values.registerCache(cache2);
+    values.registerRepository(repo1);
+    values.registerRepository(repo2);
 
     const store = new DataStore(values);
     await store.clearDataCaches();
@@ -84,16 +83,16 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = mock<DataCache<TestCompartments>>();
-    const cache2 = mock<DataCache<TestCompartments>>();
-    const repo1 = mock<Repository<TestCompartments>>();
-    const repo2 = mock<Repository<TestCompartments>>();
+    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
 
     const values = new DataCatalog();
-    values.registerCache(cacheToken1, cache1);
-    values.registerCache(cacheToken2, cache2);
-    values.registerRepository(repoToken1, repo1);
-    values.registerRepository(repoToken2, repo2);
+    values.registerCache(cache1);
+    values.registerCache(cache2);
+    values.registerRepository(repo1);
+    values.registerRepository(repo2);
 
     const store = new DataStore(values);
     await store.clearRepositories();
@@ -111,16 +110,16 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = mock<DataCache<TestCompartments>>();
-    const cache2 = mock<DataCache<TestCompartments>>();
-    const repo1 = mock<Repository<TestCompartments>>();
-    const repo2 = mock<Repository<TestCompartments>>();
+    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
 
     const values = new DataCatalog();
-    values.registerCache(cacheToken1, cache1);
-    values.registerCache(cacheToken2, cache2);
-    values.registerRepository(repoToken1, repo1);
-    values.registerRepository(repoToken2, repo2);
+    values.registerCache(cache1);
+    values.registerCache(cache2);
+    values.registerRepository(repo1);
+    values.registerRepository(repo2);
 
     const store = new DataStore(values);
     await store.clearAll();
@@ -138,16 +137,16 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = mock<DataCache<TestCompartments>>();
-    const cache2 = mock<DataCache<TestCompartments>>();
-    const repo1 = mock<Repository<TestCompartments>>();
-    const repo2 = mock<Repository<TestCompartments>>();
+    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
 
     const values = new DataCatalog();
-    values.registerCache(cacheToken1, cache1);
-    values.registerCache(cacheToken2, cache2);
-    values.registerRepository(repoToken1, repo1);
-    values.registerRepository(repoToken2, repo2);
+    values.registerCache(cache1);
+    values.registerCache(cache2);
+    values.registerRepository(repo1);
+    values.registerRepository(repo2);
 
     const store = new DataStore(values);
     const { state$ } = store;

@@ -85,12 +85,12 @@ export class DataCatalog {
       .map((x) => x.storage as IRepository<any>);
   }
 
-  public registerCache<Compartments>(token: DataStoreToken, cache: DataCache<Compartments>): void {
-    this.values.set(token, { type: 'cache', storage: cache });
+  public registerCache(cache: IDataCache): void {
+    this.values.set(cache.token, { type: 'cache', storage: cache });
   }
 
-  public registerRepository<Compartments>(token: DataStoreToken, repository: IRepository<Compartments>): void {
-    this.values.set(token, { type: 'repository', storage: repository });
+  public registerRepository<Compartments>(repository: IRepository<Compartments>): void {
+    this.values.set(repository.token, { type: 'repository', storage: repository });
   }
 
   public get(token: DataStoreToken): ICompartmentStorage | undefined {

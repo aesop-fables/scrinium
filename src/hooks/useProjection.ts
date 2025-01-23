@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useAppStorage } from '../useAppStorage';
+import { useDataStore } from '../useDataStore';
 import { Newable } from '@aesop-fables/containr';
 import { useServiceContainer } from '@aesop-fables/containr-react';
 import useConstant from './useConstant';
@@ -13,7 +13,7 @@ import { DataStoreToken } from '../DataStoreToken';
 export function useProjection<Projection>(
   constructor: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,
 ): Projection {
-  const storage = useAppStorage();
+  const storage = useDataStore();
   const container = useServiceContainer();
   return useConstant(() => createProjection(storage, container, constructor));
 }

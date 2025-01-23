@@ -3,9 +3,6 @@
 // AppData
 export * from './ApplicationState';
 
-// AppStorage
-export { AppStorage, IAppStorage } from './AppStorage';
-
 // DataCache
 export * from './DataCache';
 export * from './IDataCacheObserver';
@@ -24,7 +21,7 @@ export { Stack } from '@aesop-fables/containr';
 export * from './commands';
 export * from './queries';
 
-export * from './AppStorage';
+export * from './DataStore';
 export * from './DataStoreToken';
 export * from './bootstrapping';
 export * from './Caching';
@@ -45,6 +42,6 @@ export * from './scheduling';
 export * from './System';
 export * from './tasks';
 export * from './Transactions';
-export * from './useAppStorage';
+export * from './useDataStore';
 export * from './Utils';
 export * from './Wizards';

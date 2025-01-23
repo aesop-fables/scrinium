@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from '../ApplicationState';
-import { AppStorage } from '../AppStorage';
+import { DataCatalog, DataStore } from '../DataStore';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCacheScenario } from '../Utils';
@@ -43,10 +43,10 @@ describe('ApplicationState', () => {
     });
 
     const key = token.key;
-    const storage = new AppStorage();
-    storage.store(cache);
+    const storage = new DataCatalog();
+    storage.registerCache(cache);
 
-    const subject = new ApplicationState(storage);
+    const subject = new ApplicationState(new DataStore(storage));
     const state$ = subject.createObservable();
 
     await cache.reloadAll();

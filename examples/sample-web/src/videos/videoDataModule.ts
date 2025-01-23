@@ -6,7 +6,7 @@ import {
   createDataCacheModule,
   createRepository,
   DataCompartmentOptions,
-  IAppStorage,
+  DataStore,
   RepositoryCompartmentOptions,
 } from '@aesop-fables/scrinium';
 import { IVideoApi, VideoListingItem, VideoMetadataRest, VideoRest } from './VideoApi';
@@ -26,7 +26,7 @@ export interface VideoRegistry {
   metadata: RepositoryCompartmentOptions<string, VideoMetadataRest>;
 }
 
-export const withVideoDataModule = createDataCacheModule((appStorage: IAppStorage, container: IServiceContainer) => {
+export const withVideoDataModule = createDataCacheModule((dataStore: DataStore, container: IServiceContainer) => {
   const api = container.get<IVideoApi>(VideoServices.VideoApi);
 
   const repository = createRepository<VideoRegistry>({
@@ -58,6 +58,6 @@ export const withVideoDataModule = createDataCacheModule((appStorage: IAppStorag
     },
   });
 
-  appStorage.store(VideoDataCache, dataCache);
-  appStorage.store(VideoRepository, repository);
+  dataStore.store(VideoDataCache, dataCache);
+  dataStore.store(VideoRepository, repository);
 });

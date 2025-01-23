@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IInterceptor, interceptorChainFor, registerDependency } from '@aesop-fables/containr';
 import { ScriniumServices } from './ScriniumServices';
-import { IAppStorage } from './AppStorage';
+import { DataCatalog } from './DataStore';
 import { DataStoreToken } from './DataStoreToken';
 
 export class DataCacheInterceptor implements IInterceptor<any> {
   constructor(private readonly key: string) {}
 
   resolve(currentValue: any | undefined): any {
-    const appStorage = currentValue as IAppStorage;
-    const cache = appStorage.retrieve<any>(new DataStoreToken(this.key));
+    const dataStore = currentValue as DataCatalog;
+    const cache = dataStore.get(new DataStoreToken(this.key));
     if (typeof cache === 'undefined') {
       console.error(`@injectDataCache("${this.key}") returned undefined.`);
     }
@@ -22,26 +22,14 @@ export class RepositoryInterceptor implements IInterceptor<any> {
   constructor(private readonly key: string) {}
 
   resolve(currentValue: any | undefined): any {
-    const appStorage = currentValue as IAppStorage;
-    const cache = appStorage.repository<any>(new DataStoreToken(this.key));
+    const dataStore = currentValue as DataCatalog;
+    const cache = dataStore.get(new DataStoreToken(this.key));
     if (typeof cache === 'undefined') {
       console.error(`@injectRepository("${this.key}") returned undefined.`);
     }
 
     return cache;
   }
-}
-
-/**
- * @deprecated Use injectDataCache or injectRepository
- */
-export function fromAppStorage(storageKey: string) {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.AppStorage, parameterIndex);
-    const chain = interceptorChainFor(constructor, parameterIndex);
-    chain.add(new DataCacheInterceptor(storageKey));
-  };
 }
 
 /**
@@ -52,7 +40,7 @@ export function fromAppStorage(storageKey: string) {
 export function injectDataCache(storageKey: string) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.AppStorage, parameterIndex);
+    registerDependency(constructor, ScriniumServices.DataCatalog, parameterIndex);
     const chain = interceptorChainFor(constructor, parameterIndex);
     chain.add(new DataCacheInterceptor(storageKey));
   };
@@ -66,7 +54,7 @@ export function injectDataCache(storageKey: string) {
 export function injectRepository(storageKey: string) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.AppStorage, parameterIndex);
+    registerDependency(constructor, ScriniumServices.DataCatalog, parameterIndex);
     const chain = interceptorChainFor(constructor, parameterIndex);
     chain.add(new RepositoryInterceptor(storageKey));
   };
