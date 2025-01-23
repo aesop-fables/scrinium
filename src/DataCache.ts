@@ -5,8 +5,9 @@ import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
 import { DataCompartment } from './DataCompartment';
 import { DataStoreToken } from './DataStoreToken';
+import { ICompartmentStorage } from './ICompartmentStorage';
 
-export interface IDataCache {
+export interface IDataCache extends ICompartmentStorage {
   compartments: IDataCompartment[];
   observeWith: (observer: IDataCacheObserver) => void;
   token: DataStoreToken;
@@ -17,6 +18,10 @@ export class DataCache<T> implements IDataCache {
     readonly token: DataStoreToken,
     readonly compartments: IDataCompartment[],
   ) {}
+
+  get managedTokens(): DataStoreToken[] {
+    return this.compartments.map((x) => x.token);
+  }
 
   observe$<Output>(key: keyof T): Observable<Output> {
     return of(this.compartments).pipe(
