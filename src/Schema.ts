@@ -15,11 +15,15 @@ export class SchemaTokenExpression {
 }
 
 export class Schema {
-  constructor(private readonly values: Map<DataStoreToken, IDataTrigger[]>) {}
+  constructor(private readonly values: Record<string, IDataTrigger[]>) {}
+
+  get observableTokens(): DataStoreToken[] {
+    return Object.keys(this.values).map((x) => new DataStoreToken(x));
+  }
 
   // unit test this
   triggersFor(token: DataStoreToken): IDataTrigger[] {
-    return this.values.get(token) ?? [];
+    return this.values[token.value] ?? [];
   }
 
   toJSON() {
@@ -28,7 +32,7 @@ export class Schema {
 }
 
 export class SchemaExpression {
-  constructor(private readonly values: Map<DataStoreToken, IDataTrigger[]>) {}
+  constructor(private readonly values: Record<string, IDataTrigger[]>) {}
 
   compartment<Compartments>(token: DataStoreToken, key: keyof Compartments): SchemaTokenExpression {
     const compartmentToken = token.compartment<Compartments>(key);
@@ -42,10 +46,10 @@ export class SchemaExpression {
   }
 
   private triggersFor(token: DataStoreToken): IDataTrigger[] {
-    let triggers = this.values.get(token);
+    let triggers = this.values[token.value];
     if (!triggers) {
       triggers = [];
-      this.values.set(token, triggers);
+      this.values[token.value] = triggers;
     }
 
     return triggers;
@@ -54,7 +58,7 @@ export class SchemaExpression {
 
 // TODO -- Unit test this
 export function createSchema(configure: (schema: SchemaExpression) => void) {
-  const values: Map<DataStoreToken, IDataTrigger[]> = new Map();
+  const values: Record<string, IDataTrigger[]> = {};
   const expression = new SchemaExpression(values);
   configure(expression);
 

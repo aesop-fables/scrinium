@@ -4,6 +4,7 @@ import { DataCache, IDataCache } from './DataCache';
 import { DataStoreToken } from './DataStoreToken';
 import { ICompartmentStorage } from './ICompartmentStorage';
 import { IRepository, Repository } from './Repository';
+import { Schema } from './Schema';
 
 // Essentially an in-memory database
 // First pass is JUST a replacement for AppStorage
@@ -18,6 +19,8 @@ export type DataStoreState = {
  * Provides a managed data store for caching and repositories as well as managing their relationships.
  */
 export class DataStore {
+  private schema?: Schema;
+
   constructor(private readonly dataCatalog: DataCatalog) {}
 
   public cache<Compartments>(token: DataStoreToken): DataCache<Compartments> {
@@ -61,6 +64,28 @@ export class DataStore {
       }),
     );
   }
+
+  public apply(schema: Schema) {
+    this.schema = schema;
+  }
+
+  // public apply(schema: Schema) {
+  //   this.schema = schema;
+  //   // regen the subscriptions
+
+  //   for (let i = 0; i < schema.observableTokens.length; i++) {
+  //     const token = schema.observableTokens[i];
+  //     const type = this.dataCatalog.describe(token);
+  //     if (type === 'repository') {
+  //       console.log(`Ignoring repository ${token.key}`);
+  //       continue;
+  //     }
+
+  //     const cache = this.cache(token);
+  // Need the abstract way to point to a compartment given a token
+  // Also need a function to determine which tokens are related to a given token
+  //   }
+  // }
 }
 
 type CatalogType = 'cache' | 'repository';
