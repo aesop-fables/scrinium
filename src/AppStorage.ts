@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AppStorageToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 import { DataCache, IDataCache } from './DataCache';
 import { IRepository } from './Repository';
 import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
@@ -14,8 +14,8 @@ export interface IAppStorage {
   clearDataCaches(): void;
   clearRepositories(): void;
 
-  repository<Policy>(token: AppStorageToken): IRepository<Policy>;
-  retrieve<Policy>(token: AppStorageToken): DataCache<Policy>;
+  repository<Policy>(token: DataStoreToken): IRepository<Policy>;
+  retrieve<Policy>(token: DataStoreToken): DataCache<Policy>;
   state$: Observable<IAppStorageState>;
   store(value: IDataCache): void;
   storeRepository<Registry>(value: IRepository<Registry>): void;
@@ -26,11 +26,11 @@ export class AppStorage implements IAppStorage {
   private readonly values = new BehaviorSubject<Record<string, any>>({});
   private readonly repositories = new BehaviorSubject<Record<string, IRepository<any>>>({});
 
-  repository<Policy>(token: AppStorageToken): IRepository<Policy> {
+  repository<Policy>(token: DataStoreToken): IRepository<Policy> {
     return this.repositories.value[token.key] as IRepository<Policy>;
   }
 
-  retrieve<Policy>(token: AppStorageToken): DataCache<Policy> {
+  retrieve<Policy>(token: DataStoreToken): DataCache<Policy> {
     return this.values.value[token.key] as DataCache<Policy>;
   }
 

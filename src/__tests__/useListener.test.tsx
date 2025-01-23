@@ -24,7 +24,7 @@ import { InteractionContext } from './InteractionContext';
 import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, map } from 'rxjs';
 import { Scopes, ServiceCollection, inject } from '@aesop-fables/containr';
 import { useService } from '@aesop-fables/containr-react';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 const TestServices = {
   authContext: 'authContext',
@@ -67,7 +67,7 @@ interface PersonRest {
   lastName: string;
 }
 
-const userToken = new AppStorageToken('users');
+const userToken = new DataStoreToken('users');
 
 interface UserCompartments {
   account: DataCompartmentOptions<AccountRest | undefined>;

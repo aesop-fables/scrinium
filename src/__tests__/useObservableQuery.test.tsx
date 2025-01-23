@@ -20,7 +20,7 @@ import { Predicate, predicate } from '../Predicate';
 import { injectDataCache } from '../Decorators';
 import { ISubject, injectSubject } from '../ISubject';
 import { wait } from './utils';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 const predicateKey = 'predicateSubject';
 const subjectKey = 'subjectKey';
@@ -117,13 +117,13 @@ interface Preference {
   value?: string;
 }
 
-const accountsKey = new AppStorageToken('accounts');
+const accountsKey = new DataStoreToken('accounts');
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
 }
 
-const preferencesKey = new AppStorageToken('preferences');
+const preferencesKey = new DataStoreToken('preferences');
 
 interface PreferenceCompartments {
   preferences: DataCompartmentOptions<Preference[]>;

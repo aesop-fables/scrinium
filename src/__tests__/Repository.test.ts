@@ -8,9 +8,9 @@ import { createContainer } from '@aesop-fables/containr';
 import { useScrinium } from '../bootstrapping';
 import { IAppStorage } from '../AppStorage';
 import { ScriniumServices } from '../ScriniumServices';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
-const repoToken = new AppStorageToken('videos');
+const repoToken = new DataStoreToken('videos');
 
 describe('Repository', () => {
   test('resolves the value the first time', async () => {

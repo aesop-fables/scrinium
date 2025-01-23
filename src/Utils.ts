@@ -3,7 +3,7 @@ import { Subscription, filter } from 'rxjs';
 import { DataCache, createDataCache } from './DataCache';
 import { Semaphore } from 'async-mutex';
 import { DataCompartment } from './DataCompartment';
-import { AppStorageToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 
 export interface SubscriptionProxy<Compartments> {
   <T>(name: keyof Compartments): Promise<T>;
@@ -44,7 +44,7 @@ export interface DataCacheScenario<Compartments> {
  * expect(observedB).toStrictEqual(b);
  */
 export function createDataCacheScenario<Compartments extends Record<string, any>>(
-  token: AppStorageToken,
+  token: DataStoreToken,
   policy: Compartments,
 ): DataCacheScenario<Compartments> {
   const cache = createDataCache<Compartments>(token, policy);

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { firstValueFrom } from 'rxjs';
-import { AppStorageToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 import { DataCompartmentOptions, RetentionOptions } from './Compartments';
 import { ConfiguredDataSource } from './ConfiguredDataSource';
 import { DataCompartment } from './DataCompartment';
@@ -87,7 +87,7 @@ export interface IRepository<Registry> {
   /**
    * The token used to identify the repository.
    */
-  token: AppStorageToken;
+  token: DataStoreToken;
 }
 /**
  * Represents a set of entity compartments.
@@ -95,7 +95,7 @@ export interface IRepository<Registry> {
 export class Repository<Registry> implements IRepository<Registry> {
   private readonly compartments: Hash<ILookup<string | number, DataCompartment<unknown>>>;
   constructor(
-    readonly token: AppStorageToken,
+    readonly token: DataStoreToken,
     private readonly lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> },
   ) {
     this.compartments = {};
@@ -196,7 +196,7 @@ export class Repository<Registry> implements IRepository<Registry> {
  * ```
  */
 export function createRepository<Registry extends Record<string, any>>(
-  token: AppStorageToken,
+  token: DataStoreToken,
   registry: Registry,
 ): IRepository<Registry> {
   const entries = Object.entries(registry);
@@ -213,7 +213,7 @@ export function createRepository<Registry extends Record<string, any>>(
         source: new ConfiguredDataSource(async () => entityOptions.resolver.resolve(id)),
       };
 
-      return new DataCompartment<unknown>(token.append(key), options);
+      return new DataCompartment<unknown>(token.compartment(key), options);
     });
   });
 

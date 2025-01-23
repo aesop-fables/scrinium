@@ -25,7 +25,7 @@ export * from './commands';
 export * from './queries';
 
 export * from './AppStorage';
-export * from './AppStorageToken';
+export * from './DataStoreToken';
 export * from './bootstrapping';
 export * from './Caching';
 export * from './Compartments';

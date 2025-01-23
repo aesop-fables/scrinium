@@ -4,7 +4,7 @@ import { Predicate } from './Predicate';
 import { ISystemClock, SystemOverrides } from './System';
 import { IDataCompartmentSource } from './IDataCompartmentSource';
 import { IApplicationCacheManager } from './Caching';
-import { DataCompartmentToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 
 export declare type EventListener = (listener: () => void) => void;
 
@@ -71,7 +71,7 @@ type ActionWithArgs<T> = (value: T) => void;
 
 export interface DataCompartmentState {
   key: string;
-  token: DataCompartmentToken;
+  token: DataStoreToken;
   options: DataCompartmentOptions<any>;
   lastLoaded: number;
   value?: any;
@@ -132,7 +132,7 @@ export interface IDataCompartment {
   /**
    * The unique identifier of the compartment.
    */
-  token: DataCompartmentToken;
+  token: DataStoreToken;
   /**
    * Provides an observable that emits true when initialization is complete.
    * @returns An observable that emits true when initialization is complete.

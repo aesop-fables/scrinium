@@ -24,7 +24,7 @@ import {
   SubjectResolver,
   useScrinium,
 } from '..';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 const messageCache = 'MessageCache';
 const sampleKey = 'sampleKey';
@@ -91,19 +91,19 @@ interface Preference {
   value?: string;
 }
 
-const accountsToken = new AppStorageToken('accounts');
+const accountsToken = new DataStoreToken('accounts');
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
 }
 
-const userToken = new AppStorageToken('users');
+const userToken = new DataStoreToken('users');
 
 interface UserCompartments {
   user: DataCompartmentOptions<UserDto | undefined>;
 }
 
-const preferencesToken = new AppStorageToken('preferences');
+const preferencesToken = new DataStoreToken('preferences');
 
 interface PreferenceCompartments {
   preferences: DataCompartmentOptions<Preference[]>;

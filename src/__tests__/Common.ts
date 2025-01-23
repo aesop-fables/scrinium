@@ -16,11 +16,11 @@ import {
   injectProjectionContext,
 } from '..';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 export const TestTokens = {
-  account: new AppStorageToken('accounts'),
-  cache: new AppStorageToken('cache1'),
+  account: new DataStoreToken('accounts'),
+  cache: new DataStoreToken('cache1'),
 };
 
 export function createAccountDataCache(): DataCache<AccountCompartments> {

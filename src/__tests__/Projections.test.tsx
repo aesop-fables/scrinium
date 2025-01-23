@@ -20,9 +20,9 @@ import {
 import { InteractionContext } from './InteractionContext';
 import { combineLatest } from 'rxjs';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
-const repoToken = new AppStorageToken('videos');
+const repoToken = new DataStoreToken('videos');
 
 function useVideoRepositoryProjection(id: string) {
   return useRepositoryProjection<VideoRegistry, Video>('videos', 'videos', id);

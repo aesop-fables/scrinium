@@ -1,3 +1,4 @@
+import { DataCompartmentOptions } from '../Compartments';
 import { DataStoreToken } from '../DataStoreToken';
 
 describe('DataStoreToken', () => {
@@ -53,7 +54,7 @@ describe('DataStoreToken', () => {
   });
 
   type TestCompartments = {
-    foo: string;
-    bar: string;
+    foo: DataCompartmentOptions<string>;
+    bar: DataCompartmentOptions<string>;
   };
 });

@@ -2,14 +2,14 @@
 import { IInterceptor, interceptorChainFor, registerDependency } from '@aesop-fables/containr';
 import { ScriniumServices } from './ScriniumServices';
 import { IAppStorage } from './AppStorage';
-import { AppStorageToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 
 export class DataCacheInterceptor implements IInterceptor<any> {
   constructor(private readonly key: string) {}
 
   resolve(currentValue: any | undefined): any {
     const appStorage = currentValue as IAppStorage;
-    const cache = appStorage.retrieve<any>(new AppStorageToken(this.key));
+    const cache = appStorage.retrieve<any>(new DataStoreToken(this.key));
     if (typeof cache === 'undefined') {
       console.error(`@injectDataCache("${this.key}") returned undefined.`);
     }
@@ -23,7 +23,7 @@ export class RepositoryInterceptor implements IInterceptor<any> {
 
   resolve(currentValue: any | undefined): any {
     const appStorage = currentValue as IAppStorage;
-    const cache = appStorage.repository<any>(new AppStorageToken(this.key));
+    const cache = appStorage.repository<any>(new DataStoreToken(this.key));
     if (typeof cache === 'undefined') {
       console.error(`@injectRepository("${this.key}") returned undefined.`);
     }

@@ -8,7 +8,7 @@ import { createDataCacheScenario } from '../Utils';
 import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
 import { ApplicationState } from '../ApplicationState';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 interface ResponseA {
   name: string;
@@ -23,8 +23,8 @@ interface TestStoreCompartments {
   b: DataCompartmentOptions<ResponseB[]>;
 }
 
-const testCacheToken = new AppStorageToken('testCache');
-const testRepoToken = new AppStorageToken('testRepo');
+const testCacheToken = new DataStoreToken('testCache');
+const testRepoToken = new DataStoreToken('testRepo');
 
 describe('AppStorage', () => {
   test('state', async () => {

@@ -11,7 +11,7 @@ import {
   RetentionContext,
 } from './Compartments';
 import { ApplicationCacheManager, IApplicationCacheManager } from './Caching';
-import { DataCompartmentToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 /**
  * Represents an individual compartment of data that exposes lifecycle and observable functions to interact
  * with the cached value(s).
@@ -32,7 +32,7 @@ export class DataCompartment<Model> implements IDataCompartment {
   /**
    * The unique identifier of the compartment.
    */
-  readonly token: DataCompartmentToken;
+  readonly token: DataStoreToken;
 
   /**
    * Constructs a new instance of DataCompartment.
@@ -40,7 +40,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @param options The options used to configured the behavior of the compartment.
    * @returns A new instance of DataCompartment.
    */
-  constructor(token: DataCompartmentToken, options: DataCompartmentOptions<Model>) {
+  constructor(token: DataStoreToken, options: DataCompartmentOptions<Model>) {
     this.token = token;
     this.options = {
       comparer: defaultComparer,

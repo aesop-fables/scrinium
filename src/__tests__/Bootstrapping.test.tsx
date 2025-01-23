@@ -16,7 +16,7 @@ import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { ScriniumServices } from '../ScriniumServices';
 import { useScrinium } from '../bootstrapping';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 class TestActivator implements IActivator {
   isActivated = false;
@@ -100,7 +100,7 @@ describe('Bootstrapping', () => {
       test: DataCompartmentOptions<string>;
     }
 
-    const sampleDataKey = new AppStorageToken('test');
+    const sampleDataKey = new DataStoreToken('test');
 
     const withSampleData = createDataCacheModule((appStorage) => {
       const cache = createDataCache<SampleCompartments>(sampleDataKey, {
