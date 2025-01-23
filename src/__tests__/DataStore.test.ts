@@ -57,9 +57,11 @@ describe('DataStore', () => {
     values.set(testToken, cache);
     const store = new DataStore(values);
 
-    const schema = createSchema((config) => {
-      // Need to be able to trigger from an individual compartment too
-      config.cache(testToken).invalidates(testToken.append('compartmentB'), testToken.append('compartmentD'));
+    const schema = createSchema((builder) => {
+      builder
+        .source(testToken.compartment<TestCompartments>('compartmentA'))
+        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentB'))
+        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentD'));
     });
 
     store.apply(schema);

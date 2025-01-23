@@ -40,3 +40,15 @@ export class DataStore {
     this.generateSubscriptions();
   }
 }
+
+// Feels like the subscription is really just going to do something like...
+// createCompartmentChangedHandler(token: DataCompartmentToken, schema);
+
+// AppStorageToken is really just a path that points to a cache/repository/compartment within the DataStore
+
+// Ok, come back around in a clean branch and...
+// 1. Replace AppStorage with DataStore (AppStorage -> DataStoreBuilder)
+//     Also update the various AppStorage moniker usages like AppStorageRegistration...
+// 2. Replace AppStorageToken with DataStoreToken (AppStorageToken -> DataStoreToken)
+// 3. Replace DataCompartmentToken with DataStoreToken (DataCompartmentToken -> DataStoreToken)
+// 4. Introduce the ability to retrieve a compartment from the data store given a token (unit test!)

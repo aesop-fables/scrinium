@@ -1,14 +1,18 @@
 import { AppStorageToken, DataCompartmentToken, ScriniumToken } from './AppStorageToken';
 import { IDataTrigger, InvalidateDataTrigger } from './IDataTrigger';
 
-export class CacheExpression {
+export class SchemaTokenExpression {
   constructor(private readonly triggers: IDataTrigger[]) {}
 
-  invalidates(...tokens: ScriniumToken[]): CacheExpression {
-    return this.addTrigger(new InvalidateDataTrigger(tokens));
+  invalidatesCompartment(token: DataCompartmentToken): SchemaTokenExpression {
+    return this.addTrigger(new InvalidateDataTrigger([token]));
   }
 
-  addTrigger(trigger: IDataTrigger): CacheExpression {
+  // invalidates(...tokens: ScriniumToken[]): SchemaTokenExpression {
+  //   return this.addTrigger(new InvalidateDataTrigger(tokens));
+  // }
+
+  addTrigger(trigger: IDataTrigger): SchemaTokenExpression {
     this.triggers.push(trigger);
     return this;
   }
@@ -17,6 +21,7 @@ export class CacheExpression {
 export class Schema {
   constructor(private readonly values: Map<ScriniumToken, IDataTrigger[]>) {}
 
+  // unit test this
   triggersFor(token: ScriniumToken): IDataTrigger[] {
     return this.values.get(token) ?? [];
   }
@@ -27,19 +32,20 @@ export class Schema {
 }
 
 export class SchemaExpression {
-  constructor(private readonly values: Map<ScriniumToken, IDataTrigger[]>) {}
+  constructor(private readonly values: Map<DataCompartmentToken, IDataTrigger[]>) {}
 
-  cache(token: AppStorageToken): CacheExpression {
-    const triggers = this.triggersFor(token);
-    return new CacheExpression(triggers);
+  compartment<Compartments>(token: AppStorageToken, key: keyof Compartments): SchemaTokenExpression {
+    const compartmentToken = token.append(key as string);
+    const triggers = this.triggersFor(compartmentToken);
+    return new SchemaTokenExpression(triggers);
   }
 
-  compartment(token: DataCompartmentToken): CacheExpression {
+  source(token: DataCompartmentToken): SchemaTokenExpression {
     const triggers = this.triggersFor(token);
-    return new CacheExpression(triggers);
+    return new SchemaTokenExpression(triggers);
   }
 
-  private triggersFor(token: ScriniumToken): IDataTrigger[] {
+  private triggersFor(token: DataCompartmentToken): IDataTrigger[] {
     let triggers = this.values.get(token);
     if (!triggers) {
       triggers = [];
@@ -50,8 +56,9 @@ export class SchemaExpression {
   }
 }
 
+// TODO -- Unit test this
 export function createSchema(configure: (schema: SchemaExpression) => void) {
-  const values: Map<ScriniumToken, IDataTrigger[]> = new Map();
+  const values: Map<DataCompartmentToken, IDataTrigger[]> = new Map();
   const expression = new SchemaExpression(values);
   configure(expression);
 

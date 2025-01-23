@@ -1,10 +1,16 @@
-export type ScriniumToken = AppStorageToken | DataCompartmentToken;
+export type ScriniumToken = (AppStorageToken | DataCompartmentToken) & {
+  matches(val: ScriniumToken): boolean;
+};
 
 export class AppStorageToken {
   constructor(readonly key: string) {}
 
   get value(): string {
     return this.key;
+  }
+
+  compartment<Compartments>(key: keyof Compartments): DataCompartmentToken {
+    return new DataCompartmentToken(key as string, this);
   }
 
   append(key: string): DataCompartmentToken {
@@ -14,8 +20,13 @@ export class AppStorageToken {
   equals(val: ScriniumToken) {
     return tokenEquals(this, val);
   }
+
+  matches(val: ScriniumToken): boolean {
+    throw new Error('Method not implemented.');
+  }
 }
 
+// TODO -- Consolidate down to AppStorageToken
 export class DataCompartmentToken {
   constructor(
     readonly key: string,
@@ -28,6 +39,10 @@ export class DataCompartmentToken {
 
   equals(val: ScriniumToken) {
     return tokenEquals(this, val);
+  }
+
+  matches(val: ScriniumToken): boolean {
+    throw new Error('Method not implemented.');
   }
 }
 
