@@ -84,9 +84,7 @@ describe('Bootstrapping', () => {
         dataStore.registerCache(dataCache);
       });
 
-      const configureAppStorage = useDataCache([withAccountStorage]);
-      const container = createContainer([configureAppStorage]);
-
+      const container = createContainer([useScrinium({ modules: [withAccountStorage] })]);
       const dataStore = container.get<DataStore>(ScriniumServices.DataStore);
       const cache = dataStore.cache<AccountCompartments>(TestTokens.account);
       await cache.reload('plans');

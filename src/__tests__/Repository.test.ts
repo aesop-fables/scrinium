@@ -5,7 +5,7 @@ import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
 import { injectRepository } from '../Decorators';
 import { createContainer } from '@aesop-fables/containr';
-import { useScrinium } from '../bootstrapping';
+import { createDataCatalogModule, createInlineDataCatalogModule, useScrinium } from '../bootstrapping';
 import { DataCatalog, DataStore } from '../DataStore';
 import { ScriniumServices } from '../ScriniumServices';
 import { DataStoreToken } from '../DataStoreToken';
@@ -183,9 +183,15 @@ describe('Repository', () => {
       },
     });
 
-    const container = createContainer([useScrinium({ modules: [] })]);
-    const storage = container.get<DataCatalog>(ScriniumServices.DataStore);
-    storage.registerRepository(repository);
+    const container = createContainer([
+      useScrinium({
+        modules: [
+          createDataCatalogModule((catalog) => {
+            catalog.registerRepository(repository);
+          }),
+        ],
+      }),
+    ]);
 
     const sample = container.resolve(SampleService);
     sample.execute();
@@ -218,7 +224,7 @@ describe('Repository', () => {
 });
 
 class SampleService {
-  constructor(@injectRepository(repoToken.key) private readonly repository: IRepository<VideoRegistry>) {}
+  constructor(@injectRepository(repoToken.value) private readonly repository: IRepository<VideoRegistry>) {}
 
   execute() {
     this.repository.reset();

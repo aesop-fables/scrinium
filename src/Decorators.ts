@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IInterceptor, interceptorChainFor, registerDependency } from '@aesop-fables/containr';
 import { ScriniumServices } from './ScriniumServices';
-import { DataCatalog } from './DataStore';
+import { DataStore } from './DataStore';
 import { DataStoreToken } from './DataStoreToken';
 
 export class DataCacheInterceptor implements IInterceptor<any> {
   constructor(private readonly key: string) {}
 
   resolve(currentValue: any | undefined): any {
-    const dataStore = currentValue as DataCatalog;
-    const cache = dataStore.get(new DataStoreToken(this.key));
+    const dataStore = currentValue as DataStore;
+    const cache = dataStore.cache(new DataStoreToken(this.key));
     if (typeof cache === 'undefined') {
       console.error(`@injectDataCache("${this.key}") returned undefined.`);
     }
@@ -22,8 +22,8 @@ export class RepositoryInterceptor implements IInterceptor<any> {
   constructor(private readonly key: string) {}
 
   resolve(currentValue: any | undefined): any {
-    const dataStore = currentValue as DataCatalog;
-    const cache = dataStore.get(new DataStoreToken(this.key));
+    const dataStore = currentValue as DataStore;
+    const cache = dataStore.repository(new DataStoreToken(this.key));
     if (typeof cache === 'undefined') {
       console.error(`@injectRepository("${this.key}") returned undefined.`);
     }
@@ -40,7 +40,7 @@ export class RepositoryInterceptor implements IInterceptor<any> {
 export function injectDataCache(storageKey: string) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.DataCatalog, parameterIndex);
+    registerDependency(constructor, ScriniumServices.DataStore, parameterIndex);
     const chain = interceptorChainFor(constructor, parameterIndex);
     chain.add(new DataCacheInterceptor(storageKey));
   };
@@ -54,7 +54,7 @@ export function injectDataCache(storageKey: string) {
 export function injectRepository(storageKey: string) {
   // eslint-disable-next-line @typescript-eslint/ban-types
   return (constructor: Object, propertyKey: string | symbol | undefined, parameterIndex: number): void => {
-    registerDependency(constructor, ScriniumServices.DataCatalog, parameterIndex);
+    registerDependency(constructor, ScriniumServices.DataStore, parameterIndex);
     const chain = interceptorChainFor(constructor, parameterIndex);
     chain.add(new RepositoryInterceptor(storageKey));
   };

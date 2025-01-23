@@ -71,7 +71,7 @@ type Catalog = {
 };
 
 export class DataCatalog {
-  private readonly values: Map<DataStoreToken, Catalog> = new Map();
+  private readonly values: Map<string, Catalog> = new Map();
 
   public get caches() {
     return Array.from(this.values.values())
@@ -86,18 +86,18 @@ export class DataCatalog {
   }
 
   public registerCache(cache: IDataCache): void {
-    this.values.set(cache.token, { type: 'cache', storage: cache });
+    this.values.set(cache.token.key, { type: 'cache', storage: cache });
   }
 
   public registerRepository<Compartments>(repository: IRepository<Compartments>): void {
-    this.values.set(repository.token, { type: 'repository', storage: repository });
+    this.values.set(repository.token.key, { type: 'repository', storage: repository });
   }
 
   public get(token: DataStoreToken): ICompartmentStorage | undefined {
-    return this.values.get(token)?.storage;
+    return this.values.get(token.key)?.storage;
   }
 
   public describe(token: DataStoreToken): CatalogType | undefined {
-    return this.values.get(token)?.type;
+    return this.values.get(token.key)?.type;
   }
 }

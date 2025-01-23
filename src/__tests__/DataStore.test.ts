@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { mock, mockDeep, MockProxy } from 'jest-mock-extended';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCache, DataCache } from '../DataCache';
@@ -56,10 +57,17 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
-    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
-    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
-    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
+    const mocks = {
+      cache1: jest.fn(),
+      cache2: jest.fn(),
+      repo1: jest.fn(),
+      repo2: jest.fn(),
+    };
+
+    const cache1 = { token: cacheToken1, resetAll: mocks.cache1 } as unknown as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2, resetAll: mocks.cache2 } as unknown as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1, reset: mocks.repo1 } as unknown as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2, reset: mocks.repo2 } as unknown as Repository<TestCompartments>;
 
     const values = new DataCatalog();
     values.registerCache(cache1);
@@ -72,7 +80,7 @@ describe('DataStore', () => {
 
     expect(cache1.resetAll).toHaveBeenCalled();
     expect(cache2.resetAll).toHaveBeenCalled();
-    
+
     expect(repo1.reset).not.toHaveBeenCalled();
     expect(repo2.reset).not.toHaveBeenCalled();
   });
@@ -83,10 +91,17 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
-    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
-    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
-    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
+    const mocks = {
+      cache1: jest.fn(),
+      cache2: jest.fn(),
+      repo1: jest.fn(),
+      repo2: jest.fn(),
+    };
+
+    const cache1 = { token: cacheToken1, resetAll: mocks.cache1 } as unknown as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2, resetAll: mocks.cache2 } as unknown as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1, reset: mocks.repo1 } as unknown as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2, reset: mocks.repo2 } as unknown as Repository<TestCompartments>;
 
     const values = new DataCatalog();
     values.registerCache(cache1);
@@ -110,10 +125,17 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
-    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
-    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
-    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
+    const mocks = {
+      cache1: jest.fn(),
+      cache2: jest.fn(),
+      repo1: jest.fn(),
+      repo2: jest.fn(),
+    };
+
+    const cache1 = { token: cacheToken1, resetAll: mocks.cache1 } as unknown as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2, resetAll: mocks.cache2 } as unknown as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1, reset: mocks.repo1 } as unknown as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2, reset: mocks.repo2 } as unknown as Repository<TestCompartments>;
 
     const values = new DataCatalog();
     values.registerCache(cache1);
@@ -137,10 +159,17 @@ describe('DataStore', () => {
     const repoToken1 = new DataStoreToken('repo1');
     const repoToken2 = new DataStoreToken('repo2');
 
-    const cache1 = { token: cacheToken1 } as DataCache<TestCompartments>;
-    const cache2 = { token: cacheToken2 } as DataCache<TestCompartments>;
-    const repo1 = { token: repoToken1 } as Repository<TestCompartments>;
-    const repo2 = { token: repoToken2 } as Repository<TestCompartments>;
+    const mocks = {
+      cache1: jest.fn(),
+      cache2: jest.fn(),
+      repo1: jest.fn(),
+      repo2: jest.fn(),
+    };
+
+    const cache1 = { token: cacheToken1, resetAll: mocks.cache1 } as unknown as DataCache<TestCompartments>;
+    const cache2 = { token: cacheToken2, resetAll: mocks.cache2 } as unknown as DataCache<TestCompartments>;
+    const repo1 = { token: repoToken1, reset: mocks.repo1 } as unknown as Repository<TestCompartments>;
+    const repo2 = { token: repoToken2, reset: mocks.repo2 } as unknown as Repository<TestCompartments>;
 
     const values = new DataCatalog();
     values.registerCache(cache1);

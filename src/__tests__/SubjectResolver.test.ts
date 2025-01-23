@@ -110,7 +110,7 @@ interface PreferenceCompartments {
 }
 
 class AccountLoadedPredicate implements Predicate {
-  constructor(@injectDataCache(accountsToken.key) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@injectDataCache(accountsToken.value) private readonly cache: DataCache<AccountCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$;
@@ -120,7 +120,7 @@ class AccountLoadedPredicate implements Predicate {
 const predicateKey = 'predicateSubject';
 
 class UserLoadedPredicate implements Predicate {
-  constructor(@injectDataCache(userToken.key) private readonly cache: DataCache<UserCompartments>) {}
+  constructor(@injectDataCache(userToken.value) private readonly cache: DataCache<UserCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$;
@@ -131,7 +131,7 @@ const userPredicateKey = 'userPredicateSubject';
 
 @predicate(predicateKey)
 class PreferencesSubject implements ISubject<Preference[]> {
-  constructor(@injectDataCache(preferencesToken.key) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesToken.value) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');
@@ -141,7 +141,7 @@ class PreferencesSubject implements ISubject<Preference[]> {
 @predicate(predicateKey)
 @predicate(userPredicateKey)
 class UserPreferencesSubject implements ISubject<Preference[]> {
-  constructor(@injectDataCache(preferencesToken.key) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesToken.value) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');
