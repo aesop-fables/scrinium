@@ -53,7 +53,7 @@ export class DataCompartment<Model> implements IDataCompartment {
 
     this.systemClock = this.options.system?.clock ?? systemClock;
     this.appCache = this.options.system?.cache ?? ApplicationCacheManager.instance;
-    this.policies = [new ApplicationCacheManagerRetentionPolicy(), ...(this.options.retention?.policies ?? [])];
+    this.policies = this.options.retention?.policies ?? [new ApplicationCacheManagerRetentionPolicy()];
 
     this.value = new BehaviorSubject<Model>(options.defaultValue);
     if (this.options.loadingOptions?.strategy !== 'auto') {
