@@ -33,7 +33,9 @@ export class RetentionContext {
 
   isExpired(compartment: IDataCompartment) {
     const token = this.appCache.find(compartment.key);
-    if (!token || !token.expirationTimestamp) {
+    if (!token) return false;
+
+    if (!token.expirationTimestamp) {
       return true;
     }
 

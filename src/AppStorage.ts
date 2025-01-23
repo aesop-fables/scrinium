@@ -21,6 +21,9 @@ export interface IAppStorage {
   storeRepository<Registry>(value: IRepository<Registry>): void;
 }
 
+// The data model really lives outside of the storage...
+// What could that be called? A data model? A data cache?
+
 export class AppStorage implements IAppStorage {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly values = new BehaviorSubject<Record<string, any>>({});

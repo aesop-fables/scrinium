@@ -8,12 +8,11 @@ import { DependencyGraph } from './DependencyGraph';
 
 // Essentially an in-memory database
 export class DataStore {
-  private readonly values: Map<ScriniumToken, any> = new Map();
   private schema?: Schema;
   private readonly subscriptions: Subscription[] = [];
   private readonly graph: DependencyGraph = new DependencyGraph();
 
-  // adding a value to the store should re-calculate all subscriptions
+  constructor(private readonly values: Map<ScriniumToken, any>) {}
 
   private generateSubscriptions() {
     // no-op for now
@@ -27,12 +26,6 @@ export class DataStore {
     // Populate the graph
     // Generate subscriptions
   }
-
-  public store(value: DataCache<any> | Repository<any>) {
-    this.values.set(value.token, value);
-    this.generateSubscriptions();
-  }
-
   public cache<Compartments>(token: ScriniumToken): DataCache<Compartments> {
     return this.values.get(token) as DataCache<Compartments>;
   }
