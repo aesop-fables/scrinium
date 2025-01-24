@@ -10,8 +10,16 @@ export declare type EventListener = (listener: () => void) => void;
 
 export declare type CompartmentComparer<T> = (a: T, b: T) => boolean;
 
+const comparable: (o: any) => any = (o: any) => {
+  return typeof o != 'object' || !o
+    ? o
+    : Object.keys(o)
+        .sort()
+        .reduce((c: any, key) => ((c[key] = comparable(o[key])), c), {});
+};
+
 export function defaultComparer<T>(a: T, b: T): boolean {
-  return a === b;
+  return JSON.stringify(comparable(a)) === JSON.stringify(comparable(b));
 }
 
 export declare type LoadingStrategy = 'auto' | 'lazy' | 'manual';
@@ -79,6 +87,13 @@ export interface DataCompartmentState {
   loading: boolean;
   error?: unknown;
 }
+
+export type ChangeRecord<T> = {
+  previous?: T;
+  current: T;
+};
+
+export type ChangeSubscription<T> = (change: ChangeRecord<T>) => void;
 
 /**
  * Provides strongly-typed configuration options for an individual data compartment.

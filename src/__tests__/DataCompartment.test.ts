@@ -6,7 +6,7 @@ import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
 import { ISystemClock } from '../System';
 import { DataCompartment } from '../DataCompartment';
-import { cacheForSeconds } from '../Compartments';
+import { cacheForSeconds, ChangeRecord } from '../Compartments';
 import { DataStoreToken } from '../DataStoreToken';
 
 interface User {
@@ -22,6 +22,48 @@ describe('DataCompartment', () => {
     snapshot = {
       now: () => now,
     };
+  });
+
+  test('onChange publishes for initial load', async () => {
+    const compartment = new DataCompartment<User | undefined>(storageToken.compartment('test'), {
+      source: new ConfiguredDataSource<User>(async () => ({
+        name: 'Test',
+      })),
+      defaultValue: undefined,
+      retention: { policies: [cacheForSeconds(1)] },
+    });
+
+    let changeRecord: ChangeRecord<User | undefined> | undefined;
+    compartment.addChangeListener((record) => {
+      changeRecord = record;
+    });
+
+    await compartment.reload();
+
+    expect(changeRecord).toBeDefined();
+    expect(changeRecord?.previous).toBeUndefined();
+    expect(changeRecord?.current).toEqual({ name: 'Test' });
+  });
+
+  test('unsubscribes onChange subscription', async () => {
+    const compartment = new DataCompartment<User | undefined>(storageToken.compartment('test'), {
+      source: new ConfiguredDataSource<User>(async () => ({
+        name: 'Test',
+      })),
+      defaultValue: undefined,
+      retention: { policies: [cacheForSeconds(1)] },
+    });
+
+    let changeRecord: ChangeRecord<User | undefined> | undefined;
+    const subscription = compartment.addChangeListener((record) => {
+      changeRecord = record;
+    });
+
+    subscription.unsubscribe();
+
+    await compartment.reload();
+
+    expect(changeRecord).toBeUndefined();
   });
 
   describe('isExpired', () => {

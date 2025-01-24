@@ -5,7 +5,7 @@ import { DataStoreToken } from './DataStoreToken';
 import { ICompartmentStorage } from './ICompartmentStorage';
 import { IRepository, Repository } from './Repository';
 import { Schema } from './Schema';
-import { DataCompartment } from './DataCompartment';
+import { ChangeSubscription } from './Compartments';
 
 // Essentially an in-memory database
 // First pass is JUST a replacement for AppStorage
@@ -125,29 +125,5 @@ export class DataCatalog {
 
   public describe(token: DataStoreToken): CatalogType | undefined {
     return this.values.get(token.key)?.type;
-  }
-}
-
-type ChangeRecord<T> = {
-  previous?: T;
-  current: T;
-};
-
-type ChangeSubscription<T> = (change: ChangeRecord<T>) => void;
-
-interface DataCatalogObserver<T = any> {
-  subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription;
-}
-
-export class DataCatalogPath {
-  constructor(private readonly observer: DataCatalogObserver) {}
-
-  addChangeListener<T>(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
-    return this.observer.subscribe(catalog, onChange);
-  }
-
-  static fromCache(token: DataStoreToken): DataCatalogPath {
-    console.log(token);
-    throw new Error('Method not implemented.');
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, pairwise, Subscription } from 'rxjs';
 import { Latch } from './Utils';
-import { DataCompartmentState, IRetentionPolicy } from './Compartments';
+import { ChangeRecord, ChangeSubscription, DataCompartmentState, IRetentionPolicy } from './Compartments';
 import { ISystemClock, systemClock } from './System';
 import {
   ApplicationCacheManagerRetentionPolicy,
@@ -174,12 +174,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @param value The value to store and emit.
    */
   next(value: Model): void {
-    let shouldPublish = true;
-    if (this.options.comparer) {
-      shouldPublish = !this.options.comparer(this.value.value, value);
-    }
-
-    if (shouldPublish) {
+    if (this.shouldPublish(this.value.value, value)) {
       this.value.next(value);
     }
   }
@@ -206,6 +201,15 @@ export class DataCompartment<Model> implements IDataCompartment {
 
   getData(): unknown {
     return this.value.value;
+  }
+
+  shouldPublish(previous: Model, current: Model) {
+    let shouldPublish = true;
+    if (this.options.comparer) {
+      shouldPublish = !this.options.comparer(previous, current);
+    }
+
+    return shouldPublish;
   }
 
   getCompartmentState(): DataCompartmentState {
@@ -243,5 +247,16 @@ export class DataCompartment<Model> implements IDataCompartment {
     this.initialized.next(false);
     this.value.next(this.options.defaultValue);
     this.lastLoaded.next(0);
+  }
+  /**
+   * Registers a listener for the compartment's change event.
+   */
+  addChangeListener(listener: ChangeSubscription<Model>): Subscription {
+    return this.value.pipe(pairwise()).subscribe(([previous, current]) => {
+      if (this.shouldPublish(previous, current)) {
+        const changeRecord: ChangeRecord<Model> = { previous, current };
+        listener(changeRecord);
+      }
+    });
   }
 }
