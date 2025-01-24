@@ -8,6 +8,15 @@ export class DataStoreToken {
     return this.key;
   }
 
+  get parent(): DataStoreToken | undefined {
+    const parts = this.key.split(DataStoreToken.separator);
+    if (parts.length === 1) {
+      return undefined;
+    }
+
+    return new DataStoreToken(parts.slice(0, parts.length - 1).join(DataStoreToken.separator));
+  }
+
   compartment<Compartments>(key: keyof Compartments): DataStoreToken {
     return new DataStoreToken(`${this.key}${DataStoreToken.separator}${key as string}`);
   }

@@ -53,6 +53,17 @@ describe('DataStoreToken', () => {
     expect(baseToken.isChildOf(compartmentToken)).toBeFalsy();
   });
 
+  test('gets parent', () => {
+    const token = new DataStoreToken('data-store/data/modules/nested');
+    const compartmentToken = token.compartment<TestCompartments>('foo');
+    expect(compartmentToken.parent).toEqual(token);
+  });
+
+  test('gets parent returns undefined when it does not exist', () => {
+    const token = new DataStoreToken('data-store');
+    expect(token.parent).toBeUndefined();
+  });
+
   type TestCompartments = {
     foo: DataCompartmentOptions<string>;
     bar: DataCompartmentOptions<string>;
