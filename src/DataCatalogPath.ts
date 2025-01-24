@@ -43,7 +43,7 @@ export class DataCatalogPath {
     return this.observer.subscribe(catalog, onChange);
   }
 
-  static fromCache(token: DataStoreToken): DataCatalogPath {
+  static fromCacheCompartment(token: DataStoreToken): DataCatalogPath {
     return new DataCatalogPath(new DataCacheObserver(token));
   }
 }
