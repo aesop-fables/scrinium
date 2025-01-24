@@ -7,13 +7,14 @@ import { DataCompartment } from './DataCompartment';
 import { DataCache } from './DataCache';
 
 interface DataCatalogObserver<T = any> {
+  getCompartment(catalog: DataCatalog): DataCompartment<T>;
   subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription;
 }
 
 class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
   constructor(private readonly token: DataStoreToken) {}
 
-  subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
+  getCompartment(catalog: DataCatalog): DataCompartment<T> {
     const cacheToken = this.token.parent;
     if (!cacheToken) {
       throw new Error(`${this.token.key} is not a child token.`);
@@ -32,6 +33,11 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
       throw new Error(`Compartment ${this.token.value} not found in cache ${cacheToken.value}`);
     }
 
+    return compartment;
+  }
+
+  subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
+    const compartment = this.getCompartment(catalog);
     return compartment.addChangeListener(onChange);
   }
 }

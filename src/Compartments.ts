@@ -88,7 +88,7 @@ export interface DataCompartmentState {
   error?: unknown;
 }
 
-export type ChangeRecord<T> = {
+export type ChangeRecord<T = any> = {
   previous?: T;
   current: T;
 };

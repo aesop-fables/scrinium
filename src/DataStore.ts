@@ -5,6 +5,10 @@ import { DataStoreToken } from './DataStoreToken';
 import { IRepository, Repository } from './Repository';
 import { Schema } from './Schema';
 import { DataCatalog } from './DataCatalog';
+import { DataCatalogPath } from './DataCatalogPath';
+import { TriggerContext } from './IDataTrigger';
+import { IApplicationCacheManager } from './Caching';
+import { ISystemClock } from './System';
 
 // Essentially an in-memory database
 // First pass is JUST a replacement for AppStorage
@@ -65,25 +69,32 @@ export class DataStore {
     );
   }
 
-  public apply(schema: Schema) {
-    this.schema = schema;
-  }
-
   // public apply(schema: Schema) {
   //   this.schema = schema;
-  //   // regen the subscriptions
-
-  //   for (let i = 0; i < schema.observableTokens.length; i++) {
-  //     const token = schema.observableTokens[i];
-  //     const type = this.dataCatalog.describe(token);
-  //     if (type === 'repository') {
-  //       console.log(`Ignoring repository ${token.key}`);
-  //       continue;
-  //     }
-
-  //     const cache = this.cache(token);
-  // Need the abstract way to point to a compartment given a token
-  // Also need a function to determine which tokens are related to a given token
-  //   }
   // }
+
+  // TODO -- Need to move the cache to the constructor but don't feel like fixing the compiler errors yet
+  public apply(schema: Schema, cache: IApplicationCacheManager, clock: ISystemClock) {
+    this.schema = schema;
+    // regen the subscriptions
+
+    for (let i = 0; i < schema.observableTokens.length; i++) {
+      const token = schema.observableTokens[i];
+      const type = this.dataCatalog.describe(token);
+      if (type === 'repository') {
+        console.log(`Ignoring repository ${token.key}`);
+        continue;
+      }
+
+      const path = DataCatalogPath.fromCacheCompartment(token);
+      const triggers = schema.triggersFor(token);
+      path.addChangeListener(this.dataCatalog, (record) => {
+        const context = new TriggerContext(cache, record, this, clock);
+        for (let j = 0; j < triggers.length; j++) {
+          const trigger = triggers[j];
+          trigger.onCompartmentChanged(context);
+        }
+      });
+    }
+  }
 }

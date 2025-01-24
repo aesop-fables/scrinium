@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ApplicationCacheManager } from '../Caching';
 import { cacheForSeconds, DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCache, DataCache } from '../DataCache';
@@ -7,6 +8,7 @@ import { DataCompartment } from '../DataCompartment';
 import { DataStore } from '../DataStore';
 import { DataStoreToken } from '../DataStoreToken';
 import { createSchema } from '../Schema';
+import { systemClock } from '../System';
 import { wait } from '../tasks';
 
 describe('DataStore Integration', () => {
@@ -62,14 +64,11 @@ describe('DataStore Integration', () => {
     const schema = createSchema((builder) => {
       builder
         .source(testToken.compartment<TestCompartments>('compartmentA'))
-        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentB'));
-
-      builder
-        .source(testToken.compartment<TestCompartments>('compartmentB'))
+        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentB'))
         .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentD'));
     });
 
-    store.apply(schema);
+    store.apply(schema, ApplicationCacheManager.instance, systemClock);
 
     await cache.modify('compartmentA', async (value) => {
       return value + 'A';
