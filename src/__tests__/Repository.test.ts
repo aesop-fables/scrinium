@@ -5,9 +5,7 @@ import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
 import { injectRepository } from '../Decorators';
 import { createContainer } from '@aesop-fables/containr';
-import { createDataCatalogModule, createInlineDataCatalogModule, useScrinium } from '../bootstrapping';
-import { DataCatalog, DataStore } from '../DataStore';
-import { ScriniumServices } from '../ScriniumServices';
+import { createDataCatalogModule, useScrinium } from '../bootstrapping';
 import { DataStoreToken } from '../DataStoreToken';
 
 const repoToken = new DataStoreToken('videos');

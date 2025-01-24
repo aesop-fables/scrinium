@@ -2,8 +2,9 @@
 import { cacheForSeconds, DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCache, DataCache } from '../DataCache';
+import { DataCatalog } from '../DataCatalog';
 import { DataCompartment } from '../DataCompartment';
-import { DataCatalog, DataStore } from '../DataStore';
+import { DataStore } from '../DataStore';
 import { DataStoreToken } from '../DataStoreToken';
 import { createSchema } from '../Schema';
 import { wait } from '../tasks';

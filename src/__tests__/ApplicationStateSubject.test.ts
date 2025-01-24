@@ -1,11 +1,12 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from '../ApplicationState';
-import { DataCatalog, DataStore } from '../DataStore';
+import { DataStore } from '../DataStore';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCacheScenario } from '../Utils';
 import { DataStoreToken } from '../DataStoreToken';
+import { DataCatalog } from '../DataCatalog';
 
 interface ResponseA {
   name: string;

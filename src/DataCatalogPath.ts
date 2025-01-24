@@ -2,7 +2,7 @@
 import { Subscription } from 'rxjs';
 import { ChangeSubscription } from './Compartments';
 import { DataStoreToken } from './DataStoreToken';
-import { DataCatalog } from './DataStore';
+import { DataCatalog } from './DataCatalog';
 
 export interface DataCatalogObserver<T = any> {
   subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription;

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { mock, mockDeep, MockProxy } from 'jest-mock-extended';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCache, DataCache } from '../DataCache';
-import { DataCatalog, DataStore } from '../DataStore';
+import { DataCatalog } from '../DataCatalog';
+import { DataStore } from '../DataStore';
 import { DataStoreToken } from '../DataStoreToken';
 import { createRepository, Repository } from '../Repository';
 import { firstValueFrom } from 'rxjs';

@@ -1,4 +1,4 @@
-import { DataCatalog, DataStore } from '../DataStore';
+import { DataStore } from '../DataStore';
 import {
   BootstrappingServices,
   IActivator,
@@ -10,6 +10,7 @@ import {
 } from '@aesop-fables/containr';
 import { ScriniumServices } from '../ScriniumServices';
 import { DataCatalogModule } from './DataCatalogModule';
+import { DataCatalog } from '../DataCatalog';
 
 export function createDataCatalogModule(
   middleware: (dataCatalog: DataCatalog, container: IServiceContainer) => void,

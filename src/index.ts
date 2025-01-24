@@ -5,6 +5,7 @@ export * from './ApplicationState';
 
 // DataCache
 export * from './DataCache';
+export * from './DataCatalog';
 export * from './IDataCacheObserver';
 export * from './DataCompartment';
 export * from './IDataCompartmentSource';
