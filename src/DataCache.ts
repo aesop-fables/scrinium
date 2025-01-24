@@ -69,8 +69,8 @@ export class DataCache<T> implements IDataCache {
     await this.withCompartment(key, (compartment) => compartment.reset());
   }
 
-  findCompartment(key: keyof T): IDataCompartment {
-    const targetToken = this.token.compartment(String(key));
+  findCompartment(key: keyof T | DataStoreToken): IDataCompartment {
+    const targetToken = typeof key === 'string' ? this.token.compartment(String(key)) : (key as DataStoreToken);
     const compartment = this.compartments.find((x) => x.token.equals(targetToken));
     if (!compartment) {
       throw new Error(`Could not find compartment: ${String(key)}`);
