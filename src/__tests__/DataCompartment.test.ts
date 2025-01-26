@@ -34,8 +34,8 @@ describe('DataCompartment', () => {
     });
 
     let changeRecord: ChangeRecord<User | undefined> | undefined;
-    compartment.addChangeListener((record) => {
-      changeRecord = record;
+    compartment.addEventListener('change', ({ details: record }) => {
+      changeRecord = record as ChangeRecord;
     });
 
     await compartment.reload();
@@ -55,8 +55,8 @@ describe('DataCompartment', () => {
     });
 
     let changeRecord: ChangeRecord<User | undefined> | undefined;
-    const subscription = compartment.addChangeListener((record) => {
-      changeRecord = record;
+    const subscription = compartment.addEventListener('change', ({ details: record }) => {
+      changeRecord = record as ChangeRecord;
     });
 
     subscription.unsubscribe();

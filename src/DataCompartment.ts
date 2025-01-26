@@ -248,15 +248,41 @@ export class DataCompartment<Model> implements IDataCompartment {
     this.value.next(this.options.defaultValue);
     this.lastLoaded.next(0);
   }
-  /**
-   * Registers a listener for the compartment's change event.
-   */
-  addChangeListener(listener: ChangeSubscription<Model>): Subscription {
-    return this.value.pipe(pairwise()).subscribe(([previous, current]) => {
-      if (this.shouldPublish(previous, current)) {
-        const changeRecord: ChangeRecord<Model> = { previous, current };
-        listener(changeRecord);
-      }
-    });
+
+  addEventListener(type: EventType, listener: CompartmentEventListener): Subscription {
+    switch (type) {
+      case 'change':
+        return this.value.pipe(pairwise()).subscribe(([previous, current]) => {
+          if (this.shouldPublish(previous, current)) {
+            const event: ChangeEvent = { previous, current };
+            const envelope = this.createEventEnvelope('change', event);
+            listener(envelope);
+          }
+        });
+    }
+
+    throw new Error(`Invalid type ${type}`);
+  }
+
+  createEventEnvelope(type: EventType, event: CompartmentEvent): EventEnvelope {
+    return {
+      type,
+      timestamp: Date.now(),
+      details: event
+    }
   }
 }
+
+export type ChangeEvent = ChangeRecord;
+export type InitializedEvent = {};
+export type ResetEvent = {};
+export type CompartmentEvent = ChangeEvent | InitializedEvent | ResetEvent;
+export type EventType = 'change' | 'initialized' | 'reset';
+
+export type EventEnvelope = {
+  type: EventType;
+  timestamp: number;
+  details: CompartmentEvent;
+};
+
+export type CompartmentEventListener = (envelope: EventEnvelope) => void;

@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs';
 import { ChangeSubscription } from './Compartments';
 import { DataStoreToken } from './DataStoreToken';
 import { DataCatalog } from './DataCatalog';
-import { DataCompartment } from './DataCompartment';
+import { ChangeEvent, DataCompartment } from './DataCompartment';
 import { DataCache } from './DataCache';
 
 interface DataCatalogObserver<T = any> {
@@ -38,7 +38,7 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
 
   subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
     const compartment = this.getCompartment(catalog);
-    return compartment.addChangeListener(onChange);
+    return compartment.addEventListener('change', ({ details }) => onChange(details as ChangeEvent));
   }
 }
 
