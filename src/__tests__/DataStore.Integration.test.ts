@@ -85,4 +85,37 @@ describe('DataStore Integration', () => {
     const compartmentC = cache.findCompartment('compartmentC') as DataCompartment<string>;
     expect(compartmentC.isExpired).toBeFalsy();
   });
+
+  test('Transitive invalidation', async () => {
+    const values = new DataCatalog();
+    values.registerCache(cache);
+    const store = new DataStore(values);
+
+    const schema = createSchema((builder) => {
+      builder
+        .source(testToken.compartment<TestCompartments>('compartmentA'))
+        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentB'));
+
+      builder
+        .source(testToken.compartment<TestCompartments>('compartmentB'))
+        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentD'));
+    });
+
+    store.apply(schema, ApplicationCacheManager.instance, systemClock);
+
+    await cache.modify('compartmentA', async (value) => {
+      return value + 'A';
+    });
+
+    await wait(200);
+
+    const compartmentB = cache.findCompartment('compartmentB') as DataCompartment<string>;
+    expect(compartmentB.isExpired).toBeTruthy();
+
+    const compartmentD = cache.findCompartment('compartmentD') as DataCompartment<string>;
+    expect(compartmentD.isExpired).toBeTruthy();
+
+    const compartmentC = cache.findCompartment('compartmentC') as DataCompartment<string>;
+    expect(compartmentC.isExpired).toBeFalsy();
+  });
 });

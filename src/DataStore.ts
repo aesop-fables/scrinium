@@ -9,6 +9,7 @@ import { DataCatalogPath } from './DataCatalogPath';
 import { TriggerContext } from './IDataTrigger';
 import { IApplicationCacheManager } from './Caching';
 import { ISystemClock } from './System';
+import { createEventEnvelope } from './DataCompartment';
 
 // Essentially an in-memory database
 // First pass is JUST a replacement for AppStorage
@@ -69,10 +70,6 @@ export class DataStore {
     );
   }
 
-  // public apply(schema: Schema) {
-  //   this.schema = schema;
-  // }
-
   // TODO -- Need to move the cache to the constructor but don't feel like fixing the compiler errors yet
   public apply(schema: Schema, cache: IApplicationCacheManager, clock: ISystemClock) {
     this.schema = schema;
@@ -89,10 +86,11 @@ export class DataStore {
       const path = DataCatalogPath.fromCacheCompartment(token);
       const triggers = schema.triggersFor(token);
       path.addChangeListener(this.dataCatalog, (record) => {
-        const context = new TriggerContext(cache, record, this, clock);
+        const envelope = createEventEnvelope('change', record);
+        const context = new TriggerContext(cache, envelope, this, clock);
         for (let j = 0; j < triggers.length; j++) {
           const trigger = triggers[j];
-          trigger.onCompartmentChanged(context);
+          trigger.onCompartmentEventRaised(context);
         }
       });
     }

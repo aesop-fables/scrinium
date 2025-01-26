@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BehaviorSubject, combineLatest, map, Observable, pairwise, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, pairwise, Subscription } from 'rxjs';
 import { Latch } from './Utils';
-import { ChangeRecord, ChangeSubscription, DataCompartmentState, IRetentionPolicy } from './Compartments';
+import { ChangeRecord, DataCompartmentState, IRetentionPolicy } from './Compartments';
 import { ISystemClock, systemClock } from './System';
 import {
   ApplicationCacheManagerRetentionPolicy,
@@ -255,27 +255,45 @@ export class DataCompartment<Model> implements IDataCompartment {
         return this.value.pipe(pairwise()).subscribe(([previous, current]) => {
           if (this.shouldPublish(previous, current)) {
             const event: ChangeEvent = { previous, current };
-            const envelope = this.createEventEnvelope('change', event);
+            const envelope = createEventEnvelope('change', event);
             listener(envelope);
           }
         });
+      case 'initialized':
+        const initialized$ = this.initialized$.pipe(
+          pairwise(),
+          filter(([prev, curr]) => !prev && curr),
+          map(([, curr]) => curr),
+        );
+        return combineLatest([initialized$, this.value])
+          .pipe(filter(([x]) => x === true))
+          .subscribe(([, val]) => {
+            const event: InitializedEvent = { value: val };
+            const envelope = createEventEnvelope('initialized', event);
+            listener(envelope);
+          });
+      case 'reset':
+        const reset$ = this.initialized$.pipe(
+          pairwise(),
+          filter(([prev, curr]) => prev && !curr),
+          map(([, curr]) => curr),
+        );
+        return combineLatest([reset$, this.value])
+          .pipe(filter(([x]) => x === false))
+          .subscribe(([, val]) => {
+            const event: ResetEvent = { value: val };
+            const envelope = createEventEnvelope('reset', event);
+            listener(envelope);
+          });
     }
 
     throw new Error(`Invalid type ${type}`);
   }
-
-  createEventEnvelope(type: EventType, event: CompartmentEvent): EventEnvelope {
-    return {
-      type,
-      timestamp: Date.now(),
-      details: event
-    }
-  }
 }
 
 export type ChangeEvent = ChangeRecord;
-export type InitializedEvent = { value: any; };
-export type ResetEvent = { value: any; };
+export type InitializedEvent = { value: any };
+export type ResetEvent = { value: any };
 export type CompartmentEvent = ChangeEvent | InitializedEvent | ResetEvent;
 export type EventType = 'change' | 'initialized' | 'reset';
 
@@ -286,3 +304,11 @@ export type EventEnvelope = {
 };
 
 export type CompartmentEventListener = (envelope: EventEnvelope) => void;
+
+export function createEventEnvelope(type: EventType, event: CompartmentEvent): EventEnvelope {
+  return {
+    type,
+    timestamp: Date.now(),
+    details: event,
+  };
+}

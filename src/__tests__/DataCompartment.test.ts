@@ -5,7 +5,7 @@ import { IDataCompartmentSource } from '../IDataCompartmentSource';
 import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
 import { ISystemClock } from '../System';
-import { DataCompartment, EventType, InitializedEvent } from '../DataCompartment';
+import { DataCompartment, EventType, InitializedEvent, ResetEvent } from '../DataCompartment';
 import { cacheForSeconds, ChangeRecord } from '../Compartments';
 import { DataStoreToken } from '../DataStoreToken';
 
@@ -55,9 +55,9 @@ describe('DataCompartment', () => {
     });
 
     const invocations: Record<EventType, number> = {
-      'change': 0,
-      'initialized': 0,
-      'reset': 0,
+      change: 0,
+      initialized: 0,
+      reset: 0,
     };
 
     compartment.addEventListener('initialized', () => {
@@ -111,11 +111,12 @@ describe('DataCompartment', () => {
     let value: User | undefined;
     let invoked = false;
     compartment.addEventListener('reset', ({ details: record }) => {
-      value = (record as InitializedEvent).value;
+      value = (record as ResetEvent).value;
       invoked = true;
     });
 
     await compartment.reload();
+    await compartment.reset();
 
     expect(value).toBeUndefined();
     expect(invoked).toBeTruthy();
