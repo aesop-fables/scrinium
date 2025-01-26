@@ -274,8 +274,8 @@ export class DataCompartment<Model> implements IDataCompartment {
 }
 
 export type ChangeEvent = ChangeRecord;
-export type InitializedEvent = {};
-export type ResetEvent = {};
+export type InitializedEvent = { value: any; };
+export type ResetEvent = { value: any; };
 export type CompartmentEvent = ChangeEvent | InitializedEvent | ResetEvent;
 export type EventType = 'change' | 'initialized' | 'reset';
 

@@ -5,7 +5,7 @@ import { IDataCompartmentSource } from '../IDataCompartmentSource';
 import { wait, waitUntil } from '../tasks';
 import { Predicate } from '../Predicate';
 import { ISystemClock } from '../System';
-import { DataCompartment } from '../DataCompartment';
+import { DataCompartment, EventType, InitializedEvent } from '../DataCompartment';
 import { cacheForSeconds, ChangeRecord } from '../Compartments';
 import { DataStoreToken } from '../DataStoreToken';
 
@@ -24,7 +24,7 @@ describe('DataCompartment', () => {
     };
   });
 
-  test('onChange publishes for initial load', async () => {
+  test('onChange does not publish for initial load', async () => {
     const compartment = new DataCompartment<User | undefined>(storageToken.compartment('test'), {
       source: new ConfiguredDataSource<User>(async () => ({
         name: 'Test',
@@ -43,6 +43,82 @@ describe('DataCompartment', () => {
     expect(changeRecord).toBeDefined();
     expect(changeRecord?.previous).toBeUndefined();
     expect(changeRecord?.current).toEqual({ name: 'Test' });
+  });
+
+  test('does not publish initialized on subsequent reloads', async () => {
+    const compartment = new DataCompartment<User | undefined>(storageToken.compartment('test'), {
+      source: new ConfiguredDataSource<User>(async () => ({
+        name: 'Test',
+      })),
+      defaultValue: undefined,
+      retention: { policies: [cacheForSeconds(1)] },
+    });
+
+    const invocations: Record<EventType, number> = {
+      'change': 0,
+      'initialized': 0,
+      'reset': 0,
+    };
+
+    compartment.addEventListener('initialized', () => {
+      ++invocations.initialized;
+    });
+
+    compartment.addEventListener('change', () => {
+      ++invocations.change;
+    });
+
+    compartment.addEventListener('reset', () => {
+      ++invocations.reset;
+    });
+
+    await compartment.reload();
+    await compartment.reload();
+
+    expect(invocations.change).toBe(1);
+    expect(invocations.reset).toBe(0);
+    expect(invocations.initialized).toBe(1);
+  });
+
+  test('initialized publishes for initial load', async () => {
+    const compartment = new DataCompartment<User | undefined>(storageToken.compartment('test'), {
+      source: new ConfiguredDataSource<User>(async () => ({
+        name: 'Test',
+      })),
+      defaultValue: undefined,
+      retention: { policies: [cacheForSeconds(1)] },
+    });
+
+    let value: User | undefined;
+    compartment.addEventListener('initialized', ({ details: record }) => {
+      value = (record as InitializedEvent).value;
+    });
+
+    await compartment.reload();
+
+    expect(value).toEqual({ name: 'Test' });
+  });
+
+  test('publishes reset event with default value', async () => {
+    const compartment = new DataCompartment<User | undefined>(storageToken.compartment('test'), {
+      source: new ConfiguredDataSource<User>(async () => ({
+        name: 'Test',
+      })),
+      defaultValue: undefined,
+      retention: { policies: [cacheForSeconds(1)] },
+    });
+
+    let value: User | undefined;
+    let invoked = false;
+    compartment.addEventListener('reset', ({ details: record }) => {
+      value = (record as InitializedEvent).value;
+      invoked = true;
+    });
+
+    await compartment.reload();
+
+    expect(value).toBeUndefined();
+    expect(invoked).toBeTruthy();
   });
 
   test('unsubscribes onChange subscription', async () => {
