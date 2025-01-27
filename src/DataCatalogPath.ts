@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Subscription } from 'rxjs';
-import { ChangeSubscription } from './Compartments';
 import { DataStoreToken } from './DataStoreToken';
 import { DataCatalog } from './DataCatalog';
-import { ChangeEvent, DataCompartment } from './DataCompartment';
+import { CompartmentEventListener, DataCompartment, EventType } from './DataCompartment';
 import { DataCache } from './DataCache';
 
 interface DataCatalogObserver<T = any> {
   getCompartment(catalog: DataCatalog): DataCompartment<T>;
-  subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription;
+  addEventListener(catalog: DataCatalog, type: EventType, listener: CompartmentEventListener): Subscription;
 }
 
 class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
@@ -36,19 +35,17 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
     return compartment;
   }
 
-  // TODO -- Let's start by making this generic for all events
-  subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
+  addEventListener(catalog: DataCatalog, type: EventType, listener: CompartmentEventListener): Subscription {
     const compartment = this.getCompartment(catalog);
-    return compartment.addEventListener('change', ({ details }) => onChange(details as ChangeEvent));
+    return compartment.addEventListener(type, listener);
   }
 }
 
 export class DataCatalogPath {
   constructor(private readonly observer: DataCatalogObserver) {}
 
-  // TODO -- Let's start by making this generic for all events
-  addChangeListener<T>(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
-    return this.observer.subscribe(catalog, onChange);
+  addEventListener(catalog: DataCatalog, type: EventType, listener: CompartmentEventListener): Subscription {
+    return this.observer.addEventListener(catalog, type, listener);
   }
 
   static fromCacheCompartment(token: DataStoreToken): DataCatalogPath {

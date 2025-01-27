@@ -9,7 +9,7 @@ import { DataCatalogPath } from './DataCatalogPath';
 import { TriggerContext } from './IDataTrigger';
 import { IApplicationCacheManager } from './Caching';
 import { ISystemClock } from './System';
-import { createEventEnvelope } from './DataCompartment';
+import { EventEnvelope } from './DataCompartment';
 
 // Essentially an in-memory database
 // First pass is JUST a replacement for AppStorage
@@ -92,8 +92,7 @@ export class DataStore {
 
       const path = DataCatalogPath.fromCacheCompartment(token);
       const triggers = schema.triggersFor(token);
-      path.addChangeListener(this.dataCatalog, (record) => {
-        const envelope = createEventEnvelope('change', record);
+      const onCompartmentEventRaised = (envelope: EventEnvelope) => {
         const context = new TriggerContext(cache, envelope, this, clock);
         for (let j = 0; j < triggers.length; j++) {
           const trigger = triggers[j];
@@ -105,7 +104,10 @@ export class DataStore {
             }
           });
         }
-      });
+      };
+
+      path.addEventListener(this.dataCatalog, 'change', onCompartmentEventRaised);
+      path.addEventListener(this.dataCatalog, 'reset', onCompartmentEventRaised);
     }
   }
 }
