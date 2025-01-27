@@ -36,6 +36,7 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
     return compartment;
   }
 
+  // TODO -- Let's start by making this generic for all events
   subscribe(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
     const compartment = this.getCompartment(catalog);
     return compartment.addEventListener('change', ({ details }) => onChange(details as ChangeEvent));
@@ -45,6 +46,7 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
 export class DataCatalogPath {
   constructor(private readonly observer: DataCatalogObserver) {}
 
+  // TODO -- Let's start by making this generic for all events
   addChangeListener<T>(catalog: DataCatalog, onChange: ChangeSubscription<T>): Subscription {
     return this.observer.subscribe(catalog, onChange);
   }

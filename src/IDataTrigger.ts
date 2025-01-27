@@ -1,5 +1,5 @@
 import { IApplicationCacheManager } from './Caching';
-import { EventEnvelope } from './DataCompartment';
+import { EventEnvelope, EventType } from './DataCompartment';
 import { DataStore } from './DataStore';
 import { DataStoreToken } from './DataStoreToken';
 import { ISystemClock } from './System';
@@ -10,7 +10,6 @@ export class TriggerContext {
     readonly envelope: EventEnvelope,
     readonly store: DataStore,
     readonly clock: ISystemClock,
-    // Probably going to need to the containr...if not, then at least the subject resolver
   ) {}
 }
 
@@ -20,14 +19,14 @@ export interface IDataTrigger {
 }
 
 export class InvalidateDataTrigger implements IDataTrigger {
+  private readonly eventTypes: EventType[] = ['change', 'reset'];
   constructor(readonly tokens: DataStoreToken[]) {}
 
   onCompartmentEventRaised(context: TriggerContext): void {
+    if (this.eventTypes.indexOf(context.envelope.type) === -1) return;
+
     this.tokens.forEach((token) => {
       context.appCache.invalidate(token.value);
-
-      // need a way to dynamically construct a path from a token
-      // const path = DataCatalogPath.fromCacheCompartment(token);
     });
   }
 }

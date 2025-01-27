@@ -74,9 +74,16 @@ export class DataStore {
   public apply(schema: Schema, cache: IApplicationCacheManager, clock: ISystemClock) {
     this.schema = schema;
     // regen the subscriptions
+    const observableTokens = schema.observableTokens;
+    const visitedTokens: string[] = [];
 
-    for (let i = 0; i < schema.observableTokens.length; i++) {
-      const token = schema.observableTokens[i];
+    while (observableTokens.length > 0) {
+      const token = observableTokens.shift();
+      if (!token || visitedTokens.includes(token.key)) {
+        break;
+      }
+
+      visitedTokens.push(token.key);
       const type = this.dataCatalog.describe(token);
       if (type === 'repository') {
         console.log(`Ignoring repository ${token.key}`);
@@ -91,6 +98,12 @@ export class DataStore {
         for (let j = 0; j < triggers.length; j++) {
           const trigger = triggers[j];
           trigger.onCompartmentEventRaised(context);
+
+          trigger.tokens.forEach((t) => {
+            if (!visitedTokens.includes(t.key)) {
+              observableTokens.push(t);
+            }
+          });
         }
       });
     }
