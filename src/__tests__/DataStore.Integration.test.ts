@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { firstValueFrom } from 'rxjs';
 import { ApplicationCacheManager } from '../Caching';
 import { cacheForSeconds, DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
@@ -94,28 +95,26 @@ describe('DataStore Integration', () => {
     const schema = createSchema((builder) => {
       builder
         .source(testToken.compartment<TestCompartments>('compartmentA'))
-        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentB'));
+        .resetsCompartment(testToken.compartment<TestCompartments>('compartmentB'));
 
       builder
         .source(testToken.compartment<TestCompartments>('compartmentB'))
-        .invalidatesCompartment(testToken.compartment<TestCompartments>('compartmentD'));
+        .resetsCompartment(testToken.compartment<TestCompartments>('compartmentD'));
     });
 
     store.apply(schema, ApplicationCacheManager.instance, systemClock);
 
-    await cache.modify('compartmentA', async (value) => {
-      return value + 'A';
-    });
-
+    await cache.reloadAll();
+    await cache.reset('compartmentA');
     await wait(200);
 
     const compartmentB = cache.findCompartment('compartmentB') as DataCompartment<string>;
-    expect(compartmentB.isExpired).toBeTruthy();
+    expect(await firstValueFrom(compartmentB.initialized$)).toBeFalsy();
 
     const compartmentD = cache.findCompartment('compartmentD') as DataCompartment<string>;
-    expect(compartmentD.isExpired).toBeTruthy();
+    expect(await firstValueFrom(compartmentD.initialized$)).toBeFalsy();
 
     const compartmentC = cache.findCompartment('compartmentC') as DataCompartment<string>;
-    expect(compartmentC.isExpired).toBeFalsy();
+    expect(await firstValueFrom(compartmentC.initialized$)).toBeTruthy();
   });
 });

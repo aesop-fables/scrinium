@@ -6,8 +6,9 @@ import { CompartmentEventListener, DataCompartment, EventType } from './DataComp
 import { DataCache } from './DataCache';
 
 interface DataCatalogObserver<T = any> {
-  getCompartment(catalog: DataCatalog): DataCompartment<T>;
   addEventListener(catalog: DataCatalog, type: EventType, listener: CompartmentEventListener): Subscription;
+  getCompartment(catalog: DataCatalog): DataCompartment<T>;
+  reset(catalog: DataCatalog): Promise<void>;
 }
 
 class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
@@ -35,6 +36,10 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
     return compartment;
   }
 
+  reset(catalog: DataCatalog): Promise<void> {
+    return this.getCompartment(catalog).reset();
+  }
+
   addEventListener(catalog: DataCatalog, type: EventType, listener: CompartmentEventListener): Subscription {
     const compartment = this.getCompartment(catalog);
     return compartment.addEventListener(type, listener);
@@ -43,6 +48,10 @@ class DataCacheObserver<T = any> implements DataCatalogObserver<T> {
 
 export class DataCatalogPath {
   constructor(private readonly observer: DataCatalogObserver) {}
+
+  reset(catalog: DataCatalog): Promise<void> {
+    return this.observer.getCompartment(catalog).reset();
+  }
 
   addEventListener(catalog: DataCatalog, type: EventType, listener: CompartmentEventListener): Subscription {
     return this.observer.addEventListener(catalog, type, listener);

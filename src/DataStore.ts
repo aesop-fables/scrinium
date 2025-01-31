@@ -70,6 +70,19 @@ export class DataStore {
     );
   }
 
+  async reset(token: DataStoreToken): Promise<void> {
+    let path = this.dataCatalog.describe(token) === 'cache' ? DataCatalogPath.fromCacheCompartment(token) : null;
+    if (!path && token.parent) {
+      path = this.dataCatalog.describe(token.parent) === 'cache' ? DataCatalogPath.fromCacheCompartment(token) : null;
+    }
+
+    if (!path) {
+      return;
+    }
+
+    await path.reset(this.dataCatalog);
+  }
+
   // TODO -- Need to move the cache to the constructor but don't feel like fixing the compiler errors yet
   public apply(schema: Schema, cache: IApplicationCacheManager, clock: ISystemClock) {
     this.schema = schema;

@@ -30,3 +30,15 @@ export class InvalidateDataTrigger implements IDataTrigger {
     });
   }
 }
+
+export class ResetDataTrigger implements IDataTrigger {
+  constructor(readonly tokens: DataStoreToken[]) {}
+
+  onCompartmentEventRaised(context: TriggerContext): void {
+    if (context.envelope.type !== 'reset') return;
+
+    this.tokens.forEach((token) => {
+      context.store.reset(token);
+    });
+  }
+}

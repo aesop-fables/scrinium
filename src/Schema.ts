@@ -1,11 +1,15 @@
 import { DataStoreToken } from './DataStoreToken';
-import { IDataTrigger, InvalidateDataTrigger } from './IDataTrigger';
+import { IDataTrigger, InvalidateDataTrigger, ResetDataTrigger } from './IDataTrigger';
 
 export class SchemaTokenExpression {
   constructor(private readonly triggers: IDataTrigger[]) {}
 
   invalidatesCompartment(token: DataStoreToken): SchemaTokenExpression {
     return this.addTrigger(new InvalidateDataTrigger([token]));
+  }
+
+  resetsCompartment(token: DataStoreToken): SchemaTokenExpression {
+    return this.addTrigger(new ResetDataTrigger([token]));
   }
 
   addTrigger(trigger: IDataTrigger): SchemaTokenExpression {

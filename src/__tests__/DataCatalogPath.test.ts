@@ -36,8 +36,8 @@ describe('DataCatalogPath', () => {
 
     let changeRecord: ChangeRecord<UserDto | undefined> | undefined;
     const path = DataCatalogPath.fromCacheCompartment(userToken.compartment('account'));
-    path.addChangeListener<UserDto>(catalog, (record) => {
-      changeRecord = record;
+    path.addEventListener(catalog, 'change', ({ details: record }) => {
+      changeRecord = record as ChangeRecord<UserDto | undefined>;
     });
 
     await cache.reload('account');
