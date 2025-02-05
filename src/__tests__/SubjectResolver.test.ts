@@ -10,11 +10,11 @@ import {
 import {
   ConfiguredDataSource,
   createDataCache,
-  createDataCacheModule,
+  createDataCatalogModule,
   DataCache,
   DataCompartmentOptions,
   injectDataCache,
-  IAppStorage,
+  DataStore,
   injectSubject,
   ISubject,
   ISubjectResolver,
@@ -24,7 +24,7 @@ import {
   SubjectResolver,
   useScrinium,
 } from '..';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 const messageCache = 'MessageCache';
 const sampleKey = 'sampleKey';
@@ -91,26 +91,26 @@ interface Preference {
   value?: string;
 }
 
-const accountsToken = new AppStorageToken('accounts');
+const accountsToken = new DataStoreToken('accounts');
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
 }
 
-const userToken = new AppStorageToken('users');
+const userToken = new DataStoreToken('users');
 
 interface UserCompartments {
   user: DataCompartmentOptions<UserDto | undefined>;
 }
 
-const preferencesToken = new AppStorageToken('preferences');
+const preferencesToken = new DataStoreToken('preferences');
 
 interface PreferenceCompartments {
   preferences: DataCompartmentOptions<Preference[]>;
 }
 
 class AccountLoadedPredicate implements Predicate {
-  constructor(@injectDataCache(accountsToken.key) private readonly cache: DataCache<AccountCompartments>) {}
+  constructor(@injectDataCache(accountsToken.value) private readonly cache: DataCache<AccountCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$;
@@ -120,7 +120,7 @@ class AccountLoadedPredicate implements Predicate {
 const predicateKey = 'predicateSubject';
 
 class UserLoadedPredicate implements Predicate {
-  constructor(@injectDataCache(userToken.key) private readonly cache: DataCache<UserCompartments>) {}
+  constructor(@injectDataCache(userToken.value) private readonly cache: DataCache<UserCompartments>) {}
 
   createObservable(): Observable<boolean> {
     return this.cache.initialized$;
@@ -131,7 +131,7 @@ const userPredicateKey = 'userPredicateSubject';
 
 @predicate(predicateKey)
 class PreferencesSubject implements ISubject<Preference[]> {
-  constructor(@injectDataCache(preferencesToken.key) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesToken.value) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');
@@ -141,14 +141,14 @@ class PreferencesSubject implements ISubject<Preference[]> {
 @predicate(predicateKey)
 @predicate(userPredicateKey)
 class UserPreferencesSubject implements ISubject<Preference[]> {
-  constructor(@injectDataCache(preferencesToken.key) private readonly cache: DataCache<PreferenceCompartments>) {}
+  constructor(@injectDataCache(preferencesToken.value) private readonly cache: DataCache<PreferenceCompartments>) {}
 
   createObservable() {
     return this.cache.observe$<Preference[]>('preferences');
   }
 }
 
-const withAccountData = createDataCacheModule((storage) => {
+const withAccountData = createDataCatalogModule((storage) => {
   const cache = createDataCache<AccountCompartments>(accountsToken, {
     account: {
       loadingOptions: {
@@ -165,10 +165,10 @@ const withAccountData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(cache);
+  storage.registerCache(cache);
 });
 
-const withUserData = createDataCacheModule((storage) => {
+const withUserData = createDataCatalogModule((storage) => {
   const cache = createDataCache<UserCompartments>(userToken, {
     user: {
       loadingOptions: {
@@ -183,10 +183,10 @@ const withUserData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(cache);
+  storage.registerCache(cache);
 });
 
-const withPreferencesData = createDataCacheModule((storage) => {
+const withPreferencesData = createDataCatalogModule((storage) => {
   const cache = createDataCache<PreferenceCompartments>(preferencesToken, {
     preferences: {
       loadingOptions: {
@@ -199,7 +199,7 @@ const withPreferencesData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(cache);
+  storage.registerCache(cache);
 });
 
 describe('SubjectResolver w/ decorators', () => {
@@ -214,10 +214,10 @@ describe('SubjectResolver w/ decorators', () => {
       predicateServices,
     ]);
 
-    const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
+    const storage = container.get<DataStore>(ScriniumServices.DataStore);
     const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
-    const accountCache = storage.retrieve<AccountCompartments>(accountsToken);
-    const preferenceCache = storage.retrieve<PreferenceCompartments>(preferencesToken);
+    const accountCache = storage.cache<AccountCompartments>(accountsToken);
+    const preferenceCache = storage.cache<PreferenceCompartments>(preferencesToken);
 
     const subject$ = resolver.resolveSubject(PreferencesSubject);
     let hasError = false;
@@ -250,11 +250,11 @@ describe('SubjectResolver w/ decorators', () => {
       predicateServices,
     ]);
 
-    const storage = container.get<IAppStorage>(ScriniumServices.AppStorage);
+    const storage = container.get<DataStore>(ScriniumServices.DataStore);
     const resolver = container.get<ISubjectResolver>(ScriniumServices.SubjectResolver);
-    const accountCache = storage.retrieve<AccountCompartments>(accountsToken);
-    const userCache = storage.retrieve<UserCompartments>(userToken);
-    const preferenceCache = storage.retrieve<PreferenceCompartments>(preferencesToken);
+    const accountCache = storage.cache<AccountCompartments>(accountsToken);
+    const userCache = storage.cache<UserCompartments>(userToken);
+    const preferenceCache = storage.cache<PreferenceCompartments>(preferencesToken);
 
     const subject$ = resolver.resolveSubject(UserPreferencesSubject);
     let hasError = false;

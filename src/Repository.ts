@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { firstValueFrom } from 'rxjs';
-import { AppStorageToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 import { DataCompartmentOptions, RetentionOptions } from './Compartments';
 import { ConfiguredDataSource } from './ConfiguredDataSource';
 import { DataCompartment } from './DataCompartment';
 import { Hash, ILookup, Lookup } from './Lookup';
+import { ICompartmentStorage } from './ICompartmentStorage';
 /**
  * Represents a data source used to resolve an entity by key.
  */
@@ -51,7 +52,7 @@ export interface RepositoryCompartmentOptions<Key, Entity> extends IRepositoryCo
 /**
  * Represents a set of entity compartments.
  */
-export interface IRepository<Registry> {
+export interface IRepository<Registry> extends ICompartmentStorage {
   /**
    * Clears the cached value for the specified key/id.
    * @param key The key of the compartment to clear.
@@ -87,23 +88,25 @@ export interface IRepository<Registry> {
   /**
    * The token used to identify the repository.
    */
-  token: AppStorageToken;
+  token: DataStoreToken;
 }
 /**
  * Represents a set of entity compartments.
  */
 export class Repository<Registry> implements IRepository<Registry> {
-  private readonly compartments: Hash<ILookup<string | number, DataCompartment<unknown>>>;
+  private readonly compartmentLookups: Hash<ILookup<string | number, DataCompartment<unknown>>>;
   constructor(
-    readonly token: AppStorageToken,
+    readonly token: DataStoreToken,
+    readonly managedTokens: DataStoreToken[],
     private readonly lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> },
   ) {
-    this.compartments = {};
+    this.compartmentLookups = {};
     const entries = Object.entries(lookups);
     entries.forEach(([key, value]) => {
-      this.compartments[key] = value;
+      this.compartmentLookups[key] = value;
     });
   }
+
   /**
    * Clears the cached value for the specified key/id.
    * @param key The key of the compartment to clear.
@@ -158,7 +161,7 @@ export class Repository<Registry> implements IRepository<Registry> {
   }
 
   private findLookup<Response>(key: keyof Registry): ILookup<string | number, DataCompartment<Response>> {
-    const lookup = this.compartments[key as string] as ILookup<string | number, DataCompartment<Response>>;
+    const lookup = this.compartmentLookups[key as string] as ILookup<string | number, DataCompartment<Response>>;
     if (!lookup) {
       throw new Error(`Could not find compartment "${String(key)}".`);
     }
@@ -196,10 +199,11 @@ export class Repository<Registry> implements IRepository<Registry> {
  * ```
  */
 export function createRepository<Registry extends Record<string, any>>(
-  token: AppStorageToken,
+  token: DataStoreToken,
   registry: Registry,
 ): IRepository<Registry> {
   const entries = Object.entries(registry);
+  const managedTokens = entries.map(([key]) => token.compartment(key));
   const lookups: { [key: string | number]: ILookup<string | number, DataCompartment<unknown>> } = {};
   entries.forEach(([key, value]) => {
     lookups[key] = new Lookup<string | number, DataCompartment<unknown>>((id) => {
@@ -213,9 +217,9 @@ export function createRepository<Registry extends Record<string, any>>(
         source: new ConfiguredDataSource(async () => entityOptions.resolver.resolve(id)),
       };
 
-      return new DataCompartment<unknown>(token.append(key), options);
+      return new DataCompartment<unknown>(token.compartment(key), options);
     });
   });
 
-  return new Repository(token, lookups);
+  return new Repository(token, managedTokens, lookups);
 }

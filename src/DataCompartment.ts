@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, pairwise, Subscription } from 'rxjs';
 import { Latch } from './Utils';
-import { DataCompartmentState, IRetentionPolicy } from './Compartments';
+import { ChangeRecord, DataCompartmentState, IRetentionPolicy } from './Compartments';
 import { ISystemClock, systemClock } from './System';
 import {
   ApplicationCacheManagerRetentionPolicy,
@@ -11,7 +11,7 @@ import {
   RetentionContext,
 } from './Compartments';
 import { ApplicationCacheManager, IApplicationCacheManager } from './Caching';
-import { DataCompartmentToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 /**
  * Represents an individual compartment of data that exposes lifecycle and observable functions to interact
  * with the cached value(s).
@@ -32,7 +32,7 @@ export class DataCompartment<Model> implements IDataCompartment {
   /**
    * The unique identifier of the compartment.
    */
-  readonly token: DataCompartmentToken;
+  readonly token: DataStoreToken;
 
   /**
    * Constructs a new instance of DataCompartment.
@@ -40,7 +40,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @param options The options used to configured the behavior of the compartment.
    * @returns A new instance of DataCompartment.
    */
-  constructor(token: DataCompartmentToken, options: DataCompartmentOptions<Model>) {
+  constructor(token: DataStoreToken, options: DataCompartmentOptions<Model>) {
     this.token = token;
     this.options = {
       comparer: defaultComparer,
@@ -53,7 +53,7 @@ export class DataCompartment<Model> implements IDataCompartment {
 
     this.systemClock = this.options.system?.clock ?? systemClock;
     this.appCache = this.options.system?.cache ?? ApplicationCacheManager.instance;
-    this.policies = this.options.retention?.policies ?? [new ApplicationCacheManagerRetentionPolicy()];
+    this.policies = [new ApplicationCacheManagerRetentionPolicy(), ...(this.options.retention?.policies ?? [])];
 
     this.value = new BehaviorSubject<Model>(options.defaultValue);
     if (this.options.loadingOptions?.strategy !== 'auto') {
@@ -174,12 +174,7 @@ export class DataCompartment<Model> implements IDataCompartment {
    * @param value The value to store and emit.
    */
   next(value: Model): void {
-    let shouldPublish = true;
-    if (this.options.comparer) {
-      shouldPublish = !this.options.comparer(this.value.value, value);
-    }
-
-    if (shouldPublish) {
+    if (this.shouldPublish(this.value.value, value)) {
       this.value.next(value);
     }
   }
@@ -206,6 +201,15 @@ export class DataCompartment<Model> implements IDataCompartment {
 
   getData(): unknown {
     return this.value.value;
+  }
+
+  shouldPublish(previous: Model, current: Model) {
+    let shouldPublish = true;
+    if (this.options.comparer) {
+      shouldPublish = !this.options.comparer(previous, current);
+    }
+
+    return shouldPublish;
   }
 
   getCompartmentState(): DataCompartmentState {
@@ -244,4 +248,67 @@ export class DataCompartment<Model> implements IDataCompartment {
     this.value.next(this.options.defaultValue);
     this.lastLoaded.next(0);
   }
+
+  addEventListener(type: EventType, listener: CompartmentEventListener): Subscription {
+    switch (type) {
+      case 'change':
+        return this.value.pipe(pairwise()).subscribe(([previous, current]) => {
+          if (this.shouldPublish(previous, current)) {
+            const event: ChangeEvent = { previous, current };
+            const envelope = createEventEnvelope('change', event);
+            listener(envelope);
+          }
+        });
+      case 'initialized':
+        const initialized$ = this.initialized$.pipe(
+          pairwise(),
+          filter(([prev, curr]) => !prev && curr),
+          map(([, curr]) => curr),
+        );
+        return combineLatest([initialized$, this.value])
+          .pipe(filter(([x]) => x === true))
+          .subscribe(([, val]) => {
+            const event: InitializedEvent = { value: val };
+            const envelope = createEventEnvelope('initialized', event);
+            listener(envelope);
+          });
+      case 'reset':
+        const reset$ = this.initialized$.pipe(
+          pairwise(),
+          filter(([prev, curr]) => prev && !curr),
+          map(([, curr]) => curr),
+        );
+        return combineLatest([reset$, this.value])
+          .pipe(filter(([x]) => x === false))
+          .subscribe(([, val]) => {
+            const event: ResetEvent = { value: val };
+            const envelope = createEventEnvelope('reset', event);
+            listener(envelope);
+          });
+    }
+
+    throw new Error(`Invalid type ${type}`);
+  }
+}
+
+export type ChangeEvent = ChangeRecord;
+export type InitializedEvent = { value: any };
+export type ResetEvent = { value: any };
+export type CompartmentEvent = ChangeEvent | InitializedEvent | ResetEvent;
+export type EventType = 'change' | 'initialized' | 'reset';
+
+export type EventEnvelope = {
+  type: EventType;
+  timestamp: number;
+  details: CompartmentEvent;
+};
+
+export type CompartmentEventListener = (envelope: EventEnvelope) => void;
+
+export function createEventEnvelope(type: EventType, event: CompartmentEvent): EventEnvelope {
+  return {
+    type,
+    timestamp: Date.now(),
+    details: event,
+  };
 }

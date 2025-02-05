@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
-import { IAppStorage } from '../AppStorage';
-import { createDataCacheModule, useDataCache } from '../bootstrapping/useDataCache';
+import { DataStore } from '../DataStore';
+import { createDataCatalogModule } from '../bootstrapping/useDataCache';
 import { createDataCache } from '../DataCache';
 import {
   BootstrappingServices,
@@ -11,12 +11,12 @@ import {
   IServiceModule,
   ServiceCollection,
 } from '@aesop-fables/containr';
-import { AccountCompartments, TestTokens } from './Common';
+import { AccountCompartments, TestTokens, useDataCache } from './Common';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { ScriniumServices } from '../ScriniumServices';
 import { useScrinium } from '../bootstrapping';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 class TestActivator implements IActivator {
   isActivated = false;
@@ -65,8 +65,8 @@ describe('Bootstrapping', () => {
   });
 
   describe('useDataCache', () => {
-    test('Configures the IAppStorage with the specified data caches', async () => {
-      const withAccountStorage = createDataCacheModule((appStorage) => {
+    test('Configures the DataStore with the specified data caches', async () => {
+      const withAccountStorage = createDataCatalogModule((dataStore) => {
         const dataCache = createDataCache<AccountCompartments>(TestTokens.account, {
           plans: {
             loadingOptions: {
@@ -81,14 +81,12 @@ describe('Bootstrapping', () => {
           },
         });
 
-        appStorage.store(dataCache);
+        dataStore.registerCache(dataCache);
       });
 
-      const configureAppStorage = useDataCache([withAccountStorage]);
-      const container = createContainer([configureAppStorage]);
-
-      const appStorage = container.get<IAppStorage>(ScriniumServices.AppStorage);
-      const cache = appStorage.retrieve<AccountCompartments>(TestTokens.account);
+      const container = createContainer([useScrinium({ modules: [withAccountStorage] })]);
+      const dataStore = container.get<DataStore>(ScriniumServices.DataStore);
+      const cache = dataStore.cache<AccountCompartments>(TestTokens.account);
       await cache.reload('plans');
 
       expect(await firstValueFrom(cache.observe$('plans'))).toHaveLength(3);
@@ -100,9 +98,9 @@ describe('Bootstrapping', () => {
       test: DataCompartmentOptions<string>;
     }
 
-    const sampleDataKey = new AppStorageToken('test');
+    const sampleDataKey = new DataStoreToken('test');
 
-    const withSampleData = createDataCacheModule((appStorage) => {
+    const withSampleData = createDataCatalogModule((dataStore) => {
       const cache = createDataCache<SampleCompartments>(sampleDataKey, {
         test: {
           defaultValue: '',
@@ -116,18 +114,18 @@ describe('Bootstrapping', () => {
         },
       });
 
-      appStorage.store(cache);
+      dataStore.registerCache(cache);
     });
 
-    test('Allow app storage modules to inject IAppStorage', async () => {
+    test('Allow app storage modules to inject DataStore', async () => {
       const container = createContainer([
         useScrinium({
           modules: [withSampleData],
         }),
       ]);
 
-      const appStorage = container.get<IAppStorage>(ScriniumServices.AppStorage);
-      const sampleCache = appStorage.retrieve<SampleCompartments>(sampleDataKey);
+      const dataStore = container.get<DataStore>(ScriniumServices.DataStore);
+      const sampleCache = dataStore.cache<SampleCompartments>(sampleDataKey);
 
       const waitForSampleCacheToInitialize = () => {
         return new Promise<boolean>((resolve) => {

@@ -3,12 +3,12 @@ import { firstValueFrom, map, Observable } from 'rxjs';
 import { injectSubject, ISubject } from '../ISubject';
 import { injectDataCache } from '../Decorators';
 import { createDataCache, DataCache } from '../DataCache';
-import { createDataCacheModule, useScrinium } from '../bootstrapping';
+import { createDataCatalogModule, useScrinium } from '../bootstrapping';
 import { DataCompartmentOptions } from '../Compartments';
 import { createContainer, createServiceModule, Scopes } from '@aesop-fables/containr';
 import { predicate, Predicate } from '../Predicate';
 import { wait } from '../tasks';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 const TestServices = {
   Cache: 'test-cache',
@@ -46,12 +46,12 @@ class CountService {
   }
 }
 
-const testCacheToken = new AppStorageToken(TestServices.Cache);
+const testCacheToken = new DataStoreToken(TestServices.Cache);
 
 describe('Subject Resolution w/ lazy loading', () => {
   test('Injecting a data cache subject does not trigger the compartment', async () => {
     let resolved = false;
-    const withTestData = createDataCacheModule((appStorage) => {
+    const withTestData = createDataCatalogModule((dataCatalog) => {
       const cache = createDataCache<TestCompartments>(testCacheToken, {
         count: {
           defaultValue: 0,
@@ -65,7 +65,7 @@ describe('Subject Resolution w/ lazy loading', () => {
         },
       });
 
-      appStorage.store(cache);
+      dataCatalog.registerCache(cache);
     });
 
     const useTestServices = createServiceModule('test-services', (services) => {
