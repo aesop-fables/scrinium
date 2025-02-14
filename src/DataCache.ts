@@ -4,24 +4,29 @@ import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { DataCompartmentOptions, IDataCompartment } from './Compartments';
 import { IDataCacheObserver } from './IDataCacheObserver';
 import { DataCompartment } from './DataCompartment';
-import { AppStorageToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
+import { ICompartmentStorage } from './ICompartmentStorage';
 
-export interface IDataCache {
+export interface IDataCache extends ICompartmentStorage {
   compartments: IDataCompartment[];
   observeWith: (observer: IDataCacheObserver) => void;
-  token: AppStorageToken;
+  token: DataStoreToken;
 }
 
 export class DataCache<T> implements IDataCache {
   constructor(
-    readonly token: AppStorageToken,
+    readonly token: DataStoreToken,
     readonly compartments: IDataCompartment[],
   ) {}
+
+  get managedTokens(): DataStoreToken[] {
+    return this.compartments.map((x) => x.token);
+  }
 
   observe$<Output>(key: keyof T): Observable<Output> {
     return of(this.compartments).pipe(
       switchMap((compartments) => {
-        const compartmentToken = this.token.append(String(key));
+        const compartmentToken = this.token.compartment(String(key));
         const compartment = compartments.find((x) => x.token.equals(compartmentToken));
         if (!compartment) {
           throw new Error(`Could not find compartment: ${String(key)}`);
@@ -64,8 +69,8 @@ export class DataCache<T> implements IDataCache {
     await this.withCompartment(key, (compartment) => compartment.reset());
   }
 
-  findCompartment(key: keyof T): IDataCompartment {
-    const targetToken = this.token.append(String(key));
+  findCompartment(key: keyof T | DataStoreToken): IDataCompartment {
+    const targetToken = typeof key === 'string' ? this.token.compartment(String(key)) : (key as DataStoreToken);
     const compartment = this.compartments.find((x) => x.token.equals(targetToken));
     if (!compartment) {
       throw new Error(`Could not find compartment: ${String(key)}`);
@@ -96,12 +101,12 @@ export class DataCache<T> implements IDataCache {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDataCache<Compartments extends Record<string, any>>(
-  token: AppStorageToken,
+  token: DataStoreToken,
   policy: Compartments,
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
-    const compartmentToken = token.append(key);
+    const compartmentToken = token.compartment(key);
     return new DataCompartment<unknown>(compartmentToken, value as DataCompartmentOptions<unknown>);
   });
 

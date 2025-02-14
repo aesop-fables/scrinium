@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { IAppStorage } from '../AppStorage';
-import { useAppStorage } from '../useAppStorage';
+import { DataStore } from '../DataStore';
+import { useDataStore } from '../useDataStore';
 import { IServiceContainer } from '@aesop-fables/containr';
 import { useServiceContainer } from '@aesop-fables/containr-react';
 
 export interface MutationContext<T> {
-  storage: IAppStorage;
+  storage: DataStore;
   container: IServiceContainer;
   data: T;
 }
@@ -32,7 +32,7 @@ export interface MutatorState<Data> {
 
 export interface WrapMutationParams<Data> {
   container: IServiceContainer;
-  storage: IAppStorage;
+  storage: DataStore;
   mutator: IMutation<Data>;
   onStatusChanged: (status: MutationStatus) => void;
   onError: (err: Error) => void;
@@ -76,7 +76,7 @@ export function asMutator<Data>(mutation: IMutation<Data> | Mutation<Data>): IMu
 export function useMutation<Data>(mutation: IMutation<Data> | Mutation<Data>): MutatorState<Data> {
   const [status, setStatus] = useState(MutationStatus.Idle);
   const [error, setError] = useState<Error | undefined>(undefined);
-  const storage = useAppStorage();
+  const storage = useDataStore();
   const container = useServiceContainer();
   const mutator = asMutator<Data>(mutation);
 

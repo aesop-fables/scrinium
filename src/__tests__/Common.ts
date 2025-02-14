@@ -1,12 +1,10 @@
 import { BehaviorSubject, map, Observable } from 'rxjs';
 import {
-  IAppStorage,
   createDataCache,
   DataCache,
   DataCompartmentOptions,
-  AppStorage,
   ProjectionContext,
-  createDataCacheModule,
+  createDataCatalogModule,
   IProjectionFactory,
   createProjection,
   RepositoryCompartmentOptions,
@@ -14,13 +12,17 @@ import {
   createDataCacheScenario,
   fromProjection,
   injectProjectionContext,
+  DataCatalog,
+  DataCatalogModule,
+  DataCacheRegistry,
 } from '..';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
+import { IServiceModule, ServiceModule } from '@aesop-fables/containr';
 
 export const TestTokens = {
-  account: new AppStorageToken('accounts'),
-  cache: new AppStorageToken('cache1'),
+  account: new DataStoreToken('accounts'),
+  cache: new DataStoreToken('cache1'),
 };
 
 export function createAccountDataCache(): DataCache<AccountCompartments> {
@@ -87,7 +89,7 @@ export class AccountProjections {
 
   constructor(@injectProjectionContext() context: ProjectionContext) {
     const { storage } = context;
-    this.cache = storage.retrieve<AccountCompartments>(TestTokens.account);
+    this.cache = storage.cache<AccountCompartments>(TestTokens.account);
   }
 
   get accounts$(): Observable<AccountInfo[]> {
@@ -137,15 +139,15 @@ export class CurrentUser {
   }
 }
 
-export function createAccountStorage(policy: AccountCompartments): [IAppStorage, DataCache<AccountCompartments>] {
-  const appStorage = new AppStorage();
+export function createAccountStorage(policy: AccountCompartments): [DataCatalog, DataCache<AccountCompartments>] {
+  const dataCatalog = new DataCatalog();
   const dataCache = createDataCache<AccountCompartments>(TestTokens.account, policy);
-  appStorage.store(dataCache);
+  dataCatalog.registerCache(dataCache);
 
-  return [appStorage, dataCache];
+  return [dataCatalog, dataCache];
 }
 
-export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
+export const withInvestmentAccounts = createDataCatalogModule((dataStore) => {
   const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>(TestTokens.account, {
     plans: {
       source: new ConfiguredDataSource(async () => []),
@@ -153,7 +155,7 @@ export const withInvestmentAccounts = createDataCacheModule((appStorage) => {
     },
   });
 
-  appStorage.store(dataCache);
+  dataStore.registerCache(dataCache);
 });
 
 export interface Video {
@@ -187,4 +189,10 @@ export function createOperationScenario(): DataCacheScenario<AccountCompartments
     }),
     accounts,
   };
+}
+
+export function useDataCache(modules: DataCatalogModule[] = []): IServiceModule {
+  return new ServiceModule('dataCache', (services) => {
+    services.include(new DataCacheRegistry(modules));
+  });
 }
