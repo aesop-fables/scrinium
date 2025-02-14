@@ -12,10 +12,10 @@ import {
   ScriniumServices,
   SubjectResolver,
   createDataCache,
-  createDataCacheModule,
+  createDataCatalogModule,
   injectDataCache,
   injectSubject,
-  useAppStorage,
+  useDataStore,
   useListener,
   useObservable,
   useSubject,
@@ -24,7 +24,7 @@ import { InteractionContext } from './InteractionContext';
 import { BehaviorSubject, Observable, Observer, Subscription, combineLatest, map } from 'rxjs';
 import { Scopes, ServiceCollection, inject } from '@aesop-fables/containr';
 import { useService } from '@aesop-fables/containr-react';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 const TestServices = {
   authContext: 'authContext',
@@ -67,7 +67,7 @@ interface PersonRest {
   lastName: string;
 }
 
-const userToken = new AppStorageToken('users');
+const userToken = new DataStoreToken('users');
 
 interface UserCompartments {
   account: DataCompartmentOptions<AccountRest | undefined>;
@@ -114,11 +114,11 @@ class UserDataFactory {
   }
 }
 
-const withUserData = createDataCacheModule((storage, container) => {
+const withUserData = createDataCatalogModule((storage, container) => {
   const factory = container.resolve(UserDataFactory);
   const cache = factory.create();
 
-  storage.store(cache);
+  storage.registerCache(cache);
 });
 
 class PrincipalUser {
@@ -190,8 +190,8 @@ const useAuthenticationContext = () => {
 };
 
 const useUserData = () => {
-  const storage = useAppStorage();
-  return storage.retrieve<UserCompartments>(userToken);
+  const storage = useDataStore();
+  return storage.cache<UserCompartments>(userToken);
 };
 
 const useIsAppReady = () => {

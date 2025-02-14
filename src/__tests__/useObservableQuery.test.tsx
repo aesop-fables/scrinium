@@ -6,13 +6,7 @@ import { ServiceProvider } from '@aesop-fables/containr-react';
 import { Scopes, createContainer, createServiceModule } from '@aesop-fables/containr';
 import { useObservableQuery } from '../hooks/useObservableQuery';
 import { IObservableQuery } from '../queries/Types';
-import {
-  AppStorageRegistrations,
-  createAppStorageRegistrations,
-  createDataCacheModule,
-  IAppStorageRegistration,
-  useScrinium,
-} from '../bootstrapping';
+import { createDataCatalogModule, useScrinium } from '../bootstrapping';
 import { DataCache, createDataCache } from '../DataCache';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
@@ -20,7 +14,12 @@ import { Predicate, predicate } from '../Predicate';
 import { injectDataCache } from '../Decorators';
 import { ISubject, injectSubject } from '../ISubject';
 import { wait } from './utils';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
+import {
+  createDataModule,
+  DataCatalogRegistration,
+  DataCatalogRegistrations,
+} from '../bootstrapping/createDataCatalogModule';
 
 const predicateKey = 'predicateSubject';
 const subjectKey = 'subjectKey';
@@ -117,13 +116,13 @@ interface Preference {
   value?: string;
 }
 
-const accountsKey = new AppStorageToken('accounts');
+const accountsKey = new DataStoreToken('accounts');
 
 interface AccountCompartments {
   account: DataCompartmentOptions<AccountDto | undefined>;
 }
 
-const preferencesKey = new AppStorageToken('preferences');
+const preferencesKey = new DataStoreToken('preferences');
 
 interface PreferenceCompartments {
   preferences: DataCompartmentOptions<Preference[]>;
@@ -146,8 +145,8 @@ class PreferencesSubject implements ISubject<Preference[]> {
   }
 }
 
-class AccountRegistration implements IAppStorageRegistration {
-  defineData(): AppStorageRegistrations {
+class AccountRegistration implements DataCatalogRegistration {
+  defineData(): DataCatalogRegistrations {
     const cache = createDataCache<AccountCompartments>(accountsKey, {
       account: {
         loadingOptions: { strategy: 'lazy' },
@@ -168,9 +167,9 @@ class AccountRegistration implements IAppStorageRegistration {
   }
 }
 
-const withAccountData = createAppStorageRegistrations(AccountRegistration);
+const withAccountData = createDataModule(AccountRegistration);
 
-const withPreferencesData = createDataCacheModule((storage) => {
+const withPreferencesData = createDataCatalogModule((storage) => {
   const cache = createDataCache<PreferenceCompartments>(preferencesKey, {
     preferences: {
       loadingOptions: {
@@ -183,5 +182,5 @@ const withPreferencesData = createDataCacheModule((storage) => {
     },
   });
 
-  storage.store(cache);
+  storage.registerCache(cache);
 });

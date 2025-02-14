@@ -2,18 +2,18 @@
 import { Scopes, ServiceCollection, createContainer, createServiceModule } from '@aesop-fables/containr';
 import { ServiceProvider } from '@aesop-fables/containr-react';
 import React from 'react';
-import { ScriniumServices, IAppStorage, ISubjectResolver, SubjectResolver } from '..';
+import { ScriniumServices, DataStore, ISubjectResolver, SubjectResolver } from '..';
 
 export interface InteractionContextProps {
-  appStorage?: IAppStorage;
+  dataStore?: DataStore;
   children: JSX.Element;
   configureServices?: (services: ServiceCollection) => void;
 }
 
-export const InteractionContext: React.FC<InteractionContextProps> = ({ appStorage, ...props }) => {
+export const InteractionContext: React.FC<InteractionContextProps> = ({ dataStore, ...props }) => {
   const interactionServices = createServiceModule('interactionContext', (services) => {
-    if (appStorage) {
-      services.singleton<IAppStorage>(ScriniumServices.AppStorage, appStorage);
+    if (dataStore) {
+      services.singleton<DataStore>(ScriniumServices.DataStore, dataStore);
     }
 
     services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Transient);

@@ -2,7 +2,7 @@ import { IServiceContainer, inject, injectContainer } from '@aesop-fables/contai
 import { IDataCommand } from './Types';
 import { IMutation, Mutation, asMutator } from '../hooks/useMutation';
 import { ScriniumServices } from '../ScriniumServices';
-import { IAppStorage } from '../AppStorage';
+import { DataStore } from '../DataStore';
 
 export declare type MutationCommandParams<Params> = Params & {
   mutation: IMutation<Params> | Mutation<Params>;
@@ -11,7 +11,7 @@ export declare type MutationCommandParams<Params> = Params & {
 export class MutationCommand<Params> implements IDataCommand<MutationCommandParams<Params>> {
   constructor(
     @injectContainer() private readonly container: IServiceContainer,
-    @inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage,
+    @inject(ScriniumServices.DataStore) private readonly dataStore: DataStore,
   ) {}
 
   async execute(params: MutationCommandParams<Params>): Promise<void> {
@@ -19,7 +19,7 @@ export class MutationCommand<Params> implements IDataCommand<MutationCommandPara
     const mutator = asMutator(mutation);
     await mutator.execute({
       container: this.container,
-      storage: this.appStorage,
+      storage: this.dataStore,
       data: rest as Params,
     });
   }

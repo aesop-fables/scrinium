@@ -1,60 +1,58 @@
-import { AppStorage, IAppStorage } from '../AppStorage';
+import { DataStore } from '../DataStore';
 import {
   BootstrappingServices,
   IActivator,
   IServiceContainer,
-  IServiceModule,
   IServiceRegistry,
   ServiceCollection,
-  ServiceModule,
   inject,
   injectContainer,
 } from '@aesop-fables/containr';
 import { ScriniumServices } from '../ScriniumServices';
-import { IAppStorageModule } from './IAppStorageModule';
+import { DataCatalogModule } from './DataCatalogModule';
+import { DataCatalog } from '../DataCatalog';
 
-export function createDataCacheModule(
-  middleware: (appStorage: IAppStorage, container: IServiceContainer) => void,
-): IAppStorageModule {
+export function createDataCatalogModule(
+  middleware: (dataCatalog: DataCatalog, container: IServiceContainer) => void,
+): DataCatalogModule {
   return {
-    configureAppStorage: middleware,
+    configureDataCatalog: middleware,
   };
 }
 
-const appStorageModulesKey = 'scrinium/settings';
+const dataStoreModulesKey = 'scrinium/settings';
 
 export interface ScriniumBootstrappingOptions {
-  modules: IAppStorageModule[];
+  modules: DataCatalogModule[];
 }
 
 export class DataCacheRegistry implements IServiceRegistry {
-  constructor(private readonly modules: IAppStorageModule[] = []) {}
+  constructor(private readonly modules: DataCatalogModule[] = []) {}
   configureServices(services: ServiceCollection): void {
-    services.singleton<ScriniumBootstrappingOptions>(appStorageModulesKey, { modules: this.modules });
-    services.singleton<IAppStorage>(ScriniumServices.AppStorage, new AppStorage());
-    services.arrayAutoResolve(BootstrappingServices.Activators, DataCacheActivator);
+    services.singleton<ScriniumBootstrappingOptions>(dataStoreModulesKey, { modules: this.modules });
+    services.arrayAutoResolve(BootstrappingServices.Activators, DataCatalogActivator);
+
+    const catalog = new DataCatalog();
+    const store = new DataStore(catalog);
+
+    services.singleton(ScriniumServices.DataCatalog, catalog);
+    services.singleton(ScriniumServices.DataStore, store);
   }
 }
 
-export function useDataCache(modules: IAppStorageModule[] = []): IServiceModule {
-  return new ServiceModule('dataCache', (services) => {
-    services.include(new DataCacheRegistry(modules));
-  });
-}
-
-export class DataCacheActivator implements IActivator {
+export class DataCatalogActivator implements IActivator {
   constructor(
     @injectContainer() private readonly container: IServiceContainer,
-    @inject(ScriniumServices.AppStorage) private readonly appStorage: IAppStorage,
-    @inject(appStorageModulesKey) private readonly settings: ScriniumBootstrappingOptions,
+    @inject(ScriniumServices.DataCatalog) private readonly dataCatalog: DataCatalog,
+    @inject(dataStoreModulesKey) private readonly settings: ScriniumBootstrappingOptions,
   ) {}
 
   activate(): void {
-    this.settings.modules.forEach((module) => {
+    this.settings.modules.forEach((mod) => {
       try {
-        module.configureAppStorage(this.appStorage, this.container);
+        mod.configureDataCatalog(this.dataCatalog, this.container);
       } catch (e) {
-        console.log(module, e);
+        console.log(mod, e);
       }
     });
   }

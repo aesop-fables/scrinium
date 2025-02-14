@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useAppStorage } from '../useAppStorage';
+import { useDataStore } from '../useDataStore';
 import { Newable } from '@aesop-fables/containr';
 import { useServiceContainer } from '@aesop-fables/containr-react';
 import useConstant from './useConstant';
 import { map, Observable } from 'rxjs';
 import { IProjectionFactory, ProjectionConstructor, ProjectionContext, createProjection } from '../Projections';
 import { DataCompartment } from '../DataCompartment';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 export function useProjection<Projection>(
   constructor: ProjectionConstructor<Projection> | IProjectionFactory<Projection> | Newable<Projection>,
 ): Projection {
-  const storage = useAppStorage();
+  const storage = useDataStore();
   const container = useServiceContainer();
   return useConstant(() => createProjection(storage, container, constructor));
 }
@@ -39,7 +39,7 @@ export class DataCompartmentProjectionFactory<Value> implements IProjectionFacto
 
   create(context: ProjectionContext): DataCompartmentProjection<Value> {
     const { storage } = context;
-    const repository = storage.repository<any>(new AppStorageToken(this.storageKey));
+    const repository = storage.repository<any>(new DataStoreToken(this.storageKey));
     const compartment = repository.get<string | number, Value>(this.key, this.id);
     return new DataCompartmentProjection<Value>(compartment);
   }

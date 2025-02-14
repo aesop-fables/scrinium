@@ -5,7 +5,7 @@ import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { createDataCacheScenario } from '../Utils';
 import { wait } from './utils';
 import { waitUntil } from '../tasks';
-import { AppStorageToken } from '../AppStorageToken';
+import { DataStoreToken } from '../DataStoreToken';
 
 interface ResponseA {
   name: string;
@@ -26,7 +26,7 @@ describe('DataCache', () => {
       const a: ResponseA[] = [];
       const b: ResponseB[] = [];
 
-      const { createProxy } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
+      const { createProxy } = createDataCacheScenario<TestStoreCompartments>(new DataStoreToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => a),
           defaultValue: [],
@@ -49,7 +49,7 @@ describe('DataCache', () => {
       const b: ResponseB[] = [{ email: 'test@test.com' }];
 
       const { createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => a),
@@ -79,7 +79,7 @@ describe('DataCache', () => {
     test('Autoload true happy path', async () => {
       let loadCount = 0;
       // autoload is true by default
-      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
+      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(new DataStoreToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => {
             ++loadCount;
@@ -106,7 +106,7 @@ describe('DataCache', () => {
     test('Waits for all compartments', async () => {
       // autoload = true
       const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => {
@@ -140,7 +140,7 @@ describe('DataCache', () => {
 
     test('Initialized publishes false when an error occurs', async () => {
       // dependency: autoload = true
-      const { cache } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
+      const { cache } = createDataCacheScenario<TestStoreCompartments>(new DataStoreToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => []),
           defaultValue: [],
@@ -170,7 +170,7 @@ describe('DataCache', () => {
     test('Failure should invoke onError callback', async () => {
       // dependency: autoload = true
       let theError: Error | undefined;
-      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(new AppStorageToken('temp'), {
+      const { waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(new DataStoreToken('temp'), {
         a: {
           source: new ConfiguredDataSource(async () => []),
           defaultValue: [],
@@ -198,7 +198,7 @@ describe('DataCache', () => {
       const defaultValue: ResponseA[] = [{ name: 'default' }];
       const loadedValue: ResponseA[] = [{ name: 'loaded' }];
       const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => loadedValue),
@@ -240,7 +240,7 @@ describe('DataCache', () => {
       };
 
       const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => {
@@ -282,7 +282,7 @@ describe('DataCache', () => {
       };
 
       const { cache, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => {
@@ -321,7 +321,7 @@ describe('DataCache', () => {
       const loadedValue: ResponseA[] = [{ name: 'loaded' }];
 
       const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => loadedValue),
@@ -354,7 +354,7 @@ describe('DataCache', () => {
       const loadedValue: ResponseA[] = [{ name: 'loaded' }];
 
       const { cache, createProxy, waitForAllCompartments } = createDataCacheScenario<TestStoreCompartments>(
-        new AppStorageToken('temp'),
+        new DataStoreToken('temp'),
         {
           a: {
             source: new ConfiguredDataSource(async () => loadedValue),

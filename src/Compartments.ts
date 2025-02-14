@@ -4,14 +4,22 @@ import { Predicate } from './Predicate';
 import { ISystemClock, SystemOverrides } from './System';
 import { IDataCompartmentSource } from './IDataCompartmentSource';
 import { IApplicationCacheManager } from './Caching';
-import { DataCompartmentToken } from './AppStorageToken';
+import { DataStoreToken } from './DataStoreToken';
 
 export declare type EventListener = (listener: () => void) => void;
 
 export declare type CompartmentComparer<T> = (a: T, b: T) => boolean;
 
+const comparable: (o: any) => any = (o: any) => {
+  return typeof o != 'object' || !o
+    ? o
+    : Object.keys(o)
+        .sort()
+        .reduce((c: any, key) => ((c[key] = comparable(o[key])), c), {});
+};
+
 export function defaultComparer<T>(a: T, b: T): boolean {
-  return a === b;
+  return JSON.stringify(comparable(a)) === JSON.stringify(comparable(b));
 }
 
 export declare type LoadingStrategy = 'auto' | 'lazy' | 'manual';
@@ -71,7 +79,7 @@ type ActionWithArgs<T> = (value: T) => void;
 
 export interface DataCompartmentState {
   key: string;
-  token: DataCompartmentToken;
+  token: DataStoreToken;
   options: DataCompartmentOptions<any>;
   lastLoaded: number;
   value?: any;
@@ -79,6 +87,13 @@ export interface DataCompartmentState {
   loading: boolean;
   error?: unknown;
 }
+
+export type ChangeRecord<T = any> = {
+  previous?: T;
+  current: T;
+};
+
+export type ChangeSubscription<T> = (change: ChangeRecord<T>) => void;
 
 /**
  * Provides strongly-typed configuration options for an individual data compartment.
@@ -132,7 +147,7 @@ export interface IDataCompartment {
   /**
    * The unique identifier of the compartment.
    */
-  token: DataCompartmentToken;
+  token: DataStoreToken;
   /**
    * Provides an observable that emits true when initialization is complete.
    * @returns An observable that emits true when initialization is complete.
