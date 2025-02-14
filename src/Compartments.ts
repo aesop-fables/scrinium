@@ -155,7 +155,7 @@ export interface IDataCompartment {
   initialized$: Observable<boolean>;
   /**
    * Provides an observable that emits true when the compartment is loading.
-   * @returns An observable that emits true when initialization is complete.
+   * @returns An observable that emits true when the compartment is loading.
    */
   loading$: Observable<boolean>;
   /**
