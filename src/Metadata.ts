@@ -1,0 +1,41 @@
+import { IServiceContainer } from '@aesop-fables/containr';
+import { Observable } from 'rxjs';
+import { DataStore } from './DataStore';
+
+export type ObservedPredicate = Observable<boolean>;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Constructor = Function;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PredicateIdentifier = string;
+
+export type ConstructorDecorator = (target: Constructor) => void;
+
+const metadataKey = Symbol('@aesop-fables/scrinium/predicates/metadata');
+
+export const getPredicateMetadata = (constructor: Constructor) => {
+  const metadata = Reflect.getMetadata(metadataKey, constructor) ?? [];
+  return metadata as PredicateIdentifier[];
+};
+
+export const setPredicateMetadata = (constructor: Constructor, metadata: PredicateIdentifier[]) => {
+  Reflect.defineMetadata(metadataKey, metadata, constructor);
+};
+
+export class MetadataSubjectContext {
+  constructor(
+    readonly container: IServiceContainer,
+    readonly store: DataStore,
+  ) {}
+}
+
+export interface IMetadataSubject<T> {
+  createObservable(context: MetadataSubjectContext): Observable<T>;
+}
+
+// export function waitForCache(token: DataStoreToken) {
+//   return function (target: Constructor) {
+//     const metadata = getPredicateMetadata(target);
+//     // Reflect.defineMetadata(metadataKey, [...metadata, lookup], target);
+//   };
+// }

@@ -8,7 +8,7 @@ import {
 } from '@aesop-fables/containr';
 import { Observable, combineLatest, filter, map } from 'rxjs';
 import { ScriniumServices } from './ScriniumServices';
-import { getPredicateMetadata } from './Predicate';
+import { getPredicateMetadata } from './Metadata';
 
 /**
  * Subjects are essentially factories for observables.
