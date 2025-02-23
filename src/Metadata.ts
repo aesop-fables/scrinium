@@ -1,7 +1,6 @@
-import { IServiceContainer } from '@aesop-fables/containr';
 import { combineLatest, map, Observable } from 'rxjs';
-import { DataStore } from './DataStore';
 import { DataStoreToken } from './DataStoreToken';
+import { MetadataSubjectContext } from './MetadataSubjectContext';
 
 export type ObservedPredicate = Observable<boolean>;
 
@@ -22,13 +21,6 @@ export const getPredicateMetadata = (constructor: Constructor) => {
 export const setPredicateMetadata = (constructor: Constructor, metadata: PredicateIdentifier[]) => {
   Reflect.defineMetadata(metadataKey, metadata, constructor);
 };
-
-export class MetadataSubjectContext {
-  constructor(
-    readonly container: IServiceContainer,
-    readonly store: DataStore,
-  ) {}
-}
 
 export interface IMetadataSubject<T> {
   createObservable(context: MetadataSubjectContext): Observable<T>;

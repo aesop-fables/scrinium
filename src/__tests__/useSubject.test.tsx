@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ISubject, useSubject } from '../index';
+import { DataCatalog, DataStore, ISubject, useSubject } from '../index';
 import { InteractionContext } from './InteractionContext';
 import { Observable, of } from 'rxjs';
 import { ServiceCollection, inject } from '@aesop-fables/containr';
@@ -46,8 +46,9 @@ describe('useSubject', () => {
       });
     };
 
+    const dataStore = new DataStore(new DataCatalog());
     render(
-      <InteractionContext configureServices={configureServices}>
+      <InteractionContext dataStore={dataStore} configureServices={configureServices}>
         <SampleComponent />
       </InteractionContext>,
     );
