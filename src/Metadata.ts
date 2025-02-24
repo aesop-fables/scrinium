@@ -26,18 +26,46 @@ export interface IMetadataSubject<T> {
   createObservable(context: MetadataSubjectContext): Observable<T>;
 }
 
-// This is the decorator shim
-export function waitForCache<Compartments>(token: DataStoreToken): ConstructorDecorator {
+export type KeysOf<T> = (keyof T)[];
+
+export type MetadataSubjectAction<T> = (target: Constructor, context: MetadataSubjectContext) => Observable<T>;
+
+class ArrowFunctionMetadataSubject<T> implements IMetadataSubject<T> {
+  constructor(
+    private readonly action: MetadataSubjectAction<T>,
+    private readonly target: Constructor,
+  ) {}
+
+  createObservable(context: MetadataSubjectContext): Observable<T> {
+    return this.action(this.target, context);
+  }
+}
+
+export function createMetadataDecorator<T>(action: MetadataSubjectAction<T>): ConstructorDecorator {
   return function (target: Constructor) {
     const metadata = getPredicateMetadata(target);
-    const resolver = new WaitForCacheMetadataPredicate<Compartments>(token, []);
+    const resolver = new ArrowFunctionMetadataSubject(action, target);
     setPredicateMetadata(target, [...metadata, resolver]);
   };
 }
 
-export type KeysOf<T> = (keyof T)[];
+export function createPredicateDecorator<Compartments>(
+  token: DataStoreToken,
+  keys: KeysOf<Compartments> = [],
+): ConstructorDecorator {
+  return function (target: Constructor) {
+    const metadata = getPredicateMetadata(target);
+    const resolver = new PredicateMetadataSubject<Compartments>(token, keys);
+    setPredicateMetadata(target, [...metadata, resolver]);
+  };
+}
 
-export class WaitForCacheMetadataPredicate<Compartments> implements IMetadataSubject<boolean> {
+export const waitForCache = createPredicateDecorator;
+
+// Unit test this
+// Then, add unit tests to prove this also works for repositories
+// THEN, we can add unit tests around the command usage
+export class PredicateMetadataSubject<Compartments> implements IMetadataSubject<boolean> {
   constructor(
     readonly token: DataStoreToken,
     readonly keys: KeysOf<Compartments>,

@@ -40,6 +40,21 @@ describe('Command Executor', () => {
     expect(messages[0]).toBe('hello, world');
     expect(messages[1]).toBe('hello, world (edited)');
   });
+
+  test('Waits for predicate before executing command', async () => {
+    const messages: string[] = [];
+    const container = createContainer([
+      {
+        name: 'tests',
+        configureServices(services) {
+          services.singleton(SampleServices.messages, messages);
+        },
+      },
+    ]);
+   
+    const commands = container.resolve(CommandExecutor);
+    await commands.execute(WrappedCommand, 'hello, world');
+  });
 });
 
 const SampleServices = { messages: 'messages', wrapper: 'wrapperCommand' };
@@ -54,6 +69,16 @@ class SampleCommand implements IDataCommand<string, void> {
 
 @appendCommandMiddleware(SampleServices.wrapper)
 class WrappedCommand implements IDataCommand<string, void> {
+  constructor(@inject(SampleServices.messages) private readonly messages: string[]) {}
+
+  async execute(input: string): Promise<void> {
+    this.messages.push(input);
+  }
+}
+
+// const samplePredicate = create
+
+class PredicateCommand implements IDataCommand<string, void> {
   constructor(@inject(SampleServices.messages) private readonly messages: string[]) {}
 
   async execute(input: string): Promise<void> {
