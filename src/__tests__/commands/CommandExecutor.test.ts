@@ -72,7 +72,7 @@ describe('Command Executor', () => {
       await commands.execute(PredicateCommand, 'hello, world'),
     ]);
 
-    expect(messages.length).toBe(1);
+    expect(messages.length).toBe(2);
   });
 });
 
@@ -105,6 +105,7 @@ const samplePredicate = createMetadataDecorator<boolean>((target, context) => {
 });
 
 @samplePredicate
+@appendCommandMiddleware(SampleServices.wrapper)
 class PredicateCommand implements IDataCommand<string, void> {
   constructor(@inject(SampleServices.messages) private readonly messages: string[]) {}
 
