@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   createDataCache,
   DataCache,
   DataCompartmentOptions,
   ProjectionContext,
-  createDataCatalogModule,
-  IProjectionFactory,
-  createProjection,
-  RepositoryCompartmentOptions,
   DataCacheScenario,
   createDataCacheScenario,
   fromProjection,
@@ -19,7 +15,7 @@ import {
 } from '..';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { DataStoreToken } from '../DataStoreToken';
-import { IServiceContainer, IServiceModule, ServiceModule } from '@aesop-fables/containr';
+import { IServiceModule, ServiceModule } from '@aesop-fables/containr';
 
 export const TestTokens = {
   account: new DataStoreToken('accounts'),
@@ -125,38 +121,6 @@ export function createAccountStorage(policy: AccountCompartments): [DataCatalog,
   dataCatalog.registerCache(dataCache);
 
   return [dataCatalog, dataCache];
-}
-
-export interface Video {
-  id: string;
-  title: string;
-}
-
-export interface VideoMetadata {
-  id: string;
-  duration: number;
-}
-
-// In this example, we're pretending that the data we need
-// comes from two separate APIs that we need to merge together
-export interface VideoRegistry {
-  videos: RepositoryCompartmentOptions<string, Video>;
-  metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
-}
-
-export type VideoCompartments = {
-  mostRecent: DataCompartmentOptions<Video[]>;
-};
-
-export type VideoScenarioExpression = {
-  mostRecent?: Video[];
-  videos?: Record<string, Video>;
-  metadata?: Record<string, VideoMetadata>;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function createIntegrationContainer(expression: VideoScenarioExpression): IServiceContainer {
-  throw new Error('Not implemented');
 }
 
 export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
