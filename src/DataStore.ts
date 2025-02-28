@@ -24,7 +24,7 @@ export type DataStoreState = {
  * Provides a managed data store for caching and repositories as well as managing their relationships.
  */
 export class DataStore {
-  private schema?: Schema;
+  private _schema?: Schema;
 
   constructor(private readonly dataCatalog: DataCatalog) {}
 
@@ -83,10 +83,13 @@ export class DataStore {
     await path.reset(this.dataCatalog);
   }
 
-  // TODO -- Need to move the cache to the constructor but don't feel like fixing the compiler errors yet
+  get schema(): Schema | undefined {
+    return this._schema;
+  }
+
   public apply(schema: Schema, cache: IApplicationCacheManager, clock: ISystemClock) {
-    this.schema = schema;
-    // regen the subscriptions
+    this._schema = schema;
+
     const observableTokens = schema.observableTokens;
     const visitedTokens: string[] = [];
 

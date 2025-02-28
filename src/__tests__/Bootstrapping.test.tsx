@@ -11,7 +11,7 @@ import {
   IServiceModule,
   ServiceCollection,
 } from '@aesop-fables/containr';
-import { AccountCompartments, TestTokens, useDataCache } from './Common';
+import { AccountCompartments, TestTokens } from './Common';
 import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { ScriniumServices } from '../ScriniumServices';

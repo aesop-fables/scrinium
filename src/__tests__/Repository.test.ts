@@ -1,12 +1,12 @@
 import 'reflect-metadata';
 import { firstValueFrom } from 'rxjs';
 import { ConfiguredEntityResolver, IRepository, createRepository } from '../Repository';
-import { Video, VideoMetadata, VideoRegistry } from './Common';
 import { wait } from './utils';
 import { injectRepository } from '../Decorators';
 import { createContainer } from '@aesop-fables/containr';
 import { createDataCatalogModule, useScrinium } from '../bootstrapping';
 import { DataStoreToken } from '../DataStoreToken';
+import { Video, VideoMetadata, VideoRegistry } from './VideoData';
 
 const repoToken = new DataStoreToken('videos');
 

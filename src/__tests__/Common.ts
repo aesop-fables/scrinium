@@ -1,13 +1,10 @@
-import { BehaviorSubject, map, Observable } from 'rxjs';
+/* eslint-disable @typescript-eslint/ban-types */
+import { map, Observable } from 'rxjs';
 import {
   createDataCache,
   DataCache,
   DataCompartmentOptions,
   ProjectionContext,
-  createDataCatalogModule,
-  IProjectionFactory,
-  createProjection,
-  RepositoryCompartmentOptions,
   DataCacheScenario,
   createDataCacheScenario,
   fromProjection,
@@ -118,61 +115,12 @@ export class AccountSummaryProjection {
   }
 }
 
-export class CurrentUserProjection implements IProjectionFactory<CurrentUser> {
-  constructor(private readonly name: string) {}
-
-  create(context: ProjectionContext): CurrentUser {
-    const { container, storage } = context;
-    return createProjection(storage, container, CurrentUser, this.name);
-  }
-}
-
-export class CurrentUser {
-  private readonly user = new BehaviorSubject('');
-
-  constructor(name: string) {
-    this.user.next(name);
-  }
-
-  get user$(): Observable<string> {
-    return this.user.pipe();
-  }
-}
-
 export function createAccountStorage(policy: AccountCompartments): [DataCatalog, DataCache<AccountCompartments>] {
   const dataCatalog = new DataCatalog();
   const dataCache = createDataCache<AccountCompartments>(TestTokens.account, policy);
   dataCatalog.registerCache(dataCache);
 
   return [dataCatalog, dataCache];
-}
-
-export const withInvestmentAccounts = createDataCatalogModule((dataStore) => {
-  const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>(TestTokens.account, {
-    plans: {
-      source: new ConfiguredDataSource(async () => []),
-      defaultValue: [],
-    },
-  });
-
-  dataStore.registerCache(dataCache);
-});
-
-export interface Video {
-  id: string;
-  title: string;
-}
-
-export interface VideoMetadata {
-  id: string;
-  duration: number;
-}
-
-// In this example, we're pretending that the data we need
-// comes from two separate APIs that we need to merge together
-export interface VideoRegistry {
-  videos: RepositoryCompartmentOptions<string, Video>;
-  metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
 }
 
 export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
@@ -193,6 +141,6 @@ export function createOperationScenario(): DataCacheScenario<AccountCompartments
 
 export function useDataCache(modules: DataCatalogModule[] = []): IServiceModule {
   return new ServiceModule('dataCache', (services) => {
-    services.include(new DataCacheRegistry(modules));
+    services.include(new DataCacheRegistry({ modules }));
   });
 }

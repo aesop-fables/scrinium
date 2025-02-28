@@ -42,7 +42,10 @@ export function useObservable<T>(observable: Observable<T>, options?: Observable
   }, [resolvedOptions]);
 
   useEffect(() => {
-    const sub = target$.subscribe({ next: setState, error: (e) => setErr(e) });
+    const sub = target$.subscribe({
+      next: setState,
+      error: (e) => setErr(e),
+    });
     return () => sub.unsubscribe();
   }, [target$]); // the effect only runs once
 

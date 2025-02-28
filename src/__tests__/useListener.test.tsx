@@ -267,7 +267,7 @@ describe('useSubject', () => {
 
     const authContext = new AuthenticationContext();
     const configureServices = (services: ServiceCollection) => {
-      services.include(new DataCacheRegistry([withUserData]));
+      services.include(new DataCacheRegistry({ modules: [withUserData] }));
       services.singleton(TestServices.accountApi, accountApi);
       services.singleton(TestServices.authContext, authContext);
       services.singleton(TestServices.personApi, personApi);

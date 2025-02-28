@@ -100,11 +100,31 @@ export class DataCache<T> implements IDataCache {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * @deprecated Use the upcoming `configureDataCache` instead
+ */
 export function createDataCache<Compartments extends Record<string, any>>(
   token: DataStoreToken,
   policy: Compartments,
 ): DataCache<Compartments> {
   const entries = Object.entries(policy);
+  const compartments: IDataCompartment[] = entries.map(([key, value]) => {
+    const compartmentToken = token.compartment(key);
+    return new DataCompartment<unknown>(compartmentToken, value as DataCompartmentOptions<unknown>);
+  });
+
+  return new DataCache<Compartments>(token, compartments);
+}
+
+declare type DataCacheRegistry<Compartments> = {
+  [Property in keyof Compartments]: DataCompartmentOptions<Compartments[Property]>;
+};
+
+export function configureDataCache<Compartments extends Record<string, any>>(
+  token: DataStoreToken,
+  registry: DataCacheRegistry<Compartments>,
+): DataCache<Compartments> {
+  const entries = Object.entries(registry);
   const compartments: IDataCompartment[] = entries.map(([key, value]) => {
     const compartmentToken = token.compartment(key);
     return new DataCompartment<unknown>(compartmentToken, value as DataCompartmentOptions<unknown>);

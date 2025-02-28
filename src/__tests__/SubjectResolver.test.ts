@@ -23,6 +23,7 @@ import {
   ScriniumServices,
   SubjectResolver,
   useScrinium,
+  DataCatalog,
 } from '..';
 import { DataStoreToken } from '../DataStoreToken';
 
@@ -53,7 +54,7 @@ describe('SubjectResolver', () => {
     services.singleton<IMessageCache>(messageCache, cache);
     services.autoResolve(sampleKey, SampleSubject, Scopes.Transient);
 
-    const resolver = new SubjectResolver(services.buildContainer());
+    const resolver = new SubjectResolver(services.buildContainer(), new DataStore(new DataCatalog()));
     const observable$ = resolver.resolveSubjectByKey<string>(sampleKey);
 
     expect(await firstValueFrom(observable$)).toBe(message);
@@ -69,7 +70,7 @@ describe('SubjectResolver', () => {
     const services = new ServiceCollection();
     services.singleton<IMessageCache>(messageCache, cache);
 
-    const resolver = new SubjectResolver(services.buildContainer());
+    const resolver = new SubjectResolver(services.buildContainer(), new DataStore(new DataCatalog()));
     const observable$ = resolver.resolveSubject(SampleSubject);
 
     expect(await firstValueFrom(observable$)).toBe(message);
@@ -322,6 +323,7 @@ describe('@injectSubject', () => {
     const services = new ServiceCollection();
     services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Transient);
     services.singleton<IMessageCache>(messageCache, cache);
+    services.singleton(ScriniumServices.DataStore, new DataStore(new DataCatalog()));
     services.autoResolve(sampleKey, SampleSubject, Scopes.Transient);
 
     const container = services.buildContainer();

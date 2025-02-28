@@ -13,7 +13,7 @@ module.exports = {
     '^.+\\.(t|j)sx?$': 'ts-jest',
   },
   testEnvironment: 'jsdom',
-  testRegex: '(/__(tests|integration)__/.*|(\\.|/)(test|spec))\\.test.[jt]sx?$',
+  testRegex: '(/__integration__/.*|(\\.|/)(test|spec))\\.test.[jt]sx?$',
   testPathIgnorePatterns: ['lib'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };
