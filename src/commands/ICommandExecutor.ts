@@ -9,6 +9,9 @@ import { DataStore } from '../DataStore';
 import { ISubjectResolver, resolvePredicate } from '../ISubject';
 import { filter, firstValueFrom } from 'rxjs';
 
+/**
+ * @deprecated Use the upcoming `ICommandDispatcher` instead
+ */
 export interface ICommandExecutor {
   execute<Params, Output>(constructor: Newable<IDataCommand<Params, Output>>, params: Params): Promise<Output>;
   executeMutation<Params>(mutation: IMutation<Params> | Mutation<Params>, params: Params): Promise<void>;

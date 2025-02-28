@@ -100,6 +100,9 @@ export class DataCache<T> implements IDataCache {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * @deprecated Use the upcoming `configureDataCache` instead
+ */
 export function createDataCache<Compartments extends Record<string, any>>(
   token: DataStoreToken,
   policy: Compartments,
