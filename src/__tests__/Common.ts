@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { BehaviorSubject, map, Observable } from 'rxjs';
 import {
   createDataCache,
@@ -118,27 +119,6 @@ export class AccountSummaryProjection {
   }
 }
 
-export class CurrentUserProjection implements IProjectionFactory<CurrentUser> {
-  constructor(private readonly name: string) {}
-
-  create(context: ProjectionContext): CurrentUser {
-    const { container, storage } = context;
-    return createProjection(storage, container, CurrentUser, this.name);
-  }
-}
-
-export class CurrentUser {
-  private readonly user = new BehaviorSubject('');
-
-  constructor(name: string) {
-    this.user.next(name);
-  }
-
-  get user$(): Observable<string> {
-    return this.user.pipe();
-  }
-}
-
 export function createAccountStorage(policy: AccountCompartments): [DataCatalog, DataCache<AccountCompartments>] {
   const dataCatalog = new DataCatalog();
   const dataCache = createDataCache<AccountCompartments>(TestTokens.account, policy);
@@ -146,17 +126,6 @@ export function createAccountStorage(policy: AccountCompartments): [DataCatalog,
 
   return [dataCatalog, dataCache];
 }
-
-export const withInvestmentAccounts = createDataCatalogModule((dataStore) => {
-  const dataCache: DataCache<AccountCompartments> = createDataCache<AccountCompartments>(TestTokens.account, {
-    plans: {
-      source: new ConfiguredDataSource(async () => []),
-      defaultValue: [],
-    },
-  });
-
-  dataStore.registerCache(dataCache);
-});
 
 export interface Video {
   id: string;
@@ -174,6 +143,10 @@ export interface VideoRegistry {
   videos: RepositoryCompartmentOptions<string, Video>;
   metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
 }
+
+export type VideoCompartments = {};
+
+export type VideoScenarioExpression = {};
 
 export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
   const accounts: AccountInfoRest[] = [{ id: 1, title: 'Title', investments: [] }];
