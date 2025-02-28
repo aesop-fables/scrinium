@@ -19,7 +19,7 @@ import {
 } from '..';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
 import { DataStoreToken } from '../DataStoreToken';
-import { IServiceModule, ServiceModule } from '@aesop-fables/containr';
+import { IServiceContainer, IServiceModule, ServiceModule } from '@aesop-fables/containr';
 
 export const TestTokens = {
   account: new DataStoreToken('accounts'),
@@ -144,9 +144,20 @@ export interface VideoRegistry {
   metadata: RepositoryCompartmentOptions<string, VideoMetadata>;
 }
 
-export type VideoCompartments = {};
+export type VideoCompartments = {
+  mostRecent: DataCompartmentOptions<Video[]>;
+};
 
-export type VideoScenarioExpression = {};
+export type VideoScenarioExpression = {
+  mostRecent?: Video[];
+  videos?: Record<string, Video>;
+  metadata?: Record<string, VideoMetadata>;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function createIntegrationContainer(expression: VideoScenarioExpression): IServiceContainer {
+  throw new Error('Not implemented');
+}
 
 export function createOperationScenario(): DataCacheScenario<AccountCompartments> & { accounts: AccountInfoRest[] } {
   const accounts: AccountInfoRest[] = [{ id: 1, title: 'Title', investments: [] }];
