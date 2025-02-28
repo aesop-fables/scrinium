@@ -40,11 +40,6 @@ export class DataCacheRegistry implements IServiceRegistry {
     const catalog = new DataCatalog();
     const store = new DataStore(catalog);
 
-    if (this.options.schema) {
-      const schema = createSchema(this.options.schema);
-      store.apply(schema, ApplicationCacheManager.instance, systemClock);
-    }
-
     services.singleton(ScriniumServices.DataCatalog, catalog);
     services.singleton(ScriniumServices.DataStore, store);
   }
@@ -54,6 +49,7 @@ export class DataCatalogActivator implements IActivator {
   constructor(
     @injectContainer() private readonly container: IServiceContainer,
     @inject(ScriniumServices.DataCatalog) private readonly dataCatalog: DataCatalog,
+    @inject(ScriniumServices.DataStore) private readonly store: DataStore,
     @inject(dataStoreModulesKey) private readonly settings: ScriniumBootstrappingOptions,
   ) {}
 
@@ -65,5 +61,10 @@ export class DataCatalogActivator implements IActivator {
         console.log(mod, e);
       }
     });
+
+    if (this.settings.schema) {
+      const schema = createSchema(this.settings.schema);
+      this.store.apply(schema, ApplicationCacheManager.instance, systemClock);
+    }
   }
 }

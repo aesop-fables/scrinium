@@ -5,7 +5,6 @@ import { ISubject, ISubjectResolver } from '../ISubject';
 import { ScriniumServices } from '../ScriniumServices';
 import { ObservableOptions, useObservable } from './useObservable';
 
-// TODO -- Make the useObservable options available here
 export function useSubject<T>(
   keyOrConstructor: string | Newable<ISubject<T>>,
   options?: ObservableOptions,

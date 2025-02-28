@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContainer, inject, IServiceContainer, IServiceModule } from '@aesop-fables/containr';
 import { DataCatalogModule } from '../bootstrapping/DataCatalogModule';
-import { DataCompartmentOptions } from '../Compartments';
 import { ConfiguredEntityResolver, createRepository, RepositoryCompartmentOptions } from '../Repository';
 import {
   createDataModule,
@@ -10,8 +9,13 @@ import {
 } from '../bootstrapping/createDataCatalogModule';
 import { useScrinium } from '../bootstrapping';
 import { DataStoreToken } from '../DataStoreToken';
-import { createDataCache } from '../DataCache';
+import { configureDataCache, DataCache } from '../DataCache';
 import { ConfiguredDataSource } from '../ConfiguredDataSource';
+import { SchemaBuilder } from '../Schema';
+import { ISubject } from '../ISubject';
+import { Observable } from 'rxjs';
+import { waitForCache } from '../Metadata';
+import { injectDataCache } from '../Decorators';
 
 export interface Video {
   id: string;
@@ -31,10 +35,11 @@ export interface VideoRegistry {
 }
 
 export type VideoCompartments = {
-  mostRecent: DataCompartmentOptions<Video[]>;
+  mostRecent: Video[];
 };
 
 export type VideoScenarioExpression = {
+  delay?: number;
   mostRecent?: Video[];
   videos?: Record<string, Video>;
   metadata?: Record<string, VideoMetadata>;
@@ -44,6 +49,7 @@ export type IntegrationBootstrapOptions = {
   catalogModules?: DataCatalogModule[];
   scenario?: VideoScenarioExpression;
   serviceModules?: IServiceModule[];
+  schema?: (schema: SchemaBuilder) => void;
 };
 
 export type HttpClientResponse<T> = {
@@ -58,7 +64,7 @@ export interface IHttpClient {
 class InMemoryVideoHttpClient implements IHttpClient {
   private readonly routes: Record<string, HttpClientResponse<any>> = {};
 
-  constructor(scenario: VideoScenarioExpression) {
+  constructor(private readonly scenario: VideoScenarioExpression) {
     this.routes['/recent'] = {
       status: 200,
       data: scenario.mostRecent ?? [],
@@ -92,6 +98,10 @@ class InMemoryVideoHttpClient implements IHttpClient {
       };
     }
 
+    if (this.scenario.delay) {
+      await new Promise((resolve) => setTimeout(resolve, this.scenario.delay));
+    }
+
     return route;
   }
 }
@@ -100,17 +110,31 @@ const VideoGalleryServices = {
   httpClient: 'httpClient',
 };
 
-const VideoGalleryTokens = {
+export const VideoGalleryTokens = {
   dashboard: new DataStoreToken('dashboard'),
   repository: new DataStoreToken('repository'),
 };
+
+@waitForCache<VideoCompartments>(VideoGalleryTokens.dashboard, ['mostRecent'])
+export class MostRecentVideos implements ISubject<Video[]> {
+  constructor(
+    @injectDataCache(VideoGalleryTokens.dashboard.key) private readonly cache: DataCache<VideoCompartments>,
+  ) {}
+
+  createObservable(): Observable<Video[]> {
+    return this.cache.observe$<Video[]>('mostRecent');
+  }
+}
 
 export class VideoGalleryDataModule implements DataCatalogRegistration {
   constructor(@inject(VideoGalleryServices.httpClient) private readonly httpClient: IHttpClient) {}
 
   defineData(): DataCatalogRegistrations {
-    const dashboardCache = createDataCache<VideoCompartments>(VideoGalleryTokens.dashboard, {
+    const dashboardCache = configureDataCache<VideoCompartments>(VideoGalleryTokens.dashboard, {
       mostRecent: {
+        loadingOptions: {
+          strategy: 'lazy',
+        },
         source: new ConfiguredDataSource(async () => {
           const response = await this.httpClient.get<Video[]>('/recent');
           return response.data;
@@ -145,7 +169,7 @@ export const withVideoGalleryData = createDataModule(VideoGalleryDataModule);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createIntegrationContainer(options: IntegrationBootstrapOptions = {}): IServiceContainer {
-  const modules: DataCatalogModule[] = [];
+  const modules: DataCatalogModule[] = [withVideoGalleryData];
   const serviceModules: IServiceModule[] = [];
   if (options.scenario) {
     const httpClient = new InMemoryVideoHttpClient(options.scenario);
@@ -163,6 +187,7 @@ export function createIntegrationContainer(options: IntegrationBootstrapOptions 
   return createContainer([
     useScrinium({
       modules,
+      schema: options.schema,
     }),
     ...serviceModules,
   ]);

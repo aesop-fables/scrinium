@@ -1,4 +1,4 @@
-import { combineLatest, map, Observable } from 'rxjs';
+import { combineLatest, map, Observable, tap } from 'rxjs';
 import { DataStoreToken } from './DataStoreToken';
 import { MetadataSubjectContext } from './MetadataSubjectContext';
 
@@ -62,9 +62,6 @@ export function createPredicateDecorator<Compartments>(
 
 export const waitForCache = createPredicateDecorator;
 
-// Unit test this
-// Then, add unit tests to prove this also works for repositories
-// THEN, we can add unit tests around the command usage
 export class PredicateMetadataSubject<Compartments> implements IMetadataSubject<boolean> {
   constructor(
     readonly token: DataStoreToken,
@@ -78,7 +75,12 @@ export class PredicateMetadataSubject<Compartments> implements IMetadataSubject<
       return cache.initialized$;
     }
 
-    const filteredCompartments = cache.compartments.filter((x) => this.keys.includes(x.key as keyof Compartments));
+    const compartmentTokens = this.keys.map((x) => this.token.compartment(x).key);
+    const filteredCompartments = cache.compartments.filter((x) => compartmentTokens.includes(x.key));
+    if (filteredCompartments.length === 0) {
+      throw new Error(`No compartments found for keys: ${this.keys.join(', ')}`);
+    }
+
     return combineLatest(filteredCompartments.map((c) => c.initialized$)).pipe(map((x) => x.every((y) => y)));
   }
 }
