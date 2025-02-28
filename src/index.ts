@@ -34,6 +34,7 @@ export * from './ISubject';
 export * from './Keychain';
 export * from './Lookup';
 export * from './Metadata';
+export * from './MetadataSubjectContext';
 export * from './ObservableProvider';
 export * from './Predicate';
 export * from './PredicateListener';

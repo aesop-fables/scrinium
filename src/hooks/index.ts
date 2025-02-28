@@ -5,6 +5,7 @@ export * from './useConstant';
 export * from './useObservable';
 export * from './useObservableQuery';
 export * from './useMutation';
+export * from './usePredicate';
 export * from './useSubject';
 export * from './useListener';
 export * from './useApplicationState';
