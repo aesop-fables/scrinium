@@ -13,7 +13,7 @@ export * from './useDataCache';
 export const useScrinium = createServiceModuleWithOptions<ScriniumBootstrappingOptions>(
   '@aesop-fables/scrinium',
   (services, options) => {
-    services.include(new DataCacheRegistry(options.modules));
+    services.include(new DataCacheRegistry(options));
     services.autoResolve<ISubjectResolver>(ScriniumServices.SubjectResolver, SubjectResolver, Scopes.Singleton);
     services.autoResolve<ApplicationState>(ScriniumServices.ApplicationState, ApplicationState, Scopes.Singleton);
     services.autoResolve<ICommandExecutor>(ScriniumServices.CommandExecutor, CommandExecutor, Scopes.Transient);

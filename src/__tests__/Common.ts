@@ -141,6 +141,6 @@ export function createOperationScenario(): DataCacheScenario<AccountCompartments
 
 export function useDataCache(modules: DataCatalogModule[] = []): IServiceModule {
   return new ServiceModule('dataCache', (services) => {
-    services.include(new DataCacheRegistry(modules));
+    services.include(new DataCacheRegistry({ modules }));
   });
 }

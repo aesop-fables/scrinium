@@ -11,6 +11,9 @@ import {
 import { ScriniumServices } from '../ScriniumServices';
 import { DataCatalogModule } from './DataCatalogModule';
 import { DataCatalog } from '../DataCatalog';
+import { createSchema, SchemaBuilder } from '../Schema';
+import { ApplicationCacheManager } from '../Caching';
+import { systemClock } from '../System';
 
 export function createDataCatalogModule(
   middleware: (dataCatalog: DataCatalog, container: IServiceContainer) => void,
@@ -24,16 +27,23 @@ const dataStoreModulesKey = 'scrinium/settings';
 
 export interface ScriniumBootstrappingOptions {
   modules: DataCatalogModule[];
+  schema?: (builder: SchemaBuilder) => void;
 }
 
 export class DataCacheRegistry implements IServiceRegistry {
-  constructor(private readonly modules: DataCatalogModule[] = []) {}
+  constructor(private readonly options: ScriniumBootstrappingOptions) {}
+
   configureServices(services: ServiceCollection): void {
-    services.singleton<ScriniumBootstrappingOptions>(dataStoreModulesKey, { modules: this.modules });
+    services.singleton<ScriniumBootstrappingOptions>(dataStoreModulesKey, this.options);
     services.arrayAutoResolve(BootstrappingServices.Activators, DataCatalogActivator);
 
     const catalog = new DataCatalog();
     const store = new DataStore(catalog);
+
+    if (this.options.schema) {
+      const schema = createSchema(this.options.schema);
+      store.apply(schema, ApplicationCacheManager.instance, systemClock);
+    }
 
     services.singleton(ScriniumServices.DataCatalog, catalog);
     services.singleton(ScriniumServices.DataStore, store);

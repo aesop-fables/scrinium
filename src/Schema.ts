@@ -34,7 +34,7 @@ export class Schema {
   }
 }
 
-export class SchemaExpression {
+export class SchemaBuilder {
   constructor(private readonly values: Record<string, IDataTrigger[]>) {}
 
   compartment<Compartments>(token: DataStoreToken, key: keyof Compartments): SchemaTokenExpression {
@@ -59,9 +59,9 @@ export class SchemaExpression {
   }
 }
 
-export function createSchema(configure: (schema: SchemaExpression) => void) {
+export function createSchema(configure: (schema: SchemaBuilder) => void) {
   const values: Record<string, IDataTrigger[]> = {};
-  const expression = new SchemaExpression(values);
+  const expression = new SchemaBuilder(values);
   configure(expression);
 
   return new Schema(values);
