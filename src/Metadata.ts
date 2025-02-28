@@ -1,4 +1,4 @@
-import { combineLatest, map, Observable, tap } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { DataStoreToken } from './DataStoreToken';
 import { MetadataSubjectContext } from './MetadataSubjectContext';
 
